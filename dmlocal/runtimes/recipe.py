@@ -1,12 +1,15 @@
 """Runtime executor for schema-backed, pinned variant install recipes."""
+import hashlib
 import json
 import os
 import re
 import shutil
 import socket
+import stat
 import subprocess
 import sys
 import tarfile
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -29,6 +32,79 @@ def _safe_relpath(value):
     if path.is_absolute() or not path.parts or any(part in ("", ".", "..") for part in path.parts):
         raise ValueError("path must be a safe relative path")
     return path
+
+
+def _contained_path(base, relative):
+    """Reject lexical escapes and existing symlinks before using a recipe path."""
+    if not isinstance(relative, str) or any(part in ("", ".", "..") for part in relative.split("/")) or "\x00" in relative:
+        raise ValueError("path must be a safe relative path")
+    parts = _safe_relpath(relative).parts
+    if any(part.endswith((".", " ")) or re.fullmatch(r"(?i)(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?", part) for part in parts):
+        raise ValueError("path must be a safe relative path on all platforms")
+    base = Path(base).absolute()
+    target = base.joinpath(*parts)
+    # Include base ancestors: resolving first would conceal a symlinked support root.
+    for path in [*reversed(target.parents), target]:
+        try:
+            reparse = getattr(path.lstat(), "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+        except FileNotFoundError:
+            reparse = False
+        if path.is_symlink() or reparse:
+            raise RuntimeError("recipe path contains a symlink or junction")
+    try:
+        target.resolve().relative_to(base.resolve())
+    except ValueError as exc:
+        raise RuntimeError("recipe path escapes its directory") from exc
+    return target
+
+
+def _atomic_support_write(target, data):
+    """Use directory handles on Unix so a concurrent link swap cannot redirect a write."""
+    if os.name == "posix":
+        directory = os.open(target.anchor, os.O_RDONLY | os.O_DIRECTORY)
+        temp_name = ".dm-support-" + os.urandom(16).hex()
+        created = False
+        try:
+            for part in target.parent.parts[1:]:
+                try:
+                    os.mkdir(part, dir_fd=directory)
+                except FileExistsError:
+                    pass
+                child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=directory)
+                os.close(directory)
+                directory = child
+            descriptor = os.open(temp_name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                                 0o600, dir_fd=directory)
+            created = True
+            with os.fdopen(descriptor, "wb") as handle:
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temp_name, target.name, src_dir_fd=directory, dst_dir_fd=directory)
+        finally:
+            if created:
+                try:
+                    os.unlink(temp_name, dir_fd=directory)
+                except FileNotFoundError:
+                    pass
+            os.close(directory)
+        return
+    # Windows has no openat-style directory handles in the stdlib. Recheck
+    # symlinks/junctions immediately before the atomic replacement.
+    target.parent.mkdir(parents=True, exist_ok=True)
+    _contained_path(target.parent, target.name)
+    temp = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=target.parent, prefix=".dm-support-", delete=False) as handle:
+            temp = Path(handle.name)
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+        _contained_path(target.parent, target.name)
+        os.replace(temp, target)
+    finally:
+        if temp is not None:
+            temp.unlink(missing_ok=True)
 
 
 def _atomic_json(path, value):
@@ -196,6 +272,8 @@ class RecipeRuntime:
         self.slug = model["slug"]
         self.weights = (self.root / "models" / self.slug).resolve()
         self.runtime_dir = (self.root / "runtimes" / (self.slug + "-" + variant["id"])).resolve()
+        self.support_dir = self.root.resolve() / "support" / str(_safe_relpath(self.slug)) / str(_safe_relpath(variant["id"]))
+        self.venv_dir = self.runtime_dir
         self.state_file = self.root / "run" / (self.slug + ".json")
         self.gateway_port = int(gateway_port)
         self.ports = {}
@@ -205,10 +283,13 @@ class RecipeRuntime:
         self.compose_dir = None
 
     def _mapping(self):
-        mapping = {"weights": self.weights, "state": self.state_file.parent,
+        mapping = {"weights": self.weights, "support_dir": self.support_dir, "state": self.state_file.parent,
                    "python": self.python or ("python3" if self.runtime_name == "docker" else sys.executable), "gpu": "0"}
         mapping.update({"port:" + name: value for name, value in self.ports.items()})
         mapping.update({"code:" + name: path for name, path in self.code_dirs.items()})
+        for spec in self.recipe.get("code", []):
+            if spec.get("id") and spec["dest"] in self.code_dirs:
+                mapping["code_" + spec["id"]] = self.code_dirs[spec["dest"]]
         return mapping
 
     @staticmethod
@@ -343,9 +424,93 @@ class RecipeRuntime:
         except OSError: pass
         return env_path
 
+    def _write_support_files(self):
+        files = self.recipe.get("support_files", [])
+        if not isinstance(files, list):
+            raise ValueError("install.support_files must be an array")
+        pending = []
+        seen = set()
+        for spec in files:
+            if not isinstance(spec, dict) or not isinstance(spec.get("content"), str):
+                raise ValueError("support files require string content")
+            digest = spec.get("sha256")
+            data = spec["content"].encode("utf-8")
+            if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest) or hashlib.sha256(data).hexdigest() != digest:
+                raise RuntimeError("support file failed SHA-256 verification")
+            target = _contained_path(self.support_dir, spec.get("path"))
+            key = str(target).casefold()
+            if key in seen:
+                raise ValueError("duplicate support file path")
+            seen.add(key)
+            pending.append((spec["path"], data))
+        # Validate the complete batch before writing even the first wrapper.
+        for relative, data in pending:
+            target = _contained_path(self.support_dir, relative)
+            _atomic_support_write(target, data)
+
+    def _lock_project(self, verified=True):
+        venv = self.recipe.get("venv", {})
+        if not isinstance(venv, dict):
+            raise ValueError("install.venv must be an object")
+        lock = venv.get("lockfile")
+        if lock is None:
+            return None
+        if not isinstance(lock, dict) or lock.get("manager") != "uv":
+            raise ValueError("install.venv.lockfile.manager must be uv")
+        if self.runtime_name not in ("venv", "mlx"):
+            raise ValueError("lockfile requires a venv or mlx runtime")
+        code_id = lock.get("code_id")
+        specs = [spec for spec in self.recipe.get("code", []) if (spec.get("id") or spec.get("dest")) == code_id]
+        if not isinstance(code_id, str) or not code_id or len(specs) != 1:
+            raise ValueError("lockfile.code_id must reference one install.code id (or dest)")
+        extras = lock.get("extras", [])
+        if not isinstance(extras, list) or any(not isinstance(extra, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", extra) for extra in extras):
+            raise ValueError("lockfile.extras must be an array of project extra names")
+        if self.recipe.get("packages") or any(spec.get("pip_install") for spec in self.recipe.get("code", [])):
+            raise ValueError("frozen lockfile cannot be combined with packages or code.pip_install")
+        spec = specs[0]
+        checkout = Path(self.code_dirs[spec["dest"]])
+        lock_path = _contained_path(checkout, lock.get("path"))
+        if lock_path.name != "uv.lock":
+            raise ValueError("uv lockfile path must name uv.lock")
+        project = lock_path.parent
+        _contained_path(checkout, (project.relative_to(checkout) / "pyproject.toml").as_posix())
+        _contained_path(checkout, (project.relative_to(checkout) / ".venv").as_posix())
+        if verified:
+            expected = {"repo": spec["repo"], "revision": spec["revision"], "sha256": spec["sha256"]}
+            marker = _contained_path(checkout, ".dm-local-source.json")
+            try:
+                actual = json.loads(marker.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                raise RuntimeError("lockfile requires a verified downloaded author checkout") from exc
+            if actual != expected:
+                raise RuntimeError("lockfile author checkout verification marker does not match recipe")
+            if not lock_path.is_file() or not (project / "pyproject.toml").is_file():
+                raise RuntimeError("verified author project must contain uv.lock and pyproject.toml")
+        self.venv_dir = project / ".venv"
+        self.python = str(self.venv_dir / ("Scripts/python.exe" if os.name == "nt" else "bin/python"))
+        return project
+
+    def _lock_command(self, uv, project):
+        command = [uv, "sync", "--frozen", "--project", str(project), "--python", self.recipe["python"]]
+        for extra in self.recipe["venv"]["lockfile"].get("extras", []):
+            command.extend(["--extra", extra])
+        return command
+
     def _prepare_python(self):
         from ..uv import ensure_uv
+        project = self._lock_project()
         uv = ensure_uv(self.root)
+        if project is not None:
+            env = model_process_env()
+            for key in ("VIRTUAL_ENV", "CONDA_PREFIX", "PYTHONHOME", "PYTHONPATH"):
+                env.pop(key, None)
+            env["UV_PROJECT_ENVIRONMENT"] = str(self.venv_dir)
+            command = self._lock_command(str(uv), project)
+            subprocess.run(command, check=True, env=env)
+            if not Path(self.python).is_file():
+                raise RuntimeError("uv sync did not create the project .venv Python")
+            return
         self.runtime_dir.mkdir(parents=True, exist_ok=True)
         self.python = (str(self.runtime_dir / ("Scripts/python.exe" if os.name == "nt" else "bin/python"))
                        if self.runtime_name in ("venv", "mlx") else None)
@@ -366,18 +531,25 @@ class RecipeRuntime:
         self.runtime_dir.mkdir(parents=True, exist_ok=True)
         self.ports = allocate_ports(self.root, self.slug, self.recipe)
         runtime = self.runtime_name
-        if runtime in ("venv", "mlx"):
+        self._write_support_files()
+        venv = self.recipe.get("venv", {})
+        if not isinstance(venv, dict):
+            raise ValueError("install.venv must be an object")
+        locked = venv.get("lockfile") is not None
+        if runtime in ("venv", "mlx") and not locked:
             self._prepare_python()
         for spec in self.recipe.get("code", []):
             destination = self._download_code(spec)
             self.code_dirs[spec["dest"]] = str(destination)
-            if spec.get("pip_install"):
+            if spec.get("pip_install") and not locked:
                 command = [str(__import__("dmlocal.uv", fromlist=["ensure_uv"]).ensure_uv(self.root)),
                            "pip", "install", "--python", self.python]
                 if not spec.get("deps", False):
                     command.append("--no-deps")
                 command.append(str(destination))
                 subprocess.run(command, check=True, env=model_process_env())
+        if locked:
+            self._prepare_python()
         for extra in self.recipe.get("extra_weights", []):
             destination = self.weights.joinpath(*_safe_relpath(extra["dest"]).parts)
             download_files(extra["files"], extra["repo"], extra["revision"], destination)
@@ -405,14 +577,14 @@ class RecipeRuntime:
         env = model_process_env(os.environ, {key: expand_placeholders(value, mapping) for key, value in proc.get("env", {}).items()})
         if self.runtime_name in ("venv", "mlx") and self.python:
             # Same as activating the venv: JIT toolchains (ninja, triton) installed into it must be on PATH.
-            venv_bin = str(self.runtime_dir / ("Scripts" if os.name == "nt" else "bin"))
+            venv_bin = str(self.venv_dir / ("Scripts" if os.name == "nt" else "bin"))
             env["PATH"] = venv_bin + os.pathsep + env.get("PATH", "")
-            env["VIRTUAL_ENV"] = str(self.runtime_dir)
+            env["VIRTUAL_ENV"] = str(self.venv_dir)
         cwd_value = expand_placeholders(proc.get("cwd", str(self.weights)), mapping)
         cwd = Path(cwd_value).resolve()
-        allowed = [self.weights.resolve(), self.runtime_dir.resolve(), *(Path(path).resolve() for path in self.code_dirs.values())]
+        allowed = [self.weights.resolve(), self.runtime_dir.resolve(), self.support_dir.resolve(), *(Path(path).resolve() for path in self.code_dirs.values())]
         if not any(cwd == path or path in cwd.parents for path in allowed):
-            raise RuntimeError("process cwd must stay inside weights, code, or the runtime directory")
+            raise RuntimeError("process cwd must stay inside weights, code, support, or the runtime directory")
         if not cwd.is_dir():
             raise RuntimeError(f"process working directory does not exist: {cwd}")
         if command and command[0].lower() in ("sh", "bash", "cmd", "powershell", "pwsh") and any(
@@ -424,13 +596,13 @@ class RecipeRuntime:
             else:
                 executable = Path(command[0])
                 if not executable.is_absolute():
-                    executable = self.runtime_dir / ("Scripts" if os.name == "nt" else "bin") / command[0]
+                    executable = self.venv_dir / ("Scripts" if os.name == "nt" else "bin") / command[0]
                 # Venv entries (python, console scripts) may be symlinks into uv's interpreter store, so check the
                 # unresolved absolute path against the venv and the resolved path against weights/code directories.
                 unresolved = Path(os.path.abspath(executable))
                 executable = executable.resolve()
-                allowed_executables = [self.runtime_dir.resolve(), self.weights.resolve(), *(Path(path).resolve() for path in self.code_dirs.values())]
-                inside_venv = Path(os.path.abspath(self.runtime_dir)) in unresolved.parents
+                allowed_executables = [self.venv_dir.resolve(), self.runtime_dir.resolve(), self.support_dir.resolve(), self.weights.resolve(), *(Path(path).resolve() for path in self.code_dirs.values())]
+                inside_venv = Path(os.path.abspath(self.venv_dir)) in unresolved.parents
                 if not executable.is_file() or not (inside_venv or any(executable == base or base in executable.parents for base in allowed_executables)):
                     raise RuntimeError("process executable must be inside its venv, weights, or verified code directory")
                 command[0] = str(executable)
@@ -439,7 +611,7 @@ class RecipeRuntime:
                 command[0] = str(self.cpp.binary)
             else:
                 executable = Path(command[0]).resolve()
-                allowed_executables = [self.runtime_dir.resolve(), self.weights.resolve(), *(Path(path).resolve() for path in self.code_dirs.values())]
+                allowed_executables = [self.venv_dir.resolve(), self.runtime_dir.resolve(), self.support_dir.resolve(), self.weights.resolve(), *(Path(path).resolve() for path in self.code_dirs.values())]
                 if not executable.is_file() or not any(executable == base or base in executable.parents for base in allowed_executables):
                     raise RuntimeError("llama.cpp process executable must be the pinned llama-server binary")
         return command, env, cwd
@@ -456,6 +628,8 @@ class RecipeRuntime:
         args.extend(["-v", f"{self.weights}:{self.weights}:ro"])
         for code_dir in self.code_dirs.values():
             args.extend(["-v", f"{code_dir}:{code_dir}:ro"])
+        if self.recipe.get("support_files"):
+            args.extend(["-v", f"{self.support_dir}:{self.support_dir}:ro"])
         args.extend(["-w", str(cwd)])
         for key in self._image_secret_keys(image):
             args.extend(["-e", key + "="])
@@ -760,11 +934,15 @@ class RecipeRuntime:
                        if self.runtime_name in ("venv", "mlx") else None)
         for item in self.recipe.get("code", []):
             self.code_dirs[item["dest"]] = str(self.weights.joinpath(*_safe_relpath(item["dest"]).parts))
+        project = self._lock_project(verified=False)
         mapping = self._mapping()
         commands = []
         runtime = self.runtime_name
         if runtime in ("venv", "mlx"):
-            commands.append(["uv", "venv", str(self.runtime_dir), "--python", self.recipe["python"]])
+            if project is not None:
+                commands.append(self._lock_command("uv", project))
+            else:
+                commands.append(["uv", "venv", str(self.runtime_dir), "--python", self.recipe["python"]])
             if self.recipe.get("packages"):
                 pip = ["uv", "pip", "install", "--python", self.python]
                 for url in self.recipe.get("extra_index_urls", []): pip.extend(["--extra-index-url", url])
@@ -797,6 +975,8 @@ class RecipeRuntime:
                 docker.extend(["-v", f"{self.weights}:{self.weights}:ro"])
                 for code_dir in self.code_dirs.values():
                     docker.extend(["-v", f"{code_dir}:{code_dir}:ro"])
+                if self.recipe.get("support_files"):
+                    docker.extend(["-v", f"{self.support_dir}:{self.support_dir}:ro"])
                 docker.extend(["-w", str(cwd)])
                 allowed_env = {key: value for key, value in proc.get("env", {}).items()
                                if key.upper() != "HF_TOKEN" and not _SECRET_ENV.search(key)}

@@ -43,7 +43,68 @@ A variant is installable only when it has a valid `install` object. Prose in `se
   "verified": {"status": "unverified|verified", "where": "e.g. RunPod RTX 4090, 2026-10-09", "selftest": "pass"}
 }
 ```
-Placeholders: `{python}` venv interpreter, `{weights}` local weight dir, `{code:<dest>}` code dir, `{port:<name>}` ports allocated
+Placeholders: `{python}` venv interpreter, `{weights}` local weight dir, `{code:<dest>}` code dir, `{code_<id>}` named code dir,
+`{support_dir}` installer wrapper dir, `{port:<name>}` ports allocated
 by dm-local (names are free; `api` is the one the gateway proxies), `{state}` state dir, `{gpu}` first GPU index.
-Rules: backends bind 127.0.0.1 only; no shell `-c`; commands use only files from the weights/code dirs or the venv; HF_TOKEN is never
+Rules: backends bind 127.0.0.1 only; no shell `-c`; commands use only files from the weights/code/support dirs or the venv; HF_TOKEN is never
 passed to model processes; `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` are always set by dm-local for model processes.
+
+
+## Installer-owned support files
+
+`install.support_files` is an optional array of objects with exactly these required fields:
+
+```json
+{"path": "server.py", "content": "print('local wrapper')\n", "sha256": "<64 lowercase hex characters>"}
+```
+
+The hash is SHA-256 of `content.encode("utf-8")`, with no newline normalization, interpolation, or added bytes.
+These are our reviewed faithful wrappers, not author downloads. All entries are checked before any wrapper is
+written. Unix writes traverse directories with no-follow directory handles, including the final atomic rename,
+so concurrent symlink swaps cannot redirect a write outside the opened directory. Windows rechecks symlinks and
+junctions before writing and before replacing; concurrent hostile directory mutation requires filesystem isolation.
+Files are atomically replaced from a unique temporary file in the same directory; failed writes remove
+that temporary file. Existing wrapper content is replaced only after the recipe hash is checked.
+
+Paths are relative POSIX paths under `<state-root>/support/<model-slug>/<variant-id>/`, exposed as `{support_dir}`.
+Absolute paths, `.`/`..` components, empty components, backslashes, colons, NULs, Windows device names and trailing
+spaces/dots are rejected. Case-insensitive duplicate paths and existing symlinks/junctions in the destination or
+its ancestors are rejected. Subdirectories are allowed. Wrapper directories can be process working directories.
+Invoke Python wrappers with `["{python}", "{support_dir}/server.py", ...]`; support files are not made executable.
+Docker recipes mount this directory read-only at the same absolute path. Compose bundles must declare any needed
+mount themselves. Serving keeps the same token filtering, HF/Transformers offline environment and verified weights.
+
+## Author uv lockfile projects
+
+For `venv` and `mlx`, `install.venv.lockfile` optionally selects a frozen author project instead of a standalone
+venv and pinned `uv pip install` package list:
+
+```jsonc
+"code": [{"id": "author", "source": "github", "repo": "owner/project", "revision": "<40-hex commit>",
+          "sha256": "<archive SHA-256>", "dest": "code/project"}],
+"venv": {"lockfile": {"code_id": "author", "path": "serving/uv.lock", "manager": "uv", "extras": ["serve"]}},
+"packages": []
+```
+
+`code_id` must identify exactly one `install.code` entry by its optional `id`; an entry without `id` is identified
+by its existing `dest`. `{code_<id>}` expands to the named checkout; `{code:<dest>}` continues to work. `path` is a
+safe relative POSIX file path inside that checkout and must end in `uv.lock`. The adjacent `pyproject.toml` and
+lockfile must exist as regular files, with no symlinks/junctions in their paths. The checkout must first be downloaded
+and SHA-256 verified by the installer, with a matching source-verification marker. That existing marker is the cache
+receipt; it does not rehash a locally modified extracted checkout on reuse. `manager` must be exactly `uv`.
+`extras` is an optional list of project extra names (letters, digits, `_`, `-`, `.`; first character alphanumeric),
+needed, for example, for an author's locked `serve` extra. No arbitrary uv arguments are accepted.
+
+The installer acquires its existing pinned uv binary and runs:
+
+```text
+uv sync --frozen --project <directory-containing-uv.lock> --python <install.python> [--extra <name> ...]
+```
+
+The project `.venv` is forced through `UV_PROJECT_ENVIRONMENT`; inherited `VIRTUAL_ENV`, `CONDA_PREFIX`,
+`PYTHONHOME` and `PYTHONPATH` are removed for sync. `{python}`, process `VIRTUAL_ENV`, the first process `PATH` entry
+and relative executable lookup all select that project's `.venv` (`bin/python` on Unix, `Scripts/python.exe` on Windows).
+`install.python` remains the required major.minor interpreter pin. `packages` must be omitted or empty, and all
+`code[].pip_install` flags must be false/absent: overlays would defeat the frozen environment. Additional model
+weights continue through the existing verified download path. Dry-run renders the same frozen sync and process
+interpreter commands without acquiring uv, downloading code, creating a venv, or writing support/port files.
