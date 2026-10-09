@@ -85,10 +85,14 @@ jobs:
           Invoke-WebRequest -UseBasicParsing "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$env:DM_LOCAL_VERSION/install.ps1" -OutFile "$env:RUNNER_TEMP\install.ps1"
           & "$env:RUNNER_TEMP\install.ps1"
           & "$env:LOCALAPPDATA\DecisionModels\bin\dm-local.cmd" version
+          if ($LASTEXITCODE -ne 0) { throw 'Signed installer version failed.' }
           & "$env:LOCALAPPDATA\DecisionModels\bin\dm-local.cmd" doctor --json
+          if ($LASTEXITCODE -ne 0) { throw 'Signed installer doctor --json failed.' }
           & "$env:LOCALAPPDATA\DecisionModels\bin\dm-local.cmd" list --json
-          if ($LASTEXITCODE -ne 0) { throw 'Signed installer smoke failed.' }
+          if ($LASTEXITCODE -ne 0) { throw 'Signed installer list --json failed.' }
           & "$env:LOCALAPPDATA\DecisionModels\bin\dm-local.cmd" uninstall --all --yes
           if ($LASTEXITCODE -ne 0) { throw 'Uninstall failed.' }
           if (Test-Path "$env:LOCALAPPDATA\DecisionModels") { throw 'Uninstall left installer state.' }
           if (([Environment]::GetEnvironmentVariable('Path', 'User') -split ';') -contains "$env:LOCALAPPDATA\DecisionModels\bin") { throw 'Uninstall left its PATH entry.' }
+          python -c "import sys; print(sys.executable)"
+          if ($LASTEXITCODE -ne 0) { throw 'Uninstall damaged the shared Python runtime.' }

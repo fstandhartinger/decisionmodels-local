@@ -81,20 +81,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: powershell
         run: |
-          $source = Get-Content install/install.ps1 -Raw
-          $template = ($source -split "`n" | Where-Object { $_ -match 'Set-Content -Encoding ASCII \$Cmd' })
-          if (@($template).Count -ne 1) { throw 'Expected one launcher template.' }
-          foreach ($expected in @(0, 37)) {
-            $Cmd = Join-Path $env:RUNNER_TEMP "dm-self-delete-$expected.cmd"
-            $PyCommand = '"' + (Get-Command python).Source + '"'
-            $pyz = Join-Path $env:RUNNER_TEMP "dm-self-delete-$expected.py"
-            @('import pathlib,sys', 'pathlib.Path(sys.argv[1]).unlink()', "raise SystemExit($expected)") | Set-Content -Encoding ASCII $pyz
-            $templateForTest = $template.Replace('`"%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz`" %*', '`"' + $pyz + '`" `"' + $Cmd + '`"')
-            Invoke-Expression $templateForTest
-            & $Cmd
-            if ($LASTEXITCODE -ne $expected) { throw "Self-delete returned $LASTEXITCODE, expected $expected" }
-            if (Test-Path $Cmd) { throw 'Launcher was not deleted.' }
-          }
+          & ./scripts/test_windows_launcher.ps1
 
   e2e-tiny:
     name: Tiny real-model installer smoke / ${{ matrix.os }}

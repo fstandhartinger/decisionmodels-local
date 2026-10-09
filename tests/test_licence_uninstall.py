@@ -1,8 +1,9 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.error import URLError
 
 from dmlocal import cli, licence
@@ -91,6 +92,61 @@ class LicenceAndUninstallTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "unrecognized Docker"):
                     cli._uninstall("fixture-model")
                 stop.assert_not_called(); run.assert_not_called()
+
+    def test_uninstall_all_removes_bootstrap_but_preserves_shared_runtime(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            root = home / "DecisionModels"
+            (root / "run").mkdir(parents=True)
+            (root / "bin").mkdir()
+            (root / "lib").mkdir()
+            (root / "bin/dm-local.cmd").write_text("launcher")
+            (root / "lib/dm-local.pyz").write_text("zipapp")
+            shared = home / "uv/python/shared-runtime"
+            shared.mkdir(parents=True)
+            sentinel = shared / "python.exe"
+            sentinel.write_bytes(b"shared Python")
+            with patch.object(cli, "ensure_state", return_value=root), patch.object(Path, "home", return_value=home):
+                result = cli._uninstall_all(True)
+            self.assertEqual(result, {"removed": [], "state_dir": str(root)})
+            self.assertFalse(root.exists())
+            self.assertEqual(sentinel.read_bytes(), b"shared Python")
+
+    def test_uninstall_all_failure_preserves_bootstrap_and_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            root = home / "DecisionModels"
+            (root / "run").mkdir(parents=True)
+            (root / "bin").mkdir()
+            launcher = root / "bin/dm-local.cmd"
+            launcher.write_text("launcher")
+            manifest = root / "run/installed-fixture-model.json"
+            manifest.write_text(json.dumps({"runtime": "llamacpp"}))
+            with patch.object(cli, "ensure_state", return_value=root), patch.object(Path, "home", return_value=home), \
+                 patch.object(cli, "_uninstall", side_effect=RuntimeError("owned process still running")):
+                with self.assertRaisesRegex(RuntimeError, "state was preserved"):
+                    cli._uninstall_all(True)
+            self.assertEqual(launcher.read_text(), "launcher")
+            self.assertTrue(manifest.exists())
+
+    @unittest.skipUnless(os.name == "nt", "native Windows registry path handling")
+    def test_uninstall_all_removes_only_owned_user_path_entry(self):
+        import winreg
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            root = home / "DecisionModels"
+            (root / "run").mkdir(parents=True)
+            owned = str(root / "bin")
+            keep = r"C:\Shared Python;C:\Other App\bin"
+            key = MagicMock()
+            with patch.dict(os.environ, {"LOCALAPPDATA": str(home)}), \
+                 patch.object(cli, "ensure_state", return_value=root), patch.object(Path, "home", return_value=home), \
+                 patch.object(winreg, "OpenKey", return_value=key), \
+                 patch.object(winreg, "QueryValueEx", return_value=(keep + ";" + owned.upper() + "\\", winreg.REG_EXPAND_SZ)), \
+                 patch.object(winreg, "SetValueEx") as update:
+                cli._uninstall_all(True)
+            update.assert_called_once_with(key.__enter__.return_value, "Path", 0, winreg.REG_EXPAND_SZ, keep)
+            self.assertFalse(root.exists())
 
 
 if __name__ == "__main__": unittest.main()

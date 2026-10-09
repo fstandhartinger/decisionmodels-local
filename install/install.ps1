@@ -82,9 +82,11 @@ try {
   $PyzPath = Join-Path $Lib 'dm-local.pyz'
   $Cmd = Join-Path $Bin 'dm-local.cmd'
   $PyCommand = if ($Python.Exe -eq 'py') { 'py -3' } else { '"' + $Python.Exe + '"' }
-  # CMD parses a parenthesized block before running it. Uninstall can therefore
-  # delete this file without CMD reopening it to read the exit command.
-  @('@echo off', '(', "$PyCommand `"%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz`" %*", 'exit /b', ')') | Set-Content -Encoding ASCII $Cmd
+  # End the batch context BEFORE Python starts: uninstall deletes this launcher.
+  # A cached block still makes CMD reopen a deleted batch file on return.
+  # Keep the native self-delete/exit-code/argument regression in CI as the gate
+  # for this CMD context handoff. No child-process cleanup or shell termination.
+  @('@echo off', 'setlocal DisableDelayedExpansion', "(goto) 2>nul & $PyCommand `"%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz`" %*") | Set-Content -Encoding ASCII $Cmd
   # Make the one-command install usable now and in future user terminals.
   $UserPath = [Environment]::GetEnvironmentVariable('Path', 'User')
   if (($UserPath -split ';') -notcontains $Bin) {
