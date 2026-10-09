@@ -112,7 +112,19 @@ def _gateway_worker(slug):
     install = _load_install(root, slug)
     config = _read_config(root)
     model = install["model"]
-    gateway = Gateway(install["backend_url"], install["backend_mode"], install.get("backend_model"),
+    backend_url = install["backend_url"]
+    api_port_name = (((install.get("variant") or {}).get("install") or {}).get("api") or {}).get("port")
+    if api_port_name:
+        state_file = root / "run" / (slug + ".json")
+        fallback = backend_url
+
+        def backend_url():
+            try:
+                port = json.loads(state_file.read_text(encoding="utf-8"))["ports"][api_port_name]
+                return f"http://127.0.0.1:{int(port)}"
+            except (OSError, ValueError, KeyError, TypeError):
+                return fallback
+    gateway = Gateway(backend_url, install["backend_mode"], install.get("backend_model"),
                       install.get("prompt_config"), {"slug": slug, "name": model.get("name"),
                       "modalities": model.get("modalities", ["text"]), "question_types": model.get("question_types", {})},
                       api_key=config.get("api_key"), max_options=install.get("max_options", 64),

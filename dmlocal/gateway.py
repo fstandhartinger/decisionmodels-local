@@ -70,8 +70,8 @@ def _finite_probability(value):
 def validate_request(body, multimodal=False, max_options=64):
     if not isinstance(body, dict):
         raise ValueError("request must be a JSON object")
-    if not isinstance(body.get("model"), str) or not body["model"].strip():
-        raise ValueError("model must be a non-empty string")
+    if "model" in body and (not isinstance(body["model"], str) or not body["model"].strip()):
+        raise ValueError("model must be a non-empty string when given")
     if "state" not in body or not isinstance(body["state"], (str, dict, list)):
         raise ValueError("state must be a string, object, or array")
     if len(json.dumps(body["state"], ensure_ascii=False, separators=(",", ":")).encode("utf-8")) > MAX_STATE:
@@ -325,11 +325,17 @@ def letter_logprobs(backend_url, config, request, qname, question, opener=None):
 
 
 class Gateway:
+    @property
+    def backend_url(self):
+        url = self._backend_url() if callable(self._backend_url) else self._backend_url
+        return str(url).rstrip("/")
+
     def __init__(self, backend_url, backend_mode="proxy_jev", backend_model=None, prompt_config=None,
                  model_card=None, api_key=None, opener=None, max_options=64, backend_paths=None,
                  backend_auth_header=None):
-        _validate_backend_url(backend_url)
-        self.backend_url = backend_url.rstrip("/")
+        # backend_url may be a callable so the gateway follows backend restarts that move named ports.
+        self._backend_url = backend_url if callable(backend_url) else backend_url.rstrip("/")
+        _validate_backend_url(self.backend_url)
         self.backend_mode = backend_mode
         self.backend_model = backend_model
         self.prompt_config = prompt_config or {}
@@ -343,6 +349,8 @@ class Gateway:
     def infer(self, request, multimodal=False):
         qname, question = validate_request(request, multimodal=multimodal, max_options=self.max_options)
         slug = self.model_card.get("slug")
+        if slug and "model" not in request:
+            request = dict(request, model=slug)
         if slug and request.get("model") != slug:
             raise UnknownModelError("the requested model is not installed on this gateway")
         supported = self.model_card.get("question_types")
