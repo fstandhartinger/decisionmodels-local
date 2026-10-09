@@ -4,6 +4,9 @@ WORKDIR /app
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
 
+FROM deps AS production-deps
+RUN npm prune --omit=dev
+
 FROM node:22-alpine AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -17,6 +20,9 @@ WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+# The startup migration/mail script runs outside Next.js's traced entrypoint.
+# Include its locked production dependencies and their transitive dependencies.
+COPY --from=production-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/catalog ./catalog
