@@ -198,7 +198,59 @@
     "source": "data/jevbench-latest.json (p50_s_raw)"
    },
    "expected_speed": "About 59 ms p 50 per decision (raw, serial) on the BH measurement; GPU UNVERIFIED. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "min_vram_gb 64 is the intake VERDICT (\">=64GB\"; ~49 GB weights plus KV at mem-fraction 0.80). The NVFP4 sibling juspay/Xor-26B-A4B-NVFP4 was measured in run 46 under a different key and needs Blackwell; it is not part of this entry. Bundle and image are third-party: the installer must verify digests before use. Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "notes": "min_vram_gb 64 is the intake VERDICT (\">=64GB\"; ~49 GB weights plus KV at mem-fraction 0.80). The NVFP4 sibling juspay/Xor-26B-A4B-NVFP4 was measured in run 46 under a different key and needs Blackwell; it is not part of this entry. Bundle and image are third-party: the installer must verify digests before use. Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more.",
+   "install": {
+    "runtime": "docker-compose",
+    "image": "prakhar1611/xor-sglang@sha256:94c48d2a6cc98dc456cf93f723707ea7dd81dddfe1061e823b348d68bbe8158f",
+    "compose": {
+     "bundle": "serving/xor-26b-a4b-1.0-serving.tar.gz",
+     "bundle_sha256": "9fd6043f1cfc9ba15b37b895d7893f4c113e686d1f4c2a70d1cd74437fcbaec7",
+     "workdir": "xor-26b-a4b-1.0-serving",
+     "env": {
+      "MODEL_DIR": "{weights}",
+      "API_PORT": "{port:api}",
+      "CUDA_VISIBLE_DEVICES": "{gpu}",
+      "TP_SIZE": "1",
+      "DP_SIZE": "1",
+      "CONTEXT_LENGTH": "131072",
+      "MAX_PREFILL_TOKENS": "131072",
+      "CHUNKED_PREFILL_SIZE": "16384",
+      "MEM_FRACTION_STATIC": "0.80"
+     }
+    },
+    "processes": [
+     {
+      "name": "author-bundle",
+      "command": [
+       "bash",
+       "run.sh"
+      ],
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/v1/models",
+       "timeout_s": 2400
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "xor-26b-a4b-1.0",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia"
+     ],
+     "cuda_min": "13.0",
+     "gpu_arch_min": "sm_80",
+     "driver_min": "580"
+    },
+    "verified": {
+     "status": "unverified"
+    }
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:41Z"
