@@ -4,12 +4,8 @@ import path from "node:path";
 import { deviceQuotes, deviceStreetPrices, suggestDevice, type Device, type DeviceClass } from "@/lib/hardware-core.mjs";
 import type { Model } from "@/lib/catalog";
 
-<<<<<<< HEAD
-export type HardwarePrices = { retrieved_utc?: string; devices?: Device[]; cloud?: Array<Record<string, unknown>> };
-=======
 export type HardwarePrices = { retrieved_utc?: string; devices?: Device[]; cloud?: CloudPrice[] };
 export type CloudPrice = { provider?: string; instance?: string; gpu?: string; vram_gb?: number | null; usd_per_hour?: number; source?: string; date?: string; region?: string };
->>>>>>> fusion/decisionmodels-local-installer-20261009-web-r2
 
 export function loadHardwarePrices(): HardwarePrices {
   try { return JSON.parse(fs.readFileSync(path.join(catalogRoot(), "hardware-prices.json"), "utf8")) as HardwarePrices; }

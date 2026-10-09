@@ -1,29 +1,76 @@
 {
-  "generated_utc": "2026-10-09T17:02:32.124Z",
+  "generated_utc": "2026-10-09T17:36:58.956Z",
   "suggestions": {
-    "autojev-27b": null,
+    "autojev-27b": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
+      "variant_id": "bf16-torch-author-server",
+      "platforms": [
+        "linux-nvidia"
+      ],
+      "price_usd": 17329,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 13330
+      },
+      "source": [
+        {
+          "source": "URL not captured (WebSearch snippet)",
+          "date": "2026-10 (tracker snapshot, date approximate)",
+          "currency": "USD",
+          "value": 9381.43
+        },
+        {
+          "source": "URL not captured (WebSearch snippet, AI hardware guide citing Thunder Compute)",
+          "date": "2026-09",
+          "currency": "USD",
+          "value": 16000
+        },
+        {
+          "source": "https://gpuprix.com/us/gpus/rtx-pro-6000-blackwell",
+          "date": "2026-08-01",
+          "currency": "USD",
+          "value": 11830
+        }
+      ]
+    },
     "bobcat-flash-1.2": {
-      "id": "asus-ascent-gx10-1tb",
-      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
-      "class": "gb10",
-      "memory_gb": 128,
-      "memory_kind": "unified",
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
       "variant_id": "bf16-fp8-on-load-vllm",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 4409,
+      "price_usd": 17329,
       "price_eur": null,
       "street_prices": {
-        "USD": 3384.23
+        "USD": 13330
       },
       "source": [
         {
-          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
-          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "source": "URL not captured (WebSearch snippet)",
+          "date": "2026-10 (tracker snapshot, date approximate)",
           "currency": "USD",
-          "value": 3384.23
+          "value": 9381.43
+        },
+        {
+          "source": "URL not captured (WebSearch snippet, AI hardware guide citing Thunder Compute)",
+          "date": "2026-09",
+          "currency": "USD",
+          "value": 16000
+        },
+        {
+          "source": "https://gpuprix.com/us/gpus/rtx-pro-6000-blackwell",
+          "date": "2026-08-01",
+          "currency": "USD",
+          "value": 11830
         }
       ]
     },
@@ -59,185 +106,499 @@
       ]
     },
     "decisio-gemma-4-31b-v080": {
-      "id": "asus-ascent-gx10-1tb",
-      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
-      "class": "gb10",
-      "memory_gb": 128,
-      "memory_kind": "unified",
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
       "variant_id": "bf16-fp8-on-load-vllm",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 4409,
+      "price_usd": 17329,
       "price_eur": null,
       "street_prices": {
-        "USD": 3384.23
+        "USD": 13330
       },
       "source": [
         {
-          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
-          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "source": "URL not captured (WebSearch snippet)",
+          "date": "2026-10 (tracker snapshot, date approximate)",
           "currency": "USD",
-          "value": 3384.23
+          "value": 9381.43
+        },
+        {
+          "source": "URL not captured (WebSearch snippet, AI hardware guide citing Thunder Compute)",
+          "date": "2026-09",
+          "currency": "USD",
+          "value": 16000
+        },
+        {
+          "source": "https://gpuprix.com/us/gpus/rtx-pro-6000-blackwell",
+          "date": "2026-08-01",
+          "currency": "USD",
+          "value": 11830
         }
       ]
     },
     "deck31b": {
-      "id": "asus-ascent-gx10-1tb",
-      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
-      "class": "gb10",
-      "memory_gb": 128,
-      "memory_kind": "unified",
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
       "variant_id": "bf16-torchao-fp8-dynamic",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 4409,
+      "price_usd": 17329,
       "price_eur": null,
       "street_prices": {
-        "USD": 3384.23
+        "USD": 13330
       },
       "source": [
         {
-          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
-          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "source": "URL not captured (WebSearch snippet)",
+          "date": "2026-10 (tracker snapshot, date approximate)",
           "currency": "USD",
-          "value": 3384.23
+          "value": 9381.43
+        },
+        {
+          "source": "URL not captured (WebSearch snippet, AI hardware guide citing Thunder Compute)",
+          "date": "2026-09",
+          "currency": "USD",
+          "value": 16000
+        },
+        {
+          "source": "https://gpuprix.com/us/gpus/rtx-pro-6000-blackwell",
+          "date": "2026-08-01",
+          "currency": "USD",
+          "value": 11830
         }
       ]
     },
     "h2o-lightning-4b": {
-      "id": "asus-ascent-gx10-1tb",
-      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
-      "class": "gb10",
-      "memory_gb": 128,
-      "memory_kind": "unified",
+      "id": "rtx-5090-32",
+      "name": "NVIDIA GeForce RTX 5090 (32 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 32,
+      "memory_kind": "vram",
       "variant_id": "bf16-vllm",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 4409,
+      "price_usd": 7289,
       "price_eur": null,
       "street_prices": {
-        "USD": 3384.23
+        "USD": 5599.99
       },
       "source": [
         {
-          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
-          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "source": "https://www.trackalacker.com/articles/news/nvidia-rtx-5090-price-increase-2026",
+          "date": "2026-08 (approx.)",
           "currency": "USD",
-          "value": 3384.23
+          "value": 4099.99
         }
       ]
     },
-    "imajev-4b": null,
-    "jev-omni": null,
-    "jevify-gemma4-26b-a4b": null,
-    "jpt-4b": null,
-    "neohorse-jev-4b": null,
-    "quyet-1-0-large": {
-      "id": "asus-ascent-gx10-1tb",
-      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
-      "class": "gb10",
-      "memory_gb": 128,
+    "imajev-4b": {
+      "id": "mac-mini-m6-16-256",
+      "name": "Apple Mac mini M6 (16 GB, 256 GB)",
+      "class": "apple-silicon",
+      "memory_gb": 16,
       "memory_kind": "unified",
-      "variant_id": "bf16-transformers-inprocess",
+      "variant_id": "bf16-mlx-author-adapter",
       "platforms": [
-        "linux-nvidia",
-        "wsl2-nvidia"
+        "macos-arm64"
       ],
-      "price_usd": 4409,
-      "price_eur": null,
+      "price_usd": 1169,
+      "price_eur": 1369,
       "street_prices": {
-        "USD": 3384.23
+        "USD": 899,
+        "EUR": 1049
       },
       "source": [
         {
-          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
-          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "source": "https://www.apple.com/shop/buy-mac/mac-mini/m6-chip-12-core-cpu-12-core-gpu-16gb-memory-256gb-storage",
+          "date": "2026-10-09",
           "currency": "USD",
-          "value": 3384.23
+          "value": 899
+        },
+        {
+          "source": "https://www.apple.com/de/shop/buy-mac/mac-mini/m6-chip-12-core-cpu-12-core-gpu-16gb-memory-256gb-storage",
+          "date": "2026-10-09",
+          "currency": "EUR",
+          "value": 1049
         }
       ]
     },
-    "reflex-4b": null,
-    "rene-1-31b-fp8": {
-      "id": "asus-ascent-gx10-1tb",
-      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
-      "class": "gb10",
-      "memory_gb": 128,
+    "jev-omni": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
+      "variant_id": "fp32-backbone-bf16-autocast",
+      "platforms": [
+        "linux-nvidia"
+      ],
+      "price_usd": 17329,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 13330
+      },
+      "source": [
+        {
+          "source": "URL not captured (WebSearch snippet)",
+          "date": "2026-10 (tracker snapshot, date approximate)",
+          "currency": "USD",
+          "value": 9381.43
+        },
+        {
+          "source": "URL not captured (WebSearch snippet, AI hardware guide citing Thunder Compute)",
+          "date": "2026-09",
+          "currency": "USD",
+          "value": 16000
+        },
+        {
+          "source": "https://gpuprix.com/us/gpus/rtx-pro-6000-blackwell",
+          "date": "2026-08-01",
+          "currency": "USD",
+          "value": 11830
+        }
+      ]
+    },
+    "jevify-gemma4-26b-a4b": {
+      "id": "mac-studio-m5ultra-96-1tb",
+      "name": "Apple Mac Studio M5 Ultra (30-core CPU, 64-core GPU, 96 GB, 1 TB)",
+      "class": "apple-silicon",
+      "memory_gb": 96,
       "memory_kind": "unified",
+      "variant_id": "bf16-torch-mps",
+      "platforms": [
+        "macos-arm64"
+      ],
+      "price_usd": 7149,
+      "price_eur": 8579,
+      "street_prices": {
+        "USD": 5499,
+        "EUR": 6599
+      },
+      "source": [
+        {
+          "source": "https://www.apple.com/shop/buy-mac/mac-studio/m5-ultra-chip-30-core-cpu-64-core-gpu-96gb-memory-1tb-storage",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 5499
+        },
+        {
+          "source": "https://www.apple.com/de/shop/buy-mac/mac-studio",
+          "date": "2026-10-09",
+          "currency": "EUR",
+          "value": 6599
+        }
+      ]
+    },
+    "jpt-4b": {
+      "id": "rtx-5090-32",
+      "name": "NVIDIA GeForce RTX 5090 (32 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 32,
+      "memory_kind": "vram",
+      "variant_id": "bf16-vllm-llm2jev",
+      "platforms": [
+        "linux-nvidia"
+      ],
+      "price_usd": 7289,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 5599.99
+      },
+      "source": [
+        {
+          "source": "https://www.trackalacker.com/articles/news/nvidia-rtx-5090-price-increase-2026",
+          "date": "2026-08 (approx.)",
+          "currency": "USD",
+          "value": 4099.99
+        }
+      ]
+    },
+    "neohorse-jev-4b": {
+      "id": "mac-mini-m5pro-24-512",
+      "name": "Apple Mac mini M5 Pro (15-core CPU, 16-core GPU, 24 GB, 512 GB)",
+      "class": "apple-silicon",
+      "memory_gb": 24,
+      "memory_kind": "unified",
+      "variant_id": "bf16-torch-mps",
+      "platforms": [
+        "macos-arm64"
+      ],
+      "price_usd": 2209,
+      "price_eur": 2599,
+      "street_prices": {
+        "USD": 1699,
+        "EUR": 1999
+      },
+      "source": [
+        {
+          "source": "https://www.apple.com/shop/buy-mac/mac-mini/m5-pro-chip-15-core-cpu-16-core-gpu-24gb-memory-512gb-storage",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 1699
+        },
+        {
+          "source": "https://www.apple.com/de/shop/buy-mac/mac-mini",
+          "date": "2026-10-09",
+          "currency": "EUR",
+          "value": 1999
+        }
+      ]
+    },
+    "quyet-1-0-large": {
+      "id": "mac-studio-m5ultra-96-1tb",
+      "name": "Apple Mac Studio M5 Ultra (30-core CPU, 64-core GPU, 96 GB, 1 TB)",
+      "class": "apple-silicon",
+      "memory_gb": 96,
+      "memory_kind": "unified",
+      "variant_id": "bf16-torch-mps",
+      "platforms": [
+        "macos-arm64"
+      ],
+      "price_usd": 7149,
+      "price_eur": 8579,
+      "street_prices": {
+        "USD": 5499,
+        "EUR": 6599
+      },
+      "source": [
+        {
+          "source": "https://www.apple.com/shop/buy-mac/mac-studio/m5-ultra-chip-30-core-cpu-64-core-gpu-96gb-memory-1tb-storage",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 5499
+        },
+        {
+          "source": "https://www.apple.com/de/shop/buy-mac/mac-studio",
+          "date": "2026-10-09",
+          "currency": "EUR",
+          "value": 6599
+        }
+      ]
+    },
+    "reflex-4b": {
+      "id": "mac-mini-m5pro-64-1tb",
+      "name": "Apple Mac mini M5 Pro (18-core CPU, 20-core GPU, 64 GB, 1 TB)",
+      "class": "apple-silicon",
+      "memory_gb": 64,
+      "memory_kind": "unified",
+      "variant_id": "fp16-torch-mps",
+      "platforms": [
+        "macos-arm64"
+      ],
+      "price_usd": 2469,
+      "price_eur": 2889,
+      "street_prices": {
+        "USD": 1899,
+        "EUR": 2219
+      },
+      "source": [
+        {
+          "source": "https://www.apple.com/shop/buy-mac/mac-mini/m5-pro-chip-18-core-cpu-20-core-gpu-64gb-memory-1tb-storage",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 1899
+        },
+        {
+          "source": "https://www.apple.com/de/shop/buy-mac/mac-mini",
+          "date": "2026-10-09",
+          "currency": "EUR",
+          "value": 2219
+        }
+      ]
+    },
+    "rene-1-31b-fp8": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
       "variant_id": "fp8-dynamic-native",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 4409,
+      "price_usd": 17329,
       "price_eur": null,
       "street_prices": {
-        "USD": 3384.23
+        "USD": 13330
       },
       "source": [
         {
-          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
-          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "source": "URL not captured (WebSearch snippet)",
+          "date": "2026-10 (tracker snapshot, date approximate)",
           "currency": "USD",
-          "value": 3384.23
+          "value": 9381.43
+        },
+        {
+          "source": "URL not captured (WebSearch snippet, AI hardware guide citing Thunder Compute)",
+          "date": "2026-09",
+          "currency": "USD",
+          "value": 16000
+        },
+        {
+          "source": "https://gpuprix.com/us/gpus/rtx-pro-6000-blackwell",
+          "date": "2026-08-01",
+          "currency": "USD",
+          "value": 11830
         }
       ]
     },
-    "shisa-de-1": null,
-    "surogate-rune-26b-a4b-v3": null,
+    "shisa-de-1": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
+      "variant_id": "bf16-vllm",
+      "platforms": [
+        "linux-nvidia"
+      ],
+      "price_usd": 17329,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 13330
+      },
+      "source": [
+        {
+          "source": "URL not captured (WebSearch snippet)",
+          "date": "2026-10 (tracker snapshot, date approximate)",
+          "currency": "USD",
+          "value": 9381.43
+        },
+        {
+          "source": "URL not captured (WebSearch snippet, AI hardware guide citing Thunder Compute)",
+          "date": "2026-09",
+          "currency": "USD",
+          "value": 16000
+        },
+        {
+          "source": "https://gpuprix.com/us/gpus/rtx-pro-6000-blackwell",
+          "date": "2026-08-01",
+          "currency": "USD",
+          "value": 11830
+        }
+      ]
+    },
+    "surogate-rune-26b-a4b-v3": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
+      "variant_id": "bf16-surogate-engine",
+      "platforms": [
+        "linux-nvidia"
+      ],
+      "price_usd": 17329,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 13330
+      },
+      "source": [
+        {
+          "source": "URL not captured (WebSearch snippet)",
+          "date": "2026-10 (tracker snapshot, date approximate)",
+          "currency": "USD",
+          "value": 9381.43
+        },
+        {
+          "source": "URL not captured (WebSearch snippet, AI hardware guide citing Thunder Compute)",
+          "date": "2026-09",
+          "currency": "USD",
+          "value": 16000
+        },
+        {
+          "source": "https://gpuprix.com/us/gpus/rtx-pro-6000-blackwell",
+          "date": "2026-08-01",
+          "currency": "USD",
+          "value": 11830
+        }
+      ]
+    },
     "torchcast-decision-12b": {
-      "id": "asus-ascent-gx10-1tb",
-      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
-      "class": "gb10",
-      "memory_gb": 128,
-      "memory_kind": "unified",
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
       "variant_id": "bf16-vllm-shim",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 4409,
+      "price_usd": 17329,
       "price_eur": null,
       "street_prices": {
-        "USD": 3384.23
+        "USD": 13330
       },
       "source": [
         {
-          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
-          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "source": "URL not captured (WebSearch snippet)",
+          "date": "2026-10 (tracker snapshot, date approximate)",
           "currency": "USD",
-          "value": 3384.23
+          "value": 9381.43
+        },
+        {
+          "source": "URL not captured (WebSearch snippet, AI hardware guide citing Thunder Compute)",
+          "date": "2026-09",
+          "currency": "USD",
+          "value": 16000
+        },
+        {
+          "source": "https://gpuprix.com/us/gpus/rtx-pro-6000-blackwell",
+          "date": "2026-08-01",
+          "currency": "USD",
+          "value": 11830
         }
       ]
     },
     "vjev-vision": null,
     "xor-26b-a4b": {
-      "id": "asus-ascent-gx10-1tb",
-      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
-      "class": "gb10",
-      "memory_gb": 128,
-      "memory_kind": "unified",
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
       "variant_id": "bf16-sglang-author-bundle",
       "platforms": [
         "linux-nvidia"
       ],
-      "price_usd": 4409,
+      "price_usd": 17329,
       "price_eur": null,
       "street_prices": {
-        "USD": 3384.23
+        "USD": 13330
       },
       "source": [
         {
-          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
-          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "source": "URL not captured (WebSearch snippet)",
+          "date": "2026-10 (tracker snapshot, date approximate)",
           "currency": "USD",
-          "value": 3384.23
+          "value": 9381.43
+        },
+        {
+          "source": "URL not captured (WebSearch snippet, AI hardware guide citing Thunder Compute)",
+          "date": "2026-09",
+          "currency": "USD",
+          "value": 16000
+        },
+        {
+          "source": "https://gpuprix.com/us/gpus/rtx-pro-6000-blackwell",
+          "date": "2026-08-01",
+          "currency": "USD",
+          "value": 11830
         }
       ]
     }
