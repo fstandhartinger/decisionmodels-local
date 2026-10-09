@@ -7,6 +7,8 @@ import sys
 import time
 from pathlib import Path
 
+_managed_processes = {}
+
 
 def safe_slug(value):
     return "".join(c if c.isalnum() or c in "-_." else "-" for c in value)[:96]
@@ -22,6 +24,33 @@ def process_alive(pid):
         return True
     except (OSError, ValueError, TypeError):
         return False
+
+
+def _session_has_member(sid):
+    """Whether a process remains in the detached session created for a managed command."""
+    if os.name == "nt":
+        return process_alive(sid)
+    if sys.platform.startswith("linux"):
+        try:
+            for entry in Path("/proc").iterdir():
+                if not entry.name.isdigit():
+                    continue
+                try:
+                    text = (entry / "stat").read_text()
+                    _, rest = text.rsplit(")", 1)
+                    fields = rest.split()
+                    if len(fields) > 3 and fields[0] not in ("Z", "X") and int(fields[3]) == int(sid):
+                        return True
+                except (OSError, ValueError, IndexError):
+                    continue
+            return False
+        except OSError:
+            return process_alive(sid)
+    try:
+        output = subprocess.run(["ps", "-axo", "sess="], capture_output=True, text=True, check=False).stdout
+        return any(line.strip() == str(sid) for line in output.splitlines())
+    except OSError:
+        return process_alive(sid)
 
 
 def _record_matches_process(data):
@@ -65,14 +94,19 @@ def start_process(root, name, command, cwd=None, env=None):
         proc = subprocess.Popen(command, **kwargs)
     finally:
         handle.close()
-    payload = {"name": name, "pid": proc.pid, "command": list(command), "started_at": int(time.time()), "log": str(log_path)}
+    # This process is deliberately detached and supervised through its pidfile.
+    # Keep the handle while the current CLI process is alive so stop can reap it.
+    proc._child_created = False
+    _managed_processes[proc.pid] = proc
+    payload = {"name": name, "pid": proc.pid, "pgid": proc.pid if os.name != "nt" else None,
+               "command": list(command), "started_at": int(time.time()), "log": str(log_path)}
     tmp = record.with_suffix(".tmp")
     tmp.write_text(json.dumps(payload, indent=2) + "\n")
     os.replace(tmp, record)
     return payload
 
 
-def stop_process(root, name, timeout=10):
+def stop_process(root, name, timeout=20):
     record = pidfile(root, name)
     if not record.exists(): return {"stopped": False, "reason": "no pidfile"}
     try: data = json.loads(record.read_text())
@@ -80,24 +114,42 @@ def stop_process(root, name, timeout=10):
         record.unlink(missing_ok=True)
         return {"stopped": False, "reason": "invalid pidfile removed"}
     pid = data.get("pid")
-    if not _record_matches_process(data):
+    leader_matches = _record_matches_process(data)
+    if os.name != "nt":
+        pgid = data.get("pgid", pid)
+        if pgid != pid:
+            raise RuntimeError("managed process record has an unexpected process-group id")
+        if not leader_matches and not _session_has_member(pgid):
+            record.unlink(missing_ok=True)
+            return {"stopped": False, "reason": "process and its managed group are already stopped"}
+    elif not leader_matches:
         record.unlink(missing_ok=True)
         return {"stopped": False, "reason": "process already stopped or its PID now belongs to another command"}
     try:
         if os.name == "nt": os.kill(int(pid), signal.SIGTERM)
         else:
-            if os.getpgid(int(pid)) != int(pid):
-                raise RuntimeError("managed process is no longer the leader of its own process group")
-            os.killpg(int(pid), signal.SIGTERM)
+            os.killpg(int(data.get("pgid", pid)), signal.SIGTERM)
     except OSError as exc:
+        if getattr(exc, "errno", None) == 3:
+            record.unlink(missing_ok=True)
+            return {"stopped": False, "reason": "process group already stopped"}
         raise RuntimeError(f"could not stop {name}: {exc}") from exc
     deadline = time.monotonic() + timeout
-    while process_alive(pid) and time.monotonic() < deadline: time.sleep(0.1)
-    if process_alive(pid):
+    while (process_alive(pid) if os.name == "nt" else _session_has_member(pid)) and time.monotonic() < deadline: time.sleep(0.1)
+    still_running = process_alive(pid) if os.name == "nt" else _session_has_member(pid)
+    if still_running:
         try:
             if os.name == "nt": os.kill(int(pid), signal.SIGKILL)
             else: os.killpg(int(pid), signal.SIGKILL)
         except OSError: pass
+        if os.name != "nt":
+            deadline = time.monotonic() + 2
+            while _session_has_member(pid) and time.monotonic() < deadline:
+                time.sleep(0.1)
+    managed = _managed_processes.pop(int(pid), None)
+    if managed is not None:
+        try: managed.wait(timeout=5)
+        except (OSError, subprocess.TimeoutExpired): pass
     record.unlink(missing_ok=True)
     return {"stopped": True, "pid": pid}
 

@@ -50,9 +50,21 @@
         "port": 8741,
         "command": ["llama-server", "-m", "{weights}/Qwen3-0.6B-Q8_0.gguf", "--host", "127.0.0.1", "--port", "{port}"]
       },
+      "install": {
+        "runtime": "llamacpp",
+        "processes": [
+          {
+            "name": "llama-server",
+            "command": ["llama-server", "-m", "{weights}/Qwen3-0.6B-Q8_0.gguf", "--host", "127.0.0.1", "--port", "{port:api}"],
+            "ready": {"url": "http://127.0.0.1:{port:api}/health", "timeout_s": 300}
+          }
+        ],
+        "api": {"mode": "letter_logprobs", "port": "api", "text_path": "/v1/completions", "image_path": null, "model": null, "auth_header": null},
+        "requires": {"platforms": ["linux-cpu", "macos-arm64", "windows-x64"]}
+      },
       "measured": null,
       "expected_speed": "Small general-purpose test model; integration fixture only.",
-      "notes": "The official llama.cpp release binary is disabled until a platform asset SHA-256 is pinned."
+      "notes": "Uses the official llama.cpp b11260 binary with a recorded SHA-256 pin."
     }
   ],
   "sources_checked_utc": "2026-10-09T16:35Z"

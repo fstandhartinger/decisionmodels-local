@@ -64,6 +64,12 @@ def _gpus():
     return []
 
 
+def _cuda_version():
+    text = _run(["nvidia-smi"])
+    match = re.search(r"CUDA Version:\s*([0-9]+(?:\.[0-9]+)+)", text)
+    return match.group(1) if match else None
+
+
 def parse_nvidia_smi(text):
     rows = []
     for line in text.splitlines():
@@ -126,6 +132,7 @@ def detect(state_path=None):
         "wsl2": bool(system == "linux" and "microsoft" in Path("/proc/version").read_text(errors="ignore").lower()) if Path("/proc/version").exists() else False,
         "cpu": platform.processor() or platform.machine(), "cpu_count": os.cpu_count(), "ram_gb": _ram_gb(),
         "disk_free_gb": disk_free, "gpus": gpu, "cuda_driver": next((g.get("driver_version") for g in gpu if g["vendor"] == "nvidia"), None),
+        "cuda_version": _cuda_version() if any(g.get("vendor") == "nvidia" for g in gpu) else None,
         "docker": {"available": bool(docker and _run([docker, "--version"])), "nvidia_runtime": "nvidia" in docker_runtimes or "nvidia" in _run([docker, "info"], timeout=6).lower()},
         "python": {"version": python_version, "supported": (major, minor) >= (3, 9)},
         "uv": {"available": bool(shutil.which("uv")), "version": (_run(["uv", "--version"]) if shutil.which("uv") else None)},

@@ -1,16 +1,86 @@
 """llama.cpp runtime. Refuses until a platform asset has a reviewed SHA-256 pin."""
 import os
 import platform
+import re
 import shutil
 import subprocess
 import tarfile
 import urllib.request
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from .base import Runtime
 from ..pins import LLAMA_CPP_ASSETS, require_llama_asset
 from ..storage import sha256_file
+
+
+def _safe_extract_tar(archive_path, extracted):
+    """Extract regular files and only relative symlinks that stay in the archive root."""
+    extracted = Path(extracted).resolve()
+    extracted.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(archive_path, "r:*") as archive:
+        members = archive.getmembers()
+        by_name = {}
+        symlinks = {}
+        for member in members:
+            if "\\" in member.name:
+                raise RuntimeError("pinned llama.cpp archive contains a path with Windows separators")
+            name = PurePosixPath(member.name)
+            if (name.is_absolute() or (name.parts and re.match(r"^[A-Za-z]:", name.parts[0]))
+                    or any(part in ("", ".", "..") for part in name.parts)):
+                raise RuntimeError("pinned llama.cpp archive contains an unsafe path")
+            key = name.as_posix().rstrip("/")
+            if not key or key in by_name:
+                raise RuntimeError("pinned llama.cpp archive contains a duplicate or empty path")
+            by_name[key] = (member, name)
+            if member.issym():
+                link = PurePosixPath(member.linkname)
+                if link.is_absolute() or "\\" in member.linkname or (link.parts and re.match(r"^[A-Za-z]:", link.parts[0])):
+                    raise RuntimeError("pinned llama.cpp archive contains an absolute symlink")
+                resolved = list(name.parent.parts)
+                for part in link.parts:
+                    if part in ("", "."):
+                        continue
+                    if part == "..":
+                        if not resolved:
+                            raise RuntimeError("pinned llama.cpp archive symlink escapes its extraction root")
+                        resolved.pop()
+                    else:
+                        resolved.append(part)
+                if not resolved:
+                    raise RuntimeError("pinned llama.cpp archive symlink targets the extraction root")
+                symlinks[key] = (member, name)
+            elif not (member.isdir() or member.isfile()):
+                raise RuntimeError("pinned llama.cpp archive contains a hard link or unsupported special file")
+
+        for key in symlinks:
+            prefix = key + "/"
+            if any(other.startswith(prefix) for other in by_name if other != key):
+                raise RuntimeError("pinned llama.cpp archive uses a symlink as a parent path")
+
+        for key, (member, name) in by_name.items():
+            if key in symlinks:
+                continue
+            target = extracted.joinpath(*name.parts)
+            target.resolve().relative_to(extracted)
+            if member.isdir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            source = archive.extractfile(member)
+            if source is None:
+                raise RuntimeError("unable to read regular file from pinned llama.cpp archive")
+            with source, target.open("wb") as output:
+                shutil.copyfileobj(source, output)
+            try:
+                target.chmod(0o755 if member.mode & 0o111 else 0o644)
+            except OSError:
+                pass
+
+        for member, name in symlinks.values():
+            target = extracted.joinpath(*name.parts)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            os.symlink(member.linkname, target)
 
 
 def platform_key(variant):
@@ -38,22 +108,34 @@ class LlamaCppRuntime(Runtime):
         if digest != pin["sha256"]:
             asset.unlink(missing_ok=True)
             raise RuntimeError("llama.cpp asset failed SHA-256 verification")
+        extracted = self.runtime_dir / "unpacked"
+        if extracted.exists():
+            shutil.rmtree(extracted)
+        extracted.mkdir(parents=True)
+        binary_name = "llama-server.exe" if os.name == "nt" else "llama-server"
         if asset.suffix == ".zip":
             with zipfile.ZipFile(asset) as archive:
-                member = next((m for m in archive.namelist() if Path(m).name == ("llama-server.exe" if os.name == "nt" else "llama-server")), None)
-                if not member: raise RuntimeError("pinned llama.cpp archive contains no llama-server")
-                with archive.open(member) as src, (self.runtime_dir / Path(member).name).open("wb") as dst: shutil.copyfileobj(src, dst)
+                for member in archive.infolist():
+                    if "\\" in member.filename:
+                        raise RuntimeError("pinned llama.cpp archive contains a path with Windows separators")
+                    name = PurePosixPath(member.filename)
+                    mode = (member.external_attr >> 16) & 0o170000
+                    if name.is_absolute() or (name.parts and name.parts[0].endswith(":")) or any(part in ("", ".", "..") for part in name.parts) or mode == 0o120000:
+                        raise RuntimeError("pinned llama.cpp archive contains an unsafe path or link")
+                    target = extracted.joinpath(*name.parts)
+                    target.resolve().relative_to(extracted.resolve())
+                    if member.is_dir():
+                        target.mkdir(parents=True, exist_ok=True)
+                        continue
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    with archive.open(member) as source, target.open("wb") as output:
+                        shutil.copyfileobj(source, output)
         else:
-            with tarfile.open(asset, "r:*") as archive:
-                member = next((m for m in archive.getmembers() if Path(m.name).name == ("llama-server.exe" if os.name == "nt" else "llama-server") and m.isfile()), None)
-                if not member: raise RuntimeError("pinned llama.cpp archive contains no llama-server")
-                stream = archive.extractfile(member)
-                if stream is None: raise RuntimeError("unable to read llama-server from verified archive")
-                binary = self.runtime_dir / Path(member.name).name
-                with stream, binary.open("wb") as dst: shutil.copyfileobj(stream, dst)
-                try: binary.chmod(0o755)
-                except OSError: pass
-        self.binary = self.runtime_dir / ("llama-server.exe" if os.name == "nt" else "llama-server")
+            _safe_extract_tar(asset, extracted)
+        binaries = [path for path in extracted.rglob(binary_name) if path.is_file()]
+        if not binaries:
+            raise RuntimeError("pinned llama.cpp archive contains no llama-server")
+        self.binary = binaries[0]
 
     def start(self):
         gguf = next((self.weights / f["path"] for f in self.variant.get("files", []) if str(f["path"]).lower().endswith(".gguf")), None)

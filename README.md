@@ -36,7 +36,7 @@ Install through SSH using the system OpenSSH client. The command copies the runn
 dm-local remote -p 22 -i ~/.ssh/id_ed25519 user@gpu-host -- install <model-slug> --port 8484
 ```
 
-The local endpoint is then `http://127.0.0.1:8484`. Manage that tunnel with:
+Choose another local tunnel port with `--forward-port`, for example `--forward-port 18484`. The local endpoint is then `http://127.0.0.1:8484`. Manage that tunnel with:
 
 ```sh
 dm-local tunnel user@gpu-host status
@@ -50,7 +50,7 @@ This works with AWS, Azure, GCP, RunPod, Lium, CoreWeave, and self-managed SSH n
 - `doctor [--json]` reports OS, CPU, RAM, free disk, GPUs, CUDA driver, Docker/NVIDIA runtime, Python/uv, and DMI vendor data.
 - `list [--json]` shows catalog models and this machine's fit result.
 - `plan <slug> [--json]` compares variants, memory needs, and available catalog guidance.
-- `install <slug> [--variant ID] [--runtime docker|venv|llamacpp|mlx] [--port 8484] [--yes] [--no-start]` verifies the licence, selects a variant, downloads weights, prepares the runtime, starts the gateway, and runs its sample decisions.
+- `install <slug> [--variant ID] [--runtime docker|docker-compose|venv|llamacpp|mlx] [--port 8484] [--yes] [--no-start] [--dry-run]` verifies the licence, selects a variant, downloads weights, prepares the runtime, starts the gateway, and runs its sample decisions. `--dry-run` prints the planned downloads and commands without installing.
 - `start|stop|status|logs|test <slug>` manages or checks an installation.
 - `service <slug> --enable|--disable` configures a systemd user service on Linux or launchd agent on macOS.
 - `licence status|declare|activate <key>` checks or manages the local usage declaration and commercial licence.
@@ -77,7 +77,7 @@ No telemetry is sent. The CLI's outbound requests are limited to Hugging Face mo
 - **No models listed:** only catalog entries with pinned revisions, weight hashes, serving recipes, and licence evidence are shipped. Check `dm-local list` after installing a release that includes a reviewed catalog.
 - **Does not fit:** use `dm-local plan <slug>` for minimum memory and supported remote-machine guidance. A variant marked quantized may be unbenchmarked; its result is not the benchmarked revision's performance.
 - **Docker variant unavailable:** Linux/WSL2 NVIDIA variants need Docker, an NVIDIA driver, and the NVIDIA container runtime. Windows vLLM/SGLang use WSL2; run `wsl --install -d Ubuntu`, restart Windows, then `wsl --update` and install the current NVIDIA driver with WSL support.
-- **llama.cpp unavailable:** `dm-local` refuses to run an unpinned binary. At this release the official llama.cpp GitHub release provides source but no per-platform binary assets, so those paths remain disabled until a SHA-256 pin is available.
+- **llama.cpp unavailable:** `dm-local` only runs binaries with recorded SHA-256 pins. The current pins use official release b11260, published 29 September 2026, for Linux x64 CPU/Vulkan/CUDA 12.8, macOS arm64, and Windows x64 CPU/CUDA.
 - **Download fails:** check disk space (the installer requires model size plus a 10% margin), HTTPS access to Hugging Face, the revision, and `HF_TOKEN` for gated repositories. A verified partial download can resume on the next install attempt.
 - **Gateway is not healthy:** run `dm-local status <slug>` and `dm-local logs <slug>`. Local logs contain process output; request bodies and answers are not logged by the gateway.
 

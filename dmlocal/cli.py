@@ -18,8 +18,8 @@ from .paths import current_executable, ensure_state, state_dir
 from .process import read_process, start_process, stop_process
 from .recommend import choose_variant, plan_model
 from .remote import remote as remote_command, start_tunnel, stop_tunnel, tunnel_status
-from .runtime_selection import installer_runtime
 from .runtimes import runtime_class
+from .runtimes.recipe import RecipeRuntime
 from .selftest import run as selftest_run
 from .storage import download_variant
 
@@ -36,7 +36,15 @@ def exact_owned_container_names(root):
         except (OSError, ValueError): continue
         slug = install.get("model", {}).get("slug")
         expected = "dm-local-" + str(slug) if slug else None
-        if install.get("runtime") == "docker" and install.get("container_name") == expected:
+        if install.get("runtime") == "docker" and (install.get("variant") or {}).get("install"):
+            try:
+                state = json.loads((Path(root) / "run" / (str(slug) + ".json")).read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                state = {}
+            for name in state.get("processes", []):
+                if isinstance(name, str) and name.startswith(expected + "-") and re.fullmatch(r"dm-local-[a-z0-9.-]+-[A-Za-z0-9_.-]+", name):
+                    names.append(name)
+        elif install.get("runtime") == "docker" and install.get("container_name") == expected:
             names.append(expected)
     return sorted(set(names))
 
@@ -107,21 +115,33 @@ def _gateway_worker(slug):
     gateway = Gateway(install["backend_url"], install["backend_mode"], install.get("backend_model"),
                       install.get("prompt_config"), {"slug": slug, "name": model.get("name"),
                       "modalities": model.get("modalities", ["text"]), "question_types": model.get("question_types", {})},
-                      api_key=config.get("api_key"), max_options=install.get("max_options", 64))
+                      api_key=config.get("api_key"), max_options=install.get("max_options", 64),
+                      backend_paths=install.get("backend_paths"),
+                      backend_auth_header=install.get("backend_auth_header"))
     serve(install.get("listen", "127.0.0.1"), int(install["gateway_port"]), gateway)
 
 
-def _start(slug, root=None):
+def _start(slug, root=None, runtime=None, prepared=False):
     root = Path(root or ensure_state())
     install = _load_install(root, slug)
     gateway_state = read_process(root, "dm-local-" + slug + "-gateway")
-    runtime = runtime_class(install["runtime"])(install["model"], install["variant"], root, install["backend_port"])
-    if gateway_state["running"] and runtime.health():
+    runtime = runtime or _make_runtime(install, root)
+    backend_ready = runtime.health() and (not isinstance(runtime, RecipeRuntime) or runtime.all_ready())
+    if gateway_state["running"] and backend_ready:
         return install
     if gateway_state["running"]: stop_process(root, "dm-local-" + slug + "-gateway")
-    runtime.prepare()
-    runtime.start()
-    if not runtime._wait_ready(60):
+    if not backend_ready:
+        try:
+            runtime.stop()
+        except RuntimeError:
+            pass
+    if not prepared and not backend_ready:
+        runtime.prepare()
+    if not backend_ready:
+        runtime.start()
+    if not _wait_runtime_health(runtime, 60):
+        try: runtime.stop()
+        except RuntimeError: pass
         raise RuntimeError(f"model backend did not become healthy; inspect `dm-local logs {slug}`")
     process_name = "dm-local-" + slug + "-gateway"
     env = os.environ.copy()
@@ -144,9 +164,24 @@ def _stop(slug, root=None):
     root = Path(root or ensure_state())
     install = _load_install(root, slug)
     stop_process(root, "dm-local-" + slug + "-gateway")
-    runtime = runtime_class(install["runtime"])(install["model"], install["variant"], root, install["backend_port"])
+    runtime = _make_runtime(install, root)
     runtime.stop()
     return install
+
+
+def _make_runtime(install, root):
+    if (install.get("variant") or {}).get("install"):
+        return RecipeRuntime(install["model"], install["variant"], root, install.get("gateway_port", 8484))
+    return runtime_class(install["runtime"])(install["model"], install["variant"], root, install.get("backend_port", 8741))
+
+
+def _wait_runtime_health(runtime, seconds):
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if runtime.health():
+            return True
+        time.sleep(0.5)
+    return False
 
 
 def _install(args):
@@ -155,27 +190,79 @@ def _install(args):
     model = get_model(args.slug, models)
     hw = detect(root)
     variant, verdict = choose_variant(model, hw, args.variant, args.runtime)
-    backend_port = int(variant.get("serve", {}).get("port", 8741))
+    recipe = variant["install"]
+    runtime_name = recipe["runtime"]
     config = _read_config(root)
     api_key = args.api_key or config.get("api_key")
     if args.api_key is not None and not args.api_key:
         raise RuntimeError("--api-key cannot be empty")
     if args.listen not in ("127.0.0.1", "0.0.0.0"):
         raise RuntimeError("--listen must be 127.0.0.1 or 0.0.0.0")
-    if not 1 <= int(args.port) <= 65535 or not 1 <= backend_port <= 65535:
-        raise RuntimeError("gateway/backend ports must be between 1 and 65535")
+    if not 1 <= int(args.port) <= 65535:
+        raise RuntimeError("gateway port must be between 1 and 65535")
     if args.listen == "0.0.0.0" and not api_key:
         raise RuntimeError("--listen 0.0.0.0 requires --api-key")
+    print("✓ Check hardware — " + variant["id"] + " (" + verdict + ")")
+    if args.dry_run:
+        print("✓ Licence — would verify the declared usage before downloading")
+        extra = recipe.get("extra_weights", [])
+        file_count = len(variant.get("files", [])) + sum(len(item.get("files", [])) for item in extra)
+        byte_count = sum(int(f.get("size", 0)) for f in variant.get("files", [])) + sum(
+            int(f.get("size", 0)) for item in extra for f in item.get("files", []))
+        print(f"✓ Download {file_count} files ({byte_count / 1_000_000_000:.2f} GB) — dry run")
+        runtime = RecipeRuntime(model, variant, root, args.port)
+        for spec in variant.get("files", []):
+            url = __import__("dmlocal.storage", fromlist=["hf_url"]).hf_url(model["weights"]["repo"], model["weights"]["revision"], spec["path"])
+            print("Would download and verify: " + url + " sha256=" + spec["sha256"])
+        for item in recipe.get("extra_weights", []):
+            for spec in item.get("files", []):
+                url = __import__("dmlocal.storage", fromlist=["hf_url"]).hf_url(item["repo"], item["revision"], spec["path"])
+                print("Would download and verify: " + url + " sha256=" + spec["sha256"])
+        for item in recipe.get("code", []):
+            url = f"https://codeload.github.com/{item['repo']}/tar.gz/{item['revision']}"
+            print("Would download, verify, and safely extract: " + url + " sha256=" + item["sha256"])
+        if runtime_name == "docker-compose":
+            compose = recipe["compose"]
+            url = __import__("dmlocal.storage", fromlist=["hf_url"]).hf_url(model["weights"]["repo"], model["weights"]["revision"], compose["bundle"])
+            print("Would download, verify, and safely extract: " + url + " sha256=" + compose["bundle_sha256"])
+            print("Would write the verified Compose environment to .env, then remove it with docker compose down on stop")
+        if runtime_name == "llamacpp":
+            from .runtimes.llamacpp import platform_key
+            from .pins import require_llama_asset
+            asset = require_llama_asset(platform_key(variant))
+            print("Would download and verify: " + asset["url"] + " sha256=" + asset["sha256"])
+        print(f"✓ Set up runtime — {runtime_name}")
+        import shlex
+        for command in runtime.runtime_commands():
+            print("Would run: " + shlex.join(command))
+        if not args.no_start:
+            print("✓ Start — dry run")
+            print("✓ Self-test — dry run")
+        else:
+            print("✓ Start — skipped by --no-start")
+            print("✓ Self-test — skipped by --no-start")
+        print(f"Endpoint: http://{args.listen}:{args.port}")
+        print(f"Try: curl -s http://127.0.0.1:{args.port}/v1/models")
+        print(f"Manage with: dm-local stop {args.slug} | dm-local uninstall {args.slug}")
+        return {"slug": args.slug, "dry_run": True}
+
     usage = require_install(model, root, usage=args.usage, accept=(args.accept or args.yes))
-    print(f"Using {variant['id']} ({verdict}); declared use: {usage}.")
+    print(f"✓ Licence — declared use: {usage}")
+    extra = recipe.get("extra_weights", [])
+    file_count = len(variant.get("files", [])) + sum(len(item.get("files", [])) for item in extra)
+    byte_count = sum(int(f["size"]) for f in variant.get("files", [])) + sum(
+        int(f["size"]) for item in extra for f in item.get("files", []))
+    print(f"Download {file_count} files ({byte_count / 1_000_000_000:.2f} GB)")
     weights = download_variant(model, variant, root)
-    runtime_name = installer_runtime(variant)
-    if runtime_name is None:
-        raise RuntimeError("catalog variant has no supported installation runtime")
-    cls = runtime_class(runtime_name)
-    runtime = cls(model, variant, root, backend_port)
+    print(f"✓ Download {file_count} files ({byte_count / 1_000_000_000:.2f} GB)")
+    api = recipe["api"]
+    backend_mode = api["mode"]
+    runtime = RecipeRuntime(model, variant, root, args.port)
     runtime.prepare()
-    backend_mode, backend_url, prompt_config = _backend_spec(model, variant)
+    backend_port = runtime.ports[api["port"]]
+    backend_url = f"http://127.0.0.1:{backend_port}"
+    prompt_config = {"prompt_template": model.get("readout", {}).get("prompt_template"), "model": api.get("model") or args.slug}
+    backend_paths = {"text": api.get("text_path"), "image": api.get("image_path")}
     max_options = min(20, int(variant.get("max_options", 20))) if backend_mode == "letter_logprobs" else int(variant.get("max_options", 64))
     listen = args.listen
     if listen == "0.0.0.0": print(_color("Warning: the gateway will listen on every network interface.", "33"), file=sys.stderr)
@@ -183,21 +270,29 @@ def _install(args):
         config["api_key"] = args.api_key
         _write_config(root, config)
     install = {"model": model, "variant": variant, "runtime": runtime_name, "backend_mode": backend_mode,
-               "backend_url": backend_url, "backend_model": prompt_config.get("model"), "prompt_config": prompt_config,
+               "backend_url": backend_url, "backend_model": api.get("model") or prompt_config.get("model"), "prompt_config": prompt_config,
+               "backend_paths": backend_paths, "backend_auth_header": api.get("auth_header"),
                "gateway_port": int(args.port), "backend_port": backend_port, "listen": listen, "max_options": max_options,
                "weight_files": [str(x) for x in weights], "runtime_path": str(runtime.runtime_dir),
-               "container_name": "dm-local-" + args.slug if runtime_name == "docker" else None}
+               "container_name": "dm-local-" + args.slug if runtime_name == "docker" and not variant.get("install") else None}
     _save_install(root, args.slug, install)
+    print(f"✓ Set up runtime — {runtime_name}")
     if not args.no_start:
-        _start(args.slug, root)
+        _start(args.slug, root, runtime=runtime, prepared=True)
+        print("✓ Start — model processes and gateway are ready")
         try:
             report = selftest_run(f"http://127.0.0.1:{args.port}", api_key=api_key, model=args.slug)
             print("Self-test passed; p50 latency over five choice runs: " + str(report["latency_p50_ms_5_runs"]) + " ms")
+            print("✓ Self-test")
         except Exception:
             _stop(args.slug, root)
             raise
+    else:
+        print("✓ Start — skipped by --no-start")
+        print("✓ Self-test — skipped by --no-start")
     print(f"Endpoint: http://{listen}:{args.port}")
     print("Try: curl -s http://127.0.0.1:" + str(args.port) + "/v1/models")
+    print(f"Stop or remove it with: dm-local stop {args.slug} | dm-local uninstall {args.slug}")
     if api_key: print("Inference calls require Authorization: Bearer <your-api-key>.")
     return install
 
@@ -247,8 +342,9 @@ def _status(slug, args):
     root = ensure_state()
     install = _load_install(root, slug)
     gateway_state = read_process(root, "dm-local-" + slug + "-gateway")
-    runtime = runtime_class(install["runtime"])(install["model"], install["variant"], root, install["backend_port"])
-    result = {"slug": slug, "gateway": gateway_state, "backend_healthy": runtime.health(),
+    runtime = _make_runtime(install, root)
+    backend_healthy = runtime.health() and (not isinstance(runtime, RecipeRuntime) or runtime.all_ready())
+    result = {"slug": slug, "gateway": gateway_state, "backend_healthy": backend_healthy,
               "endpoint": f"http://127.0.0.1:{install['gateway_port']}", "runtime": install["runtime"]}
     if args.as_json: _json(result)
     else: print(f"{slug}: gateway={'running' if gateway_state['running'] else 'stopped'}, backend={'healthy' if result['backend_healthy'] else 'not healthy'}; {result['endpoint']}")
@@ -259,22 +355,45 @@ def _logs(slug, lines):
     paths = [root / "run" / ("dm-local-" + slug + "-backend.log"), root / "run" / ("dm-local-" + slug + "-gateway.log")]
     install = _load_install(root, slug)
     if install["runtime"] == "docker":
-        serve = install["variant"].get("serve", {})
-        if serve.get("compose_files"):
-            command = ["docker", "compose", "-p", "dm-local-" + slug]
-            weights = root / "models" / slug
-            for value in serve["compose_files"]:
-                path = (weights / value).resolve()
-                try: path.relative_to(weights.resolve())
-                except ValueError as exc: raise RuntimeError("compose file escapes the model directory") from exc
-                command.extend(["-f", str(path)])
-            command.extend(["logs", "--tail", str(lines)])
+        if (install.get("variant") or {}).get("install"):
+            try:
+                state = json.loads((root / "run" / (slug + ".json")).read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                state = {}
+            for name in state.get("processes", []):
+                if not isinstance(name, str) or not name.startswith("dm-local-" + slug + "-"):
+                    continue
+                result = subprocess.run(["docker", "logs", "--tail", str(lines), name], check=False, text=True, capture_output=True)
+                print(f"--- {name} ---\n" + result.stdout + result.stderr, end="")
         else:
-            if install.get("container_name") != "dm-local-" + slug:
-                raise RuntimeError("refusing to inspect an unrecognized Docker container name")
-            command = ["docker", "logs", "--tail", str(lines), install["container_name"]]
-        result = subprocess.run(command, check=False, text=True, capture_output=True)
-        print(result.stdout + result.stderr, end="")
+            serve = install["variant"].get("serve", {})
+            if serve.get("compose_files"):
+                command = ["docker", "compose", "-p", "dm-local-" + slug]
+                weights = root / "models" / slug
+                for value in serve["compose_files"]:
+                    path = (weights / value).resolve()
+                    try: path.relative_to(weights.resolve())
+                    except ValueError as exc: raise RuntimeError("compose file escapes the model directory") from exc
+                    command.extend(["-f", str(path)])
+                command.extend(["logs", "--tail", str(lines)])
+            else:
+                if install.get("container_name") != "dm-local-" + slug:
+                    raise RuntimeError("refusing to inspect an unrecognized Docker container name")
+                command = ["docker", "logs", "--tail", str(lines), install["container_name"]]
+            result = subprocess.run(command, check=False, text=True, capture_output=True)
+            print(result.stdout + result.stderr, end="")
+    elif (install.get("variant") or {}).get("install"):
+        if install.get("runtime") == "docker-compose":
+            runtime = _make_runtime(install, root)
+            runtime._download_compose_bundle()
+            result = subprocess.run(["docker", "compose", "-p", "dm-local-" + slug, "logs", "--tail", str(lines)],
+                                    cwd=runtime.compose_dir, check=False, text=True, capture_output=True)
+            print(result.stdout + result.stderr, end="")
+        for proc in install["variant"]["install"].get("processes", []):
+            path = root / "run" / ("dm-local-" + slug + "-" + proc["name"] + ".log")
+            if path.exists():
+                print(f"--- {path.name} ---")
+                print("\n".join(path.read_text(errors="replace").splitlines()[-lines:]))
     for path in paths:
         if path.exists():
             print(f"--- {path.name} ---")
@@ -285,7 +404,7 @@ def _uninstall(slug, keep_weights=False):
     root = ensure_state()
     install = _load_install(root, slug)
     container = install.get("container_name")
-    if install["runtime"] == "docker":
+    if install["runtime"] == "docker" and not (install.get("variant") or {}).get("install"):
         expected = "dm-local-" + slug
         if container != expected:
             raise RuntimeError("refusing to remove an unrecognized Docker container name")
@@ -322,7 +441,8 @@ def _uninstall_all(yes):
         slug = path.name[len("installed-"):-len(".json")]
         try:
             install = _load_install(root, slug)
-            if install.get("runtime") == "docker" and install.get("container_name") not in owned_names:
+            recipe_backed = bool((install.get("variant") or {}).get("install"))
+            if install.get("runtime") == "docker" and not recipe_backed and install.get("container_name") not in owned_names:
                 raise RuntimeError("manifest does not name an exact dm-local container created by this installer")
             _uninstall(slug, keep_weights=False); slugs.append(slug)
         except Exception as exc:
@@ -381,7 +501,8 @@ def _license(args):
 
 
 def _remote(args):
-    return remote_command(args.host, args.subcommand, args.port, args.identity, args.local_port, args.remote_port)
+    return remote_command(args.host, args.subcommand, args.port, args.identity, args.local_port, args.remote_port,
+                          forward_port=args.forward_port)
 
 
 def _tunnel(args):
@@ -397,17 +518,17 @@ def parser():
     p = commands.add_parser("doctor"); p.add_argument("--json", dest="as_json", action="store_true")
     p = commands.add_parser("list"); p.add_argument("--json", dest="as_json", action="store_true")
     p = commands.add_parser("plan"); p.add_argument("slug"); p.add_argument("--json", dest="as_json", action="store_true")
-    p = commands.add_parser("install"); p.add_argument("slug"); p.add_argument("--variant"); p.add_argument("--runtime", choices=["docker", "venv", "llamacpp", "mlx"])
+    p = commands.add_parser("install"); p.add_argument("slug"); p.add_argument("--variant"); p.add_argument("--runtime", choices=["docker", "docker-compose", "venv", "llamacpp", "mlx"])
     p.add_argument("--port", type=int, default=8484); p.add_argument("--listen", default="127.0.0.1"); p.add_argument("--api-key")
     p.add_argument("--usage", choices=["individual", "small_company", "company"]); p.add_argument("--accept", action="store_true")
-    p.add_argument("--yes", action="store_true"); p.add_argument("--no-start", action="store_true")
+    p.add_argument("--yes", action="store_true"); p.add_argument("--no-start", action="store_true"); p.add_argument("--dry-run", action="store_true")
     for name in ("start", "stop", "test"):
         p = commands.add_parser(name); p.add_argument("slug")
     p = commands.add_parser("status"); p.add_argument("slug"); p.add_argument("--json", dest="as_json", action="store_true")
     p = commands.add_parser("logs"); p.add_argument("slug"); p.add_argument("--lines", type=int, default=100)
     p = commands.add_parser("uninstall"); p.add_argument("slug", nargs="?"); p.add_argument("--all", action="store_true"); p.add_argument("--keep-weights", action="store_true"); p.add_argument("--yes", action="store_true")
     p = commands.add_parser("service"); p.add_argument("slug"); group = p.add_mutually_exclusive_group(required=True); group.add_argument("--enable", action="store_true"); group.add_argument("--disable", action="store_true")
-    p = commands.add_parser("remote"); p.add_argument("host"); p.add_argument("-p", "--port", type=int); p.add_argument("-i", "--identity"); p.add_argument("--local-port", type=int, default=8484); p.add_argument("--remote-port", type=int, default=8484); p.add_argument("subcommand", nargs=argparse.REMAINDER)
+    p = commands.add_parser("remote"); p.add_argument("host"); p.add_argument("-p", "--port", type=int); p.add_argument("-i", "--identity"); p.add_argument("--local-port", type=int, default=8484); p.add_argument("--remote-port", type=int, default=8484); p.add_argument("--forward-port", type=int); p.add_argument("subcommand", nargs=argparse.REMAINDER)
     p = commands.add_parser("tunnel"); p.add_argument("host"); p.add_argument("action", choices=["start", "stop", "status"]); p.add_argument("--port", type=int); p.add_argument("-i", "--identity"); p.add_argument("--local-port", type=int, default=8484); p.add_argument("--remote-port", type=int, default=8484)
     p = commands.add_parser("licence"); p.add_argument("action", nargs="?", choices=["status", "declare", "activate"], default="status"); p.add_argument("key", nargs="?"); p.add_argument("--usage", choices=["individual", "small_company", "company"]); p.add_argument("--accept", action="store_true"); p.add_argument("--json", dest="as_json", action="store_true")
     commands.add_parser("version")

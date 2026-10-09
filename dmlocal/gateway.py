@@ -172,9 +172,11 @@ def _image_dimensions_ok(mime, data):
         return False
 
 
-def _http_json(url, payload, timeout=60, opener=None):
+def _http_json(url, payload, timeout=60, opener=None, headers=None):
     data = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-    request = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
+    request_headers = {"Content-Type": "application/json"}
+    request_headers.update(headers or {})
+    request = urllib.request.Request(url, data=data, headers=request_headers, method="POST")
     with (opener or _LOCAL_OPENER)(request, timeout=timeout) as response:
         status = getattr(response, "status", None)
         if status is None: status = response.getcode()
@@ -253,11 +255,25 @@ def _letter_probabilities(data, letters):
     choices = data.get("choices") or []
     if not choices:
         raise ValueError("completion backend returned no choices")
-    lp = (choices[0].get("logprobs") or {}).get("top_logprobs") or []
-    if not lp or not isinstance(lp[0], dict):
+    logprobs = choices[0].get("logprobs") or {}
+    top_logprobs = logprobs.get("top_logprobs") or []
+    if not top_logprobs:
+        content = logprobs.get("content") or []
+        top_logprobs = (content[0].get("top_logprobs") or []) if content and isinstance(content[0], dict) else []
+    if not top_logprobs:
         raise ValueError("completion backend returned no top token log-probabilities")
     normalized = {}
-    for token, value in lp[0].items():
+    if isinstance(top_logprobs[0], dict) and {"token", "logprob"}.issubset(top_logprobs[0]):
+        candidates = top_logprobs
+    else:
+        candidates = top_logprobs[0] if isinstance(top_logprobs[0], dict) else top_logprobs
+    if isinstance(candidates, dict):
+        entries = candidates.items()
+    elif isinstance(candidates, list):
+        entries = ((item.get("token"), item.get("logprob")) for item in candidates if isinstance(item, dict))
+    else:
+        raise ValueError("completion backend returned malformed top token log-probabilities")
+    for token, value in entries:
         letter = token.strip()
         if letter in letters and isinstance(value, (int, float)) and math.isfinite(value):
             normalized[letter] = float(value)
@@ -310,7 +326,8 @@ def letter_logprobs(backend_url, config, request, qname, question, opener=None):
 
 class Gateway:
     def __init__(self, backend_url, backend_mode="proxy_jev", backend_model=None, prompt_config=None,
-                 model_card=None, api_key=None, opener=None, max_options=64):
+                 model_card=None, api_key=None, opener=None, max_options=64, backend_paths=None,
+                 backend_auth_header=None):
         _validate_backend_url(backend_url)
         self.backend_url = backend_url.rstrip("/")
         self.backend_mode = backend_mode
@@ -320,6 +337,8 @@ class Gateway:
         self.api_key = api_key
         self.opener = opener or _LOCAL_OPENER
         self.max_options = int(max_options)
+        self.backend_paths = backend_paths or {}
+        self.backend_auth_header = backend_auth_header
 
     def infer(self, request, multimodal=False):
         qname, question = validate_request(request, multimodal=multimodal, max_options=self.max_options)
@@ -331,6 +350,8 @@ class Gateway:
             raise UnsupportedModalityError("this model does not support the requested question type")
         if multimodal and not request.get("images"):
             raise ValueError("/v1/multimodal requires at least one image")
+        if multimodal and self.backend_mode == "proxy_jev" and self.backend_paths.get("image") is None:
+            raise UnsupportedModalityError("this model's install recipe does not provide an image endpoint")
         if multimodal and request.get("images") and "image" not in self.model_card.get("modalities", ["text", "image"]):
             raise UnsupportedModalityError("this model does not support images")
         request = dict(request)
@@ -341,7 +362,13 @@ class Gateway:
                     raise UnsupportedModalityError("letter_logprobs does not support image input")
                 raw = letter_logprobs(self.backend_url, self.prompt_config, request, qname, question, opener=self.opener)
             elif self.backend_mode == "proxy_jev":
-                status, raw = _http_json(self.backend_url, request, opener=self.opener)
+                backend_path = self.backend_paths.get("image" if multimodal else "text")
+                url = self.backend_url.rstrip("/") + backend_path if backend_path else self.backend_url
+                headers = {}
+                if self.backend_auth_header:
+                    name, value = self.backend_auth_header.split(":", 1)
+                    headers[name.strip()] = value.strip()
+                status, raw = _http_json(url, request, opener=self.opener, headers=headers)
                 if status < 200 or status >= 300:
                     raise RuntimeError("model backend returned an error")
             else:

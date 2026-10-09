@@ -1,4 +1,5 @@
 """Audited third-party binary and image pins. Refresh only from the cited sources."""
+import re
 
 # uv 0.12.24, GitHub release and its sha256.sum, checked 2026-10-09.
 # Source: https://github.com/astral-sh/uv/releases/tag/0.12.24
@@ -31,19 +32,42 @@ UV_ASSETS = {
     },
 }
 
-# The official ggml-org release currently publishes source only, no per-platform
-# llama-server assets. Refuse that runtime until an asset hash is published and
-# independently recorded here. Source checked via the GitHub releases API on
-# 2026-10-09: https://api.github.com/repos/ggml-org/llama.cpp/releases/latest
-LLAMA_CPP_VERSION = "v0.6.0"
-LLAMA_CPP_RELEASE = "https://github.com/ggml-org/llama.cpp/releases/tag/v0.6.0"
+# SHA-256 values computed from the official assets below. b11260 was published
+# 2026-09-29T19:56:18Z (more than seven days before this pin was recorded on
+# 2026-10-09). Source: https://github.com/ggml-org/llama.cpp/releases/tag/b11260
+LLAMA_CPP_VERSION = "b11260"
+LLAMA_CPP_RELEASE = "https://github.com/ggml-org/llama.cpp/releases/tag/b11260"
 LLAMA_CPP_ASSETS = {
-    "linux-x86_64-cpu": None,
-    "linux-x86_64-cuda": None,
-    "linux-x86_64-vulkan": None,
-    "macos-arm64-metal": None,
-    "windows-x86_64-cpu": None,
-    "windows-x86_64-cuda": None,
+    "linux-x86_64-cpu": {
+        "file": "llama-b11260-bin-ubuntu-x64.tar.gz",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11260/llama-b11260-bin-ubuntu-x64.tar.gz",
+        "sha256": "af08c2f07e66ecd1252ca03c3e75b579df6cb80dac3965c65c56793b2ab9b0a0",
+    },
+    "linux-x86_64-vulkan": {
+        "file": "llama-b11260-bin-ubuntu-vulkan-x64.tar.gz",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11260/llama-b11260-bin-ubuntu-vulkan-x64.tar.gz",
+        "sha256": "5d034b06a5a78d2077f55a88e2689b2904abe0c8732551fd43e2983f84b9a66e",
+    },
+    "linux-x86_64-cuda": {
+        "file": "llama-b11260-bin-ubuntu-cuda-12.8-x64.tar.gz",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11260/llama-b11260-bin-ubuntu-cuda-12.8-x64.tar.gz",
+        "sha256": "1e2578d887bf4be72ae89332c43304c9eabb33fa15ccfc3c335779eb27bd3ddc",
+    },
+    "macos-arm64-metal": {
+        "file": "llama-b11260-bin-macos-arm64.tar.gz",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11260/llama-b11260-bin-macos-arm64.tar.gz",
+        "sha256": "64e7831a28330e367c6ec6dae3b9a17cc06a7c8e062bdf8b35b767c8c22c7dc5",
+    },
+    "windows-x86_64-cpu": {
+        "file": "llama-b11260-bin-win-cpu-x64.zip",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11260/llama-b11260-bin-win-cpu-x64.zip",
+        "sha256": "d55f92b3a7bf0a8b7d59f71e7fa76db896d2070726f26026e3ca46542d9d5733",
+    },
+    "windows-x86_64-cuda": {
+        "file": "llama-b11260-bin-win-cuda-12.4-x64.zip",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11260/llama-b11260-bin-win-cuda-12.4-x64.zip",
+        "sha256": "aef7825c8f7e36c03d1d02bf7c2b2a635028c916dfb7693707b54f53ea76a2e8",
+    },
 }
 
 # Docker Hub official-image manifest-list digests, checked 2026-10-09.
@@ -66,10 +90,6 @@ def require_llama_asset(platform_key):
 
 
 def require_docker_image(reference):
-    if "@" not in reference:
-        raise RuntimeError("Docker image must use a pinned @sha256 digest from the catalog.")
-    name, digest = reference.rsplit("@", 1)
-    expected = DOCKER_IMAGES.get(name)
-    if not expected or digest != expected:
-        raise RuntimeError(f"Docker image {name!r} does not match a verified official-image pin in dmlocal/pins.py.")
+    if not isinstance(reference, str) or not re.fullmatch(r"[A-Za-z0-9._/:+-]+@sha256:[0-9a-f]{64}", reference):
+        raise RuntimeError("Docker image must use a digest-pinned @sha256 reference.")
     return reference

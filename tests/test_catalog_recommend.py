@@ -36,11 +36,12 @@ class CatalogAndRecommendationTests(unittest.TestCase):
         candidate["runtime"] = "vLLM (author recipe)"
         candidate.pop("packages")
         candidate["serve"] = {"steps": ["Run the author server"]}
+        candidate.pop("install")
         model = model_with_variants([candidate])
         validate_model(model)
         result = plan_model(model, hardware())
-        self.assertEqual(result["variants"][0]["verdict"], "does_not_fit")
-        self.assertIn("does not declare a supported installer runtime", result["variants"][0]["reasons"][0])
+        self.assertEqual(result["variants"][0]["verdict"], "not_installable")
+        self.assertIn("not installable: install recipe is missing", result["variants"][0]["reasons"][0])
 
     def test_catalog_requires_pinned_revision_and_weight_hash(self):
         model = model_with_variants([variant()])
@@ -75,6 +76,8 @@ class CatalogAndRecommendationTests(unittest.TestCase):
                                 precision="bf16", platforms=["linux-cpu"]),
                         variant("llama", runtime="llamacpp", min_vram=0, recommended=0, benchmarked=False,
                                 precision="q4", platforms=["linux-cpu"])]
+        cpu_variants[0]["install"]["requires"]["platforms"] = ["linux-cpu"]
+        cpu_variants[1]["install"]["requires"]["platforms"] = ["linux-cpu"]
         cpu_variants[1]["files"][0]["path"] = "fixture.gguf"
         cpu_model = model_with_variants(cpu_variants)
         with patch("dmlocal.recommend.LLAMA_CPP_ASSETS", {"linux-x86_64-cpu": {"sha256": "a"}}):
@@ -83,6 +86,8 @@ class CatalogAndRecommendationTests(unittest.TestCase):
                                   platforms=["macos-arm64"]),
                           variant("mlx", runtime="mlx", min_vram=0, recommended=0, benchmarked=False,
                                   platforms=["macos-arm64"])]
+        apple_variants[0]["install"]["requires"]["platforms"] = ["macos-arm64"]
+        apple_variants[1]["install"]["requires"]["platforms"] = ["macos-arm64"]
         apple_model = model_with_variants(apple_variants)
         apple_hw = hardware(osname="darwin", gpus=False, apple={"chip": "Apple M", "unified_memory_gb": 24})
         apple_hw["arch"] = "arm64"
