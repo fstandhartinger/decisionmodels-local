@@ -12,16 +12,33 @@ export function marginQuote(streetPrice) {
   return Math.ceil((target + 1) / 10) * 10 - 1;
 }
 
-export function deviceStreetPrices(device) {
-  const currencies = [...new Set((device.prices ?? []).map((price) => price.currency).filter(Boolean))];
-  return Object.fromEntries(currencies.map((currency) => [
-    currency,
-    median((device.prices ?? []).filter((price) => price.currency === currency).map((price) => price.value))
-  ]));
+const defaultClasses = [
+  { id: "gpu-workstation", platforms: ["linux-nvidia"], auto_suggest: true },
+  { id: "apple-silicon", platforms: ["macos-arm64"], auto_suggest: true },
+  { id: "gb10", platforms: ["linux-arm64"], auto_suggest: false },
+  { id: "jetson", platforms: ["linux-arm64"], auto_suggest: false },
+  { id: "android", platforms: ["android"], auto_suggest: false }
+];
+
+function classDefinition(device, classes = defaultClasses) {
+  return classes.find((item) => item.id === device.class && item.device_ids?.includes(device.id))
+    ?? classes.find((item) => item.id === device.class && !item.device_ids);
 }
 
-export function deviceQuotes(device) {
-  return Object.fromEntries(Object.entries(deviceStreetPrices(device)).map(([currency, price]) => [currency, marginQuote(price)]));
+function deviceStreetPricesForCurrency(device, currency, definition) {
+  const listed = median((device.prices ?? []).filter((price) => price.currency === currency).map((price) => price.value));
+  if (listed === null) return null;
+  const base = Number(definition?.base_system_by_currency?.[currency] ?? 0);
+  return listed + (Number.isFinite(base) ? base : 0);
+}
+
+export function deviceStreetPrices(device, definition) {
+  const currencies = [...new Set((device.prices ?? []).map((price) => price.currency).filter(Boolean))];
+  return Object.fromEntries(currencies.map((currency) => [currency, deviceStreetPricesForCurrency(device, currency, definition)]));
+}
+
+export function deviceQuotes(device, definition) {
+  return Object.fromEntries(Object.entries(deviceStreetPrices(device, definition)).map(([currency, price]) => [currency, marginQuote(price)]));
 }
 
 function isQuantized(variant) {
@@ -29,66 +46,60 @@ function isQuantized(variant) {
   return /q\d|quant|int[48]|fp8|nvfp4/.test(precision);
 }
 
-const classPlatforms = {
-  "gpu-workstation": ["linux-nvidia", "wsl2-nvidia"],
-  gb10: ["linux-nvidia"],
-  jetson: ["linux-nvidia"],
-  "apple-silicon": ["macos-arm64"],
-  "amd-apu": ["linux-cpu"],
-  android: ["android"]
-};
-
-function requiredMemory(variant, device) {
-  const recommended = Number(variant.recommended_vram_gb);
-  const minRam = Number(variant.min_ram_gb);
-  if (device.memory_kind === "unified" || device.memory_kind === "ram") {
-    const requirements = [recommended, minRam].filter((value) => Number.isFinite(value) && value > 0);
-    return requirements.length ? Math.max(...requirements) : null;
+function requiredMemory(variant, definition) {
+  if (definition.id === "apple-silicon") {
+    const ram = Number(variant.min_ram_gb);
+    return Number.isFinite(ram) && ram > 0 ? ram : null;
   }
+  const recommended = Number(variant.recommended_vram_gb);
   return Number.isFinite(recommended) && recommended > 0 ? recommended : null;
 }
 
-function compatibleVariant(model, device, variant) {
-  const platforms = classPlatforms[device.class] ?? [];
-  if (!platforms.some((platform) => (variant.platforms ?? []).includes(platform))) return false;
-  const needed = requiredMemory(variant, device);
+function compatibleVariant(model, device, variant, definition) {
+  if (!definition?.auto_suggest || !definition.device_ids?.includes(device.id)) return false;
+  if (!(definition.platforms ?? []).some((platform) => (variant.platforms ?? []).includes(platform))) return false;
+  const needed = requiredMemory(variant, definition);
   if (needed === null || !Number.isFinite(device.memory_gb) || device.memory_gb < needed) return false;
-  const isImage = (model.modalities ?? []).includes("image");
-  if (isImage && device.supports_image !== true) return false;
-  if (["jetson", "android"].includes(device.class)) {
+  if (["jetson", "android"].includes(definition.id)) {
     if ((model.params?.total_b ?? Infinity) > 4 || !isQuantized(variant)) return false;
   }
   return true;
 }
 
-export function deviceFits(model, device, variant) {
+export function deviceFits(model, device, variant, classes = defaultClasses) {
   if (model.installer_policy?.status === "excluded") return false;
+  const definition = classDefinition(device, classes);
+  if (!definition?.auto_suggest) return false;
   const variants = variant ? [variant] : (model.variants ?? []);
-  return variants.some((candidate) => compatibleVariant(model, device, candidate));
+  return variants.some((candidate) => compatibleVariant(model, device, candidate, definition));
 }
 
-export function suggestDevice(model, devices) {
+export function suggestDevice(model, devices, classes = defaultClasses) {
   if (model.installer_policy?.status === "excluded") return null;
   const candidates = devices.flatMap((device) => {
+    const definition = classDefinition(device, classes);
+    if (!definition?.auto_suggest) return [];
     const variant = [...(model.variants ?? [])]
-      .filter((candidate) => compatibleVariant(model, device, candidate))
-      .sort((a, b) => requiredMemory(a, device) - requiredMemory(b, device))[0];
-    return variant && Object.keys(deviceStreetPrices(device)).length > 0 ? [{ device, variant }] : [];
-  });
-  const currencyPriority = ["USD", "EUR"].sort((left, right) => {
-    const leftCount = candidates.filter(({ device }) => deviceStreetPrices(device)[left] != null).length;
-    const rightCount = candidates.filter(({ device }) => deviceStreetPrices(device)[right] != null).length;
-    return rightCount - leftCount || left.localeCompare(right);
-  });
-  const currency = currencyPriority.find((item) => candidates.some(({ device }) => deviceStreetPrices(device)[item] != null));
-  candidates.sort(({ device: a }, { device: b }) => {
-    const aPrice = currency ? (deviceStreetPrices(a)[currency] ?? Infinity) : Infinity;
-    const bPrice = currency ? (deviceStreetPrices(b)[currency] ?? Infinity) : Infinity;
-    return aPrice - bPrice || a.name.localeCompare(b.name);
+      .filter((candidate) => compatibleVariant(model, device, candidate, definition))
+      .sort((a, b) => requiredMemory(a, definition) - requiredMemory(b, definition))[0];
+    return variant && Object.keys(deviceStreetPrices(device, definition)).length > 0 ? [{ device, variant, definition }] : [];
   });
   if (!candidates.length) return null;
-  const { device, variant } = candidates[0];
-  const quotes = deviceQuotes(device);
+
+  const currencyPriority = ["USD", "EUR"].sort((left, right) => {
+    const leftCount = candidates.filter(({ device, definition }) => deviceStreetPrices(device, definition)[left] != null).length;
+    const rightCount = candidates.filter(({ device, definition }) => deviceStreetPrices(device, definition)[right] != null).length;
+    return rightCount - leftCount || left.localeCompare(right);
+  });
+  const currency = currencyPriority.find((item) => candidates.some(({ device, definition }) => deviceStreetPrices(device, definition)[item] != null));
+  candidates.sort(({ device: a, definition: aDefinition }, { device: b, definition: bDefinition }) => {
+    const aPrice = currency ? (deviceStreetPrices(a, aDefinition)[currency] ?? Infinity) : Infinity;
+    const bPrice = currency ? (deviceStreetPrices(b, bDefinition)[currency] ?? Infinity) : Infinity;
+    return aPrice - bPrice || a.name.localeCompare(b.name);
+  });
+
+  const { device, variant, definition } = candidates[0];
+  const quotes = deviceQuotes(device, definition);
   return {
     id: device.id,
     name: device.name,
@@ -99,7 +110,7 @@ export function suggestDevice(model, devices) {
     platforms: variant.platforms ?? [],
     price_usd: quotes.USD ?? null,
     price_eur: quotes.EUR ?? null,
-    street_prices: deviceStreetPrices(device),
+    street_prices: deviceStreetPrices(device, definition),
     source: (device.prices ?? []).map(({ source, date, currency, value }) => ({ source, date, currency, value }))
   };
 }

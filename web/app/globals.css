@@ -153,3 +153,47 @@ tr:last-child td { border-bottom:0; }
 .space-top-lg { margin-top:28px; }
 @media(max-width:900px) { .header-inner,.footer-inner,.section-wrap { width:min(100% - 36px,1200px); } .header-inner { gap:18px; min-height:68px; } .brand-lockup { width:160px; } .main-nav { gap:15px; } .hero { padding-top:78px; } .hero-grid,.detail-grid { grid-template-columns:1fr; gap:28px; } .benefit-grid { grid-template-columns:repeat(2,1fr); } .model-grid { grid-template-columns:repeat(2,1fr); } }
 @media(max-width:620px) { body { font-size:15px; } .header-inner,.footer-inner,.section-wrap { width:calc(100% - 32px); } .header-inner { min-height:62px; gap:12px; flex-wrap:wrap; padding:10px 0; } .brand-lockup { width:142px; } .main-nav { order:3; width:100%; overflow-x:auto; gap:20px; padding:2px 0 4px; } .main-nav a { white-space:nowrap; font-size:.82rem; } .theme-toggle { margin-left:auto; width:34px; height:34px; } .hero { padding:66px 0 48px; } h1 { font-size:clamp(2.5rem,12vw,3.7rem); } h2 { font-size:2.2rem; } .hero-grid { gap:24px; } .section { padding:36px 0; } .section-heading { display:block; } .section-heading p { margin-top:12px; } .benefit-grid,.model-grid,.panel-grid,.split,.faq,.timeline { grid-template-columns:1fr; } .benefit { min-height:0; } .benefit h3 { margin:16px 0 6px; } .panel,.price-card { padding:20px; } .form-grid { grid-template-columns:1fr; } .form-grid .full-width { grid-column:auto; } .footer-inner { align-items:flex-start; flex-direction:column; padding:24px 0; gap:10px; } .footer-inner nav { margin-left:0; gap:14px; } .step-list li { grid-template-columns:26px minmax(0,1fr); } .step-list .copy-button { grid-column:2; justify-self:start; } .page-top { padding-top:66px; } }
+
+html,body { max-width:100%; overflow-x:clip; }
+.section-wrap,.hero-grid>*,.panel,.price-card,.model-card,.tabs-card,.table-wrap { min-width:0; }
+.table-wrap { max-width:100%; }
+.code-block { display:block; width:100%; max-width:100%; white-space:pre-wrap; overflow-wrap:anywhere; overflow-x:auto; }
+.variant-cards { display:none; }
+.variant-card { padding:18px; }
+.variant-card dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:16px 0 0; }
+.variant-card dl>div { min-width:0; }
+.variant-card dt { color:var(--muted); font:500 .68rem var(--dm-font-mono); text-transform:uppercase; letter-spacing:.04em; }
+.variant-card dd { margin:4px 0 0; overflow-wrap:anywhere; font-size:.88rem; }
+.api-examples h4 { margin:20px 0 8px; font:600 .86rem var(--dm-font-text); }
+.ranked-model-grid { align-items:stretch; }
+.ranked-model-card { min-width:0; }
+.ranked-model-card h3 { overflow-wrap:anywhere; }
+.capability-score { color:var(--ink) !important; font-weight:600; }
+.hardware-chips { margin-top:auto; }
+.excluded-model-card { opacity:.58; background:var(--surface-soft); }
+.excluded-reason { font-size:.84rem !important; }
+.hardware-class { border-top:1px solid var(--line); }
+.class-composition { margin-bottom:16px; }
+.licence-card { padding:22px; }
+.licence-card h2 { font-size:1.75rem; }
+.licence-card ul { margin:12px 0; }
+.licence-price { margin:10px 0 2px; font-family:"Inter Tight",var(--dm-font-display); font-size:2.5rem; font-weight:600; line-height:1.05; }
+.trust-note { margin:16px 0; padding:12px 14px; border-left:3px solid var(--dm-emerald); background:var(--accent-wash); color:var(--ink) !important; font-size:1rem !important; }
+
+@media(max-width:767px) {
+  html,body { overflow-x:clip; }
+  .section-wrap,.header-inner,.footer-inner { width:calc(100% - 32px); }
+  .variant-table { display:none; }
+  .variant-cards { display:grid; gap:12px; }
+  .variant-card dl { grid-template-columns:1fr; }
+  .model-grid,.benefit-grid,.panel-grid,.split,.faq,.timeline { grid-template-columns:minmax(0,1fr); }
+  .table-wrap { overflow-x:auto; overscroll-behavior-inline:contain; }
+  .table-wrap table { min-width:680px; }
+  .tab-list { max-width:100%; scrollbar-width:thin; }
+  .tab-panel { padding:12px 14px 16px; }
+  .step-list li { grid-template-columns:26px minmax(0,1fr); }
+  .step-list li code { min-width:0; overflow-wrap:anywhere; }
+  .step-list .copy-button { grid-column:2; justify-self:start; }
+  .command-line { align-items:flex-start; flex-wrap:wrap; }
+  .command-line code { min-width:0; flex:1 1 100%; }
+}
