@@ -202,7 +202,103 @@
     "source": "data/jevbench-latest.json (p50_s_raw)"
    },
    "expected_speed": "About 61 ms p 50 per decision on the BH H 100 (raw, serial). Long inputs (61K+ tokens) are slower; see the author README. Provisioning class: H 100 80 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "min_vram_gb left null: no measured minimum in the files read. Not run by this slice. The readiness file records that the BH row still needs a current native admission, and that the per-type temperatures must stay exactly as published. Base google/gemma-4-26B-A4B-it @ 4d7ae498 (the two LoRA adapters are merged into these weights). Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. VRAM provisioning floor for unchanged BH recipe: H100 80 GB (recorded historical GPU). BF16 shards total 51.612 GB; FP8-on-load is about 25.806 GB before scales/unquantized components. max-model-len 98368, max-num-seqs 64 and max_num_batched_tokens 16384 leave a substantial KV/activation requirement. 80 GB conservatively retains the measured hardware class; a 48 GB short-context recipe was not verified. Exact minimum is not a measured fit threshold."
+   "notes": "min_vram_gb left null: no measured minimum in the files read. Not run by this slice. The readiness file records that the BH row still needs a current native admission, and that the per-type temperatures must stay exactly as published. Base google/gemma-4-26B-A4B-it @ 4d7ae498 (the two LoRA adapters are merged into these weights). Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. VRAM provisioning floor for unchanged BH recipe: H100 80 GB (recorded historical GPU). BF16 shards total 51.612 GB; FP8-on-load is about 25.806 GB before scales/unquantized components. max-model-len 98368, max-num-seqs 64 and max_num_batched_tokens 16384 leave a substantial KV/activation requirement. 80 GB conservatively retains the measured hardware class; a 48 GB short-context recipe was not verified. Exact minimum is not a measured fit threshold. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "vllm==0.30.0+cu129",
+     "torchcodec==0.16.0+cu129",
+     "numpy==2.3.5",
+     "scipy==1.18.1",
+     "fastapi==0.136.3",
+     "uvicorn==0.54.0",
+     "httpx==0.28.1",
+     "jinja2==3.1.6"
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "-m",
+       "bobcat.flash_server",
+       "--engine",
+       "vllm",
+       "--model",
+       "{weights}",
+       "--compiler-model",
+       "{weights}/compiler",
+       "--quantization",
+       "fp8",
+       "--temperature",
+       "choice=0.594604,noul=0.353553,score=0.529732",
+       "--name",
+       "bobcat-flash-1.2",
+       "--max-num-seqs",
+       "64",
+       "--max-model-len",
+       "98368",
+       "--engine-arg",
+       "max_num_batched_tokens=16384",
+       "--engine-arg",
+       "attention_backend=TRITON_ATTN",
+       "--identifiers",
+       "{weights}/bobcat-identifiers.json",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:api}",
+       "--local"
+      ],
+      "env": {
+       "VLLM_NO_USAGE_STATS": "1",
+       "VLLM_USE_FLASHINFER_SAMPLER": "0"
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1200
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "bobcat-flash-1.2",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia",
+      "wsl2-nvidia"
+     ],
+     "cuda_min": "12.9",
+     "gpu_arch_min": "sm_89"
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
+     "selftest": "not run"
+    },
+    "extra_index_urls": [
+     "https://wheels.vllm.ai/0.30.0/cu129",
+     "https://download.pytorch.org/whl/cu129"
+    ],
+    "index_strategy": "unsafe-best-match",
+    "code": [
+     {
+      "source": "github",
+      "repo": "foxl-ai/bobcat",
+      "revision": "43387a09bbc0310edcf57e2b21fa59ea81ac4166",
+      "sha256": "d51c5334754f7ceb263cc8c692b32f7aa5514b1f322c727e8d16793f14f8c2f6",
+      "dest": "code/author",
+      "pip_install": true
+     }
+    ]
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:40Z"

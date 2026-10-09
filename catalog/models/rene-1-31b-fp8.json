@@ -350,7 +350,67 @@
     "source": "data/jevbench-latest.json (p50_s_raw)"
    },
    "expected_speed": "About 0.11 s p 50 per decision on the BH card (raw, serial). Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "Weights are already FP8 on disk (33.3 GB total incl. trunk and head).  Serving path is BH's shim, so the installer would need its own loader. Not verified against a current native profile (readiness says a native admission is still required). Host RAM provisioning estimate: pinned weight files sum to 33.282 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 44 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. VRAM derivation: 33.282 GB pinned FP8 trunk/head weights; +25%=41.603 GB. Author README reports 39.3 GB allocated /44.5 GB reserved on B200, supporting a 48 GB L40S class for short requests. At 62,976 tokens it reports67.9 GB, so long inputs need80 GB+; retain recommended96 GB from the BH RTX PRO6000 recipe. Host RAM estimate42 GB rounded to44 GB; a48 GB host is preferable."
+   "notes": "Weights are already FP8 on disk (33.3 GB total incl. trunk and head).  Serving path is BH's shim, so the installer would need its own loader. Not verified against a current native profile (readiness says a native admission is still required). Host RAM provisioning estimate: pinned weight files sum to 33.282 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 44 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. VRAM derivation: 33.282 GB pinned FP8 trunk/head weights; +25%=41.603 GB. Author README reports 39.3 GB allocated /44.5 GB reserved on B200, supporting a 48 GB L40S class for short requests. At 62,976 tokens it reports67.9 GB, so long inputs need80 GB+; retain recommended96 GB from the BH RTX PRO6000 recipe. Host RAM estimate42 GB rounded to44 GB; a48 GB host is preferable. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.14.0",
+     "transformers==5.17.0",
+     "compressed-tensors==0.19.0",
+     "accelerate==1.15.0",
+     "safetensors==0.8.0",
+     "pillow==12.3.0",
+     "huggingface-hub==1.32.0"
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "rene",
+       "{weights}",
+       "{port:api}",
+       "127.0.0.1"
+      ],
+      "env": {},
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1200
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "rene-1-31b-fp8",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia",
+      "wsl2-nvidia"
+     ],
+     "cuda_min": "13.0",
+     "gpu_arch_min": "sm_89"
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
+     "selftest": "not run"
+    },
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "#!/usr/bin/env python3\n\"\"\"add-requests run 39: a loopback /v1/systemone shim around an author's OWN in-process entry point.\n\n    shim_r39.py rene  /root/w/hf/rene        PORT\n    shim_r39.py clef  /root/w/hf/clef-flash  PORT\n\nNo answer arithmetic of ours. The only translation is a type rename that the two contracts need:\n  rene: TypeSafe `noul` <-> Rene `yesno` (request: type renamed, instructions and criteria passed unchanged;\n        answer: Rene's `probability` = P(true) is returned as `noul`). choice/score go through untouched.\n        The TypeSafe `model` field is dropped (Rene validates it against its own id); nothing else is.\n  clef: the request body goes to the author's `systemone(model, processor, body)` unchanged, defaults unchanged.\nA request the model refuses (ValueError / its own contract error) is answered 422 = an honest miss, never retried.\nBinds 127.0.0.1 only. Single-threaded, one request at a time, as the harness sends them.\n\"\"\"\nfrom __future__ import annotations\n\nimport json\nimport sys\nimport time\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\nKIND, PATH, PORT = sys.argv[1], sys.argv[2], int(sys.argv[3])\nHOST = sys.argv[4]\nassert HOST == \"127.0.0.1\"\nSTATS = {\"requests\": 0, \"ok\": 0, \"refused\": 0, \"clef_hit_max_length\": 0}\n\nif KIND == \"rene\":\n    from transformers import AutoModel\n    MODEL = AutoModel.from_pretrained(PATH, trust_remote_code=True, device_map=\"auto\")\n\n    def answer(body: dict) -> dict:\n        req = {\"state\": body[\"state\"], \"questions\": {}}\n        for k, q in body[\"questions\"].items():\n            q = dict(q)\n            if q.get(\"type\") == \"noul\":\n                q[\"type\"] = \"yesno\"\n            req[\"questions\"][k] = q\n        resp = MODEL.respond(req)\n        out = {}\n        for k, a in resp[\"answers\"].items():\n            if a.get(\"type\") == \"yesno\":\n                out[k] = {\"type\": \"noul\", \"noul\": a[\"probability\"]}\n            else:\n                out[k] = a\n        return {\"model\": resp.get(\"model\", \"rene-1-31b-fp8\"), \"answers\": out, \"usage\": resp.get(\"usage\", {})}\n\nelif KIND == \"clef\":\n    sys.path.insert(0, PATH)\n    from joint_schema_model import load_release_model, systemone\n    MODEL, PROC = load_release_model(PATH, device=\"cuda\")\n\n    def answer(body: dict) -> dict:\n        resp = systemone(MODEL, PROC, body)\n        if resp.get(\"usage\", {}).get(\"input_tokens\") == 16384:   # the author's default max_length: state was cut\n            STATS[\"clef_hit_max_length\"] += 1\n        return resp\nelse:\n    raise SystemExit(f\"unknown kind {KIND}\")\n\n\nclass H(BaseHTTPRequestHandler):\n    def log_message(self, *a):  # quiet\n        pass\n\n    def _send(self, code: int, obj: dict) -> None:\n        b = json.dumps(obj).encode()\n        self.send_response(code)\n        self.send_header(\"content-type\", \"application/json\")\n        self.send_header(\"content-length\", str(len(b)))\n        self.end_headers()\n        self.wfile.write(b)\n\n    def do_GET(self):\n        if self.path == \"/health\":\n            self._send(200, {\"status\": \"ready\", \"kind\": KIND, \"path\": PATH, **STATS})\n        else:\n            self._send(404, {\"detail\": \"not found\"})\n\n    def do_POST(self):\n        if self.path != \"/v1/systemone\":\n            return self._send(404, {\"detail\": \"not found\"})\n        STATS[\"requests\"] += 1\n        try:\n            body = json.loads(self.rfile.read(int(self.headers.get(\"content-length\", 0))))\n            out = answer(body)\n        except (ValueError, TypeError, KeyError) as exc:\n            STATS[\"refused\"] += 1\n            return self._send(422, {\"detail\": f\"{type(exc).__name__}: {str(exc)[:300]}\"})\n        STATS[\"ok\"] += 1\n        self._send(200, out)\n\n\nif __name__ == \"__main__\":\n    print(f\"SHIM_READY kind={KIND} port={PORT} t={time.time():.0f}\", flush=True)\n    HTTPServer((HOST, PORT), H).serve_forever()\n",
+      "sha256": "6c482d97df17f75b02d44f0d37536f2e8fd73f39dffa7a49b146ec2c3f254185"
+     }
+    ]
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:40Z"

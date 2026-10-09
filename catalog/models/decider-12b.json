@@ -154,7 +154,83 @@
     "source": "data/jevbench-latest.json (p50_s_raw)"
    },
    "expected_speed": "About 54 ms p 50 per decision (raw, serial) on the BH card. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "min_vram_gb 60 from BH meta.json; recommended 96 is the BH card. The v1 revision decider-12b-v1 (Mapika/decider-12b @ 09e9e338, stock Gemma-4-12B-it, separate row) is NOT in this catalog entry; it is a separate BH row with its own readiness status. Weights 23.9 GB bf16. Host RAM provisioning estimate: pinned weight files sum to 23.920 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 32 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "notes": "min_vram_gb 60 from BH meta.json; recommended 96 is the BH card. The v1 revision decider-12b-v1 (Mapika/decider-12b @ 09e9e338, stock Gemma-4-12B-it, separate row) is NOT in this catalog entry; it is a separate BH row with its own readiness status. Weights 23.9 GB bf16. Host RAM provisioning estimate: pinned weight files sum to 23.920 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 32 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.14.1+cu130",
+     "transformers==5.18.0",
+     "flash-linear-attention==0.5.2",
+     "numpy==2.5.3",
+     "huggingface-hub==1.32.0",
+     "jinja2==3.1.6",
+     "fastapi==0.136.3",
+     "uvicorn==0.54.0",
+     "httpx==0.28.1",
+     "pillow==12.3.0",
+     "accelerate==1.15.0"
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "-m",
+       "uvicorn",
+       "decider.serve:app",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:api}"
+      ],
+      "env": {
+       "DECIDER_MODEL": "{weights}",
+       "DECIDER_DEVICE": "cuda"
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1200
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "jev-latest",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia",
+      "wsl2-nvidia"
+     ],
+     "cuda_min": "13.0",
+     "gpu_arch_min": "sm_80"
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
+     "selftest": "not run"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "Mapika/decider",
+      "revision": "45024082b7d4bb667bf9140b7a7c073d3b483f6b",
+      "sha256": "b3ced86dbee79c292628ca15dfce3401309f4a7de9e770ea3dd907480078b816",
+      "dest": "code/author",
+      "pip_install": true
+     }
+    ],
+    "extra_index_urls": [
+     "https://download.pytorch.org/whl/cu130"
+    ],
+    "index_strategy": "unsafe-best-match"
+   }
   },
   {
    "id": "fp32-torch-cpu",
@@ -233,7 +309,84 @@
    },
    "measured": null,
    "expected_speed": "Estimate only: a 12B FP 32 CPU prefill may take tens of seconds for 300–1500 tokens; strongly dependent on memory bandwidth/vector support. No CPU timing/parity measured.",
-   "notes": "Unmodified author server supports CPU FP32 and Apple MPS FP16 via DECIDER_DEVICE; these are not BF16 variants. https://raw.githubusercontent.com/Mapika/decider/45024082b7d4bb667bf9140b7a7c073d3b483f6b/decider/serve.py L77: DEVICE = os.environ.get(\"DECIDER_DEVICE\", \"auto\")                          # auto | cuda[:i] | mps | cpu; L382: dev = \"cuda\" if torch.cuda.is_available() else (\"mps\" if torch.backends.mps.is_available() else \"cpu\"); L396: return dev, default_dtype(dev); L419: if WARMUP and eng.use_graphs:                   # off CUDA there are no graphs to capture; every request runs eager. https://raw.githubusercontent.com/Mapika/decider/45024082b7d4bb667bf9140b7a7c073d3b483f6b/decider/infer.py L73: return torch.float16 if d.startswith(\"mps\") else (torch.float32 if d.startswith(\"cpu\") else torch.bfloat16). Disable FP8/compile and schema preload off CUDA; EngineV2 L51 disables CUDA graphs off CUDA, and the startup warmup is guarded. Author custom in-process model/head readout is not backend-agnostic. About 23.920 GB BF16/FP16 weights; CPU FP32 doubles them before activations. Memory estimate: 23.920 GB downloaded weights × 2 for fp32 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified."
+   "notes": "Unmodified author server supports CPU FP32 and Apple MPS FP16 via DECIDER_DEVICE; these are not BF16 variants. https://raw.githubusercontent.com/Mapika/decider/45024082b7d4bb667bf9140b7a7c073d3b483f6b/decider/serve.py L77: DEVICE = os.environ.get(\"DECIDER_DEVICE\", \"auto\")                          # auto | cuda[:i] | mps | cpu; L382: dev = \"cuda\" if torch.cuda.is_available() else (\"mps\" if torch.backends.mps.is_available() else \"cpu\"); L396: return dev, default_dtype(dev); L419: if WARMUP and eng.use_graphs:                   # off CUDA there are no graphs to capture; every request runs eager. https://raw.githubusercontent.com/Mapika/decider/45024082b7d4bb667bf9140b7a7c073d3b483f6b/decider/infer.py L73: return torch.float16 if d.startswith(\"mps\") else (torch.float32 if d.startswith(\"cpu\") else torch.bfloat16). Disable FP8/compile and schema preload off CUDA; EngineV2 L51 disables CUDA graphs off CUDA, and the startup warmup is guarded. Author custom in-process model/head readout is not backend-agnostic. About 23.920 GB BF16/FP16 weights; CPU FP32 doubles them before activations. Memory estimate: 23.920 GB downloaded weights × 2 for fp32 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.14.1+cpu",
+     "transformers==5.18.0",
+     "flash-linear-attention==0.5.2",
+     "numpy==2.5.3",
+     "huggingface-hub==1.32.0",
+     "jinja2==3.1.6",
+     "fastapi==0.136.3",
+     "uvicorn==0.54.0",
+     "httpx==0.28.1",
+     "pillow==12.3.0",
+     "accelerate==1.15.0"
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "-m",
+       "uvicorn",
+       "decider.serve:app",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:api}"
+      ],
+      "env": {
+       "DECIDER_MODEL": "{weights}",
+       "DECIDER_DEVICE": "cpu",
+       "DECIDER_FP8": "0",
+       "DECIDER_COMPILE": "0",
+       "DECIDER_SCHEMAS": ""
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1200
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "jev-latest",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-cpu",
+      "windows-cpu"
+     ]
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
+     "selftest": "not run"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "Mapika/decider",
+      "revision": "45024082b7d4bb667bf9140b7a7c073d3b483f6b",
+      "sha256": "b3ced86dbee79c292628ca15dfce3401309f4a7de9e770ea3dd907480078b816",
+      "dest": "code/author",
+      "pip_install": true
+     }
+    ],
+    "extra_index_urls": [
+     "https://download.pytorch.org/whl/cpu"
+    ],
+    "index_strategy": "unsafe-best-match"
+   }
   },
   {
    "id": "fp16-torch-mps",
@@ -311,7 +464,79 @@
    },
    "measured": null,
    "expected_speed": "Estimate only: a recent 48 GB+ M-series Mac may take roughly 1–15 s for a 300–1500-token prefill of the 12B FP 16 model. No MPS timing/parity measured.",
-   "notes": "Unmodified author server supports CPU FP32 and Apple MPS FP16 via DECIDER_DEVICE; these are not BF16 variants. https://raw.githubusercontent.com/Mapika/decider/45024082b7d4bb667bf9140b7a7c073d3b483f6b/decider/serve.py L77: DEVICE = os.environ.get(\"DECIDER_DEVICE\", \"auto\")                          # auto | cuda[:i] | mps | cpu; L382: dev = \"cuda\" if torch.cuda.is_available() else (\"mps\" if torch.backends.mps.is_available() else \"cpu\"); L396: return dev, default_dtype(dev); L419: if WARMUP and eng.use_graphs:                   # off CUDA there are no graphs to capture; every request runs eager. https://raw.githubusercontent.com/Mapika/decider/45024082b7d4bb667bf9140b7a7c073d3b483f6b/decider/infer.py L73: return torch.float16 if d.startswith(\"mps\") else (torch.float32 if d.startswith(\"cpu\") else torch.bfloat16). Disable FP8/compile and schema preload off CUDA; EngineV2 L51 disables CUDA graphs off CUDA, and the startup warmup is guarded. Author custom in-process model/head readout is not backend-agnostic. About 23.920 GB BF16/FP16 weights; CPU FP32 doubles them before activations. Memory estimate: 23.920 GB downloaded weights × 1 for fp16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac."
+   "notes": "Unmodified author server supports CPU FP32 and Apple MPS FP16 via DECIDER_DEVICE; these are not BF16 variants. https://raw.githubusercontent.com/Mapika/decider/45024082b7d4bb667bf9140b7a7c073d3b483f6b/decider/serve.py L77: DEVICE = os.environ.get(\"DECIDER_DEVICE\", \"auto\")                          # auto | cuda[:i] | mps | cpu; L382: dev = \"cuda\" if torch.cuda.is_available() else (\"mps\" if torch.backends.mps.is_available() else \"cpu\"); L396: return dev, default_dtype(dev); L419: if WARMUP and eng.use_graphs:                   # off CUDA there are no graphs to capture; every request runs eager. https://raw.githubusercontent.com/Mapika/decider/45024082b7d4bb667bf9140b7a7c073d3b483f6b/decider/infer.py L73: return torch.float16 if d.startswith(\"mps\") else (torch.float32 if d.startswith(\"cpu\") else torch.bfloat16). Disable FP8/compile and schema preload off CUDA; EngineV2 L51 disables CUDA graphs off CUDA, and the startup warmup is guarded. Author custom in-process model/head readout is not backend-agnostic. About 23.920 GB BF16/FP16 weights; CPU FP32 doubles them before activations. Memory estimate: 23.920 GB downloaded weights × 1 for fp16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac. Install recipe requires macOS 14 or newer for the pinned official PyTorch wheel; model/operator parity on MPS remains unverified. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.14.1",
+     "transformers==5.18.0",
+     "flash-linear-attention==0.5.2",
+     "numpy==2.5.3",
+     "huggingface-hub==1.32.0",
+     "jinja2==3.1.6",
+     "fastapi==0.136.3",
+     "uvicorn==0.54.0",
+     "httpx==0.28.1",
+     "pillow==12.3.0",
+     "accelerate==1.15.0"
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "-m",
+       "uvicorn",
+       "decider.serve:app",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:api}"
+      ],
+      "env": {
+       "DECIDER_MODEL": "{weights}",
+       "DECIDER_DEVICE": "mps",
+       "DECIDER_FP8": "0",
+       "DECIDER_COMPILE": "0",
+       "DECIDER_SCHEMAS": ""
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1200
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "jev-latest",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "macos-arm64"
+     ]
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
+     "selftest": "not run"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "Mapika/decider",
+      "revision": "45024082b7d4bb667bf9140b7a7c073d3b483f6b",
+      "sha256": "b3ced86dbee79c292628ca15dfce3401309f4a7de9e770ea3dd907480078b816",
+      "dest": "code/author",
+      "pip_install": true
+     }
+    ]
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:40Z"

@@ -174,7 +174,82 @@
     "source": "data/jevbench-latest.json (p50_s_raw)"
    },
    "expected_speed": "About 0.12 s p 50 per decision on the BH RTX PRO 6000 (serial, raw). Expect roughly 0.1-0.2 s per decision on a similar 96 GB card; not measured elsewhere. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "BH measured on RTX PRO 6000 (v1.5 fast-lane run was H100). min_vram_gb 70 is BH meta.json; recommended 96 is the BH card. 62.6 GB of bf16 weights on disk. Not a server: the installer needs the quyet package, not a stock vLLM server. Host RAM provisioning estimate: pinned weight files sum to 62.546 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 80 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "notes": "BH measured on RTX PRO 6000 (v1.5 fast-lane run was H100). min_vram_gb 70 is BH meta.json; recommended 96 is the BH card. 62.6 GB of bf16 weights on disk. Not a server: the installer needs the quyet package, not a stock vLLM server. Host RAM provisioning estimate: pinned weight files sum to 62.546 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 80 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.13.0+cu130",
+     "transformers==5.17.0",
+     "safetensors==0.8.0",
+     "huggingface-hub==1.32.0",
+     "numpy==2.5.3",
+     "pillow==12.3.0",
+     "torchvision==0.28.0+cu130"
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "{code:code/author}",
+       "{weights}",
+       "cuda",
+       "{port:api}",
+       "127.0.0.1"
+      ],
+      "env": {},
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1200
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "chinhnc/Quyet-1.0-Large",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia",
+      "wsl2-nvidia"
+     ],
+     "cuda_min": "13.0",
+     "gpu_arch_min": "sm_80"
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
+     "selftest": "not run"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "ncchinh/quyet",
+      "revision": "f9bddb97bf0e39c8c965a85c0c6c5d1295224b6a",
+      "sha256": "cdef11e30d68e0c63305f877247b64e2a96ab23c2fbc824d7f25b5a83017453f",
+      "dest": "code/author",
+      "pip_install": false
+     }
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"dm-local transport for quyet 1.0.0; native readout is unchanged.\"\"\"\nimport json\nimport sys\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\nsys.path.insert(0, sys.argv[1] + \"/src\")\nimport quyet\nfrom quyet.errors import QuestionError\nif quyet.__version__ != \"1.0.0\":\n    raise RuntimeError(\"expected quyet 1.0.0\")\nmodel = quyet.load(sys.argv[2], device=sys.argv[3])\nfor _ in range(3):\n    model.predict(\"warm-up\", {\"decision\": {\"type\": \"noul\", \"instructions\": \"Is this a warm-up?\", \"criteria\": {\"true\": \"yes\", \"false\": \"no\"}}})\nclass Handler(BaseHTTPRequestHandler):\n    def log_message(self, *args):\n        pass\n    def send(self, status, body):\n        raw = json.dumps(body).encode()\n        self.send_response(status)\n        self.send_header(\"Content-Type\", \"application/json\")\n        self.send_header(\"Content-Length\", str(len(raw)))\n        self.end_headers()\n        self.wfile.write(raw)\n    def do_GET(self):\n        self.send(200, {\"status\": \"ready\"}) if self.path == \"/health\" else self.send(404, {\"detail\": \"not found\"})\n    def do_POST(self):\n        if self.path != \"/v1/systemone\":\n            return self.send(404, {\"detail\": \"not found\"})\n        try:\n            body = json.loads(self.rfile.read(int(self.headers.get(\"Content-Length\", \"0\"))))\n            state, questions = body[\"state\"], body[\"questions\"]\n        except (ValueError, TypeError, KeyError) as exc:\n            return self.send(422, {\"detail\": str(exc)[:300]})\n        try:\n            out = model.predict(state, questions)\n        except QuestionError as exc:\n            return self.send(422, {\"detail\": str(exc)[:300]})\n        except Exception as exc:\n            return self.send(500, {\"detail\": type(exc).__name__})\n        self.send(200, out)\nassert sys.argv[5] == \"127.0.0.1\"\nHTTPServer((sys.argv[5], int(sys.argv[4])), Handler).serve_forever()\n",
+      "sha256": "c81323e8a7761fb20f32a71c3d1e339078c1d575eca4d0c7938c286b3be109a8"
+     }
+    ],
+    "extra_index_urls": [
+     "https://download.pytorch.org/whl/cu130"
+    ],
+    "index_strategy": "unsafe-best-match"
+   }
   },
   {
    "id": "bf16-torch-mps",
@@ -270,7 +345,75 @@
    },
    "measured": null,
    "expected_speed": "Estimate only: expect several seconds to tens of seconds per 300–1500-token prefill on a 96 GB+ M-series Mac for a 31B model. No Mac timing/parity measured.",
-   "notes": "The unmodified author library/CLI accepts CPU or MPS and keeps BF16 in its LLM loader: https://raw.githubusercontent.com/ncchinh/quyet/f9bddb97bf0e39c8c965a85c0c6c5d1295224b6a/src/quyet/cli.py L18: p.add_argument(\"--device\", help=\"cpu, cuda, cuda:1, ... (default: cuda if available)\"); L21: model = load(a.model, device=a.device). https://raw.githubusercontent.com/ncchinh/quyet/f9bddb97bf0e39c8c965a85c0c6c5d1295224b6a/src/quyet/llm/runtime.py L22: dtype = dtype or torch.bfloat16; L29: model = model.to(device). 31B CPU execution is technically selectable but not practical; no CPU installer variant is offered. BF16 62.546 GB +25% =78.18 GB (~72.8 GiB), so a 64 GB Mac cannot fit; only a 96 GB+ Mac candidate is added, unbenchmarked. Readout is in-process and requires its calibrated label probabilities; backend_agnostic=false. Memory estimate: 62.546 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac."
+   "notes": "The unmodified author library/CLI accepts CPU or MPS and keeps BF16 in its LLM loader: https://raw.githubusercontent.com/ncchinh/quyet/f9bddb97bf0e39c8c965a85c0c6c5d1295224b6a/src/quyet/cli.py L18: p.add_argument(\"--device\", help=\"cpu, cuda, cuda:1, ... (default: cuda if available)\"); L21: model = load(a.model, device=a.device). https://raw.githubusercontent.com/ncchinh/quyet/f9bddb97bf0e39c8c965a85c0c6c5d1295224b6a/src/quyet/llm/runtime.py L22: dtype = dtype or torch.bfloat16; L29: model = model.to(device). 31B CPU execution is technically selectable but not practical; no CPU installer variant is offered. BF16 62.546 GB +25% =78.18 GB (~72.8 GiB), so a 64 GB Mac cannot fit; only a 96 GB+ Mac candidate is added, unbenchmarked. Readout is in-process and requires its calibrated label probabilities; backend_agnostic=false. Memory estimate: 62.546 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac. Install recipe requires macOS 14 or newer for the pinned official PyTorch wheel; model/operator parity on MPS remains unverified. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.13.0",
+     "transformers==5.17.0",
+     "safetensors==0.8.0",
+     "huggingface-hub==1.32.0",
+     "numpy==2.5.3",
+     "pillow==12.3.0",
+     "torchvision==0.28.0"
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "{code:code/author}",
+       "{weights}",
+       "mps",
+       "{port:api}",
+       "127.0.0.1"
+      ],
+      "env": {},
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1200
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "chinhnc/Quyet-1.0-Large",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "macos-arm64"
+     ]
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
+     "selftest": "not run"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "ncchinh/quyet",
+      "revision": "f9bddb97bf0e39c8c965a85c0c6c5d1295224b6a",
+      "sha256": "cdef11e30d68e0c63305f877247b64e2a96ab23c2fbc824d7f25b5a83017453f",
+      "dest": "code/author",
+      "pip_install": false
+     }
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"dm-local transport for quyet 1.0.0; native readout is unchanged.\"\"\"\nimport json\nimport sys\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\nsys.path.insert(0, sys.argv[1] + \"/src\")\nimport quyet\nfrom quyet.errors import QuestionError\nif quyet.__version__ != \"1.0.0\":\n    raise RuntimeError(\"expected quyet 1.0.0\")\nmodel = quyet.load(sys.argv[2], device=sys.argv[3])\nfor _ in range(3):\n    model.predict(\"warm-up\", {\"decision\": {\"type\": \"noul\", \"instructions\": \"Is this a warm-up?\", \"criteria\": {\"true\": \"yes\", \"false\": \"no\"}}})\nclass Handler(BaseHTTPRequestHandler):\n    def log_message(self, *args):\n        pass\n    def send(self, status, body):\n        raw = json.dumps(body).encode()\n        self.send_response(status)\n        self.send_header(\"Content-Type\", \"application/json\")\n        self.send_header(\"Content-Length\", str(len(raw)))\n        self.end_headers()\n        self.wfile.write(raw)\n    def do_GET(self):\n        self.send(200, {\"status\": \"ready\"}) if self.path == \"/health\" else self.send(404, {\"detail\": \"not found\"})\n    def do_POST(self):\n        if self.path != \"/v1/systemone\":\n            return self.send(404, {\"detail\": \"not found\"})\n        try:\n            body = json.loads(self.rfile.read(int(self.headers.get(\"Content-Length\", \"0\"))))\n            state, questions = body[\"state\"], body[\"questions\"]\n        except (ValueError, TypeError, KeyError) as exc:\n            return self.send(422, {\"detail\": str(exc)[:300]})\n        try:\n            out = model.predict(state, questions)\n        except QuestionError as exc:\n            return self.send(422, {\"detail\": str(exc)[:300]})\n        except Exception as exc:\n            return self.send(500, {\"detail\": type(exc).__name__})\n        self.send(200, out)\nassert sys.argv[5] == \"127.0.0.1\"\nHTTPServer((sys.argv[5], int(sys.argv[4])), Handler).serve_forever()\n",
+      "sha256": "c81323e8a7761fb20f32a71c3d1e339078c1d575eca4d0c7938c286b3be109a8"
+     }
+    ]
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:40Z"

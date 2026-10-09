@@ -161,7 +161,90 @@
     "source": "data/jevbench-latest.json (p50_s_raw)"
    },
    "expected_speed": "About 37 ms p 50 per decision (raw, serial) on the BH card. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "min_vram_gb 40 from BH meta.json; recommended 96 is the BH card. Weights 23.9 GB bf16. Non-commercial only: the installer may only offer it under that label. Host RAM provisioning estimate: pinned weight files sum to 23.920 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 32 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "notes": "min_vram_gb 40 from BH meta.json; recommended 96 is the BH card. Weights 23.9 GB bf16. Non-commercial only: the installer may only offer it under that label. Host RAM provisioning estimate: pinned weight files sum to 23.920 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 32 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "vllm==0.30.0+cu129",
+     "torchcodec==0.16.0+cu129"
+    ],
+    "processes": [
+     {
+      "name": "engine",
+      "command": [
+       "{python}",
+       "-m",
+       "vllm.entrypoints.cli.main",
+       "serve",
+       "{weights}",
+       "--served-model-name",
+       "torchcast-decision-12b",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:engine}",
+       "--max-model-len",
+       "16384",
+       "--gpu-memory-utilization",
+       "0.90"
+      ],
+      "env": {
+       "VLLM_NO_USAGE_STATS": "1",
+       "VLLM_USE_FLASHINFER_SAMPLER": "0"
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:engine}/health",
+       "timeout_s": 1200
+      }
+     },
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{weights}/torchcast_shim.py"
+      ],
+      "env": {
+       "SHIM_VLLM": "http://127.0.0.1:{port:engine}/v1/chat/completions",
+       "SHIM_MODEL": "torchcast-decision-12b",
+       "SHIM_PORT": "{port:api}",
+       "SHIM_HOST": "127.0.0.1"
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 120
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "torchcast-decision-12b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia",
+      "wsl2-nvidia"
+     ],
+     "cuda_min": "12.9",
+     "gpu_arch_min": "sm_80"
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
+     "selftest": "not run"
+    },
+    "extra_index_urls": [
+     "https://wheels.vllm.ai/0.30.0/cu129",
+     "https://download.pytorch.org/whl/cu129"
+    ],
+    "index_strategy": "unsafe-best-match"
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:41Z"

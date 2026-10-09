@@ -238,7 +238,104 @@
     "source": "data/jevbench-latest.json (p50_s_raw)"
    },
    "expected_speed": "About 0.12 s p 50 per decision (raw, serial) on the BH measurement; the GPU for that row is UNVERIFIED. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "Benchmarked revision bd4a7cbb is the revision the intake recipe and the Decision Index ranked; the v1.6 row's own revision record was not located, and bd4a7cbb and c6b360d4 differ only in README (per PINS). min_vram_gb 80 is from the rtxpro6000-a2 candidate meta.json; recommended 96 is the intake card. The recipe is \"READY\" per the intake VERDICT but the rtxpro6000-a2 variant is candidate, not accepted. Shard and tokenizer sha256 values are from the intake PINS.sha256; the HF tree API returned masked LFS oids for this gated repo, so they are not independently re-checked here. Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. The engine creates a separate converted cache at first launch: budget roughly a second model-sized copy (~52 GB) plus runtime installation, above the original disk_gb weight download estimate."
+   "notes": "Benchmarked revision bd4a7cbb is the revision the intake recipe and the Decision Index ranked; the v1.6 row's own revision record was not located, and bd4a7cbb and c6b360d4 differ only in README (per PINS). min_vram_gb 80 is from the rtxpro6000-a2 candidate meta.json; recommended 96 is the intake card. The recipe is \"READY\" per the intake VERDICT but the rtxpro6000-a2 variant is candidate, not accepted. Shard and tokenizer sha256 values are from the intake PINS.sha256; the HF tree API returned masked LFS oids for this gated repo, so they are not independently re-checked here. Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. The engine creates a separate converted cache at first launch: budget roughly a second model-sized copy (~52 GB) plus runtime installation, above the original disk_gb weight download estimate. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.11.0+cu130",
+     "torchvision==0.26.0+cu130",
+     "transformers==5.19.0",
+     "surogate @ https://github.com/invergent-ai/surogate/releases/download/v1.5.3/surogate-1.5.3%2Bcu130-cp312-abi3-manylinux_2_39_x86_64.whl#sha256=587f2c5a92c682a9210122d6abb16bf578412a14768ee4c114a81820b78caab4"
+    ],
+    "processes": [
+     {
+      "name": "engine",
+      "command": [
+       "{python}",
+       "{support_dir}/launch.py",
+       "serve",
+       "{weights}",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:engine}",
+       "--max-model-len",
+       "32768",
+       "--max-num-seqs",
+       "8",
+       "--kv-capacity",
+       "auto",
+       "--decision-temperature",
+       "2",
+       "--served-model-name",
+       "surogate/rune-26b-a4b-GGUF"
+      ],
+      "env": {
+       "SUROGATE_SERVE_CACHE": "{state}/surogate-cache",
+       "WANDB_DISABLED": "true",
+       "WANDB_MODE": "disabled"
+      },
+      "cwd": "{support_dir}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:engine}/health",
+       "timeout_s": 1200
+      }
+     },
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "http://127.0.0.1:{port:engine}",
+       "{port:api}"
+      ],
+      "env": {},
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 120
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "surogate/rune-26b-a4b-GGUF",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia"
+     ],
+     "cuda_min": "13.0",
+     "glibc_min": "2.39",
+     "gpu_arch_min": "sm_120"
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
+     "selftest": "not run"
+    },
+    "extra_index_urls": [
+     "https://download.pytorch.org/whl/cu130"
+    ],
+    "index_strategy": "unsafe-best-match",
+    "support_files": [
+     {
+      "path": "launch.py",
+      "content": "\"\"\"Set the same NVIDIA library search path as the BH Rune serve.sh, then exec author CLI.\"\"\"\nimport glob\nimport os\nimport site\nimport sys\nfrom pathlib import Path\nlibs = []\nfor root in site.getsitepackages():\n    libs.extend(sorted(p for p in glob.glob(root + \"/nvidia/*/lib\") if os.path.isdir(p)))\n    cu13 = root + \"/nvidia/cu13/lib\"\n    if os.path.isdir(cu13) and cu13 not in libs:\n        libs.append(cu13)\nif os.environ.get(\"LD_LIBRARY_PATH\"):\n    libs.append(os.environ[\"LD_LIBRARY_PATH\"])\nos.environ[\"LD_LIBRARY_PATH\"] = \":\".join(libs)\ncli = str(Path(sys.executable).parent / \"surogate\")\nos.execv(sys.executable, [sys.executable, cli, *sys.argv[1:]])\n",
+      "sha256": "dc476b9b8405a02944eac9f98edad3540588fb83f1d41991e52e78e4738c3f00"
+     },
+     {
+      "path": "server.py",
+      "content": "#!/usr/bin/env python3\n\"\"\"Loopback path translator in front of the author's surogate engine (JevBench intake wave m6, Rune v3 text track).\n\nThe engine's decisions v1 endpoint (POST /v1/decisions; docs/inference/decisions.md) takes exactly the TypeSafe request that\nJevBench's unchanged `typesafe` adapter sends ({model, state, questions: {name: {type, instructions, criteria}}}) and answers\nin the TypeSafe shape the adapter reads (answers.<name>: noul = P(true); choice + probabilities keyed by option key; score +\nprobabilities keyed \"0\"..\"k-1\"; usage.input_tokens). Only the path differs (/v1/systemone). This proxy forwards the body\nbyte-for-byte to /v1/decisions and returns the engine's answer byte-for-byte; it changes nothing else. An HTTP 400 (the\nengine's refusal of a malformed or over-long request) is returned as 422 (a wrong answer under the harness stop rule); every\nother status passes through. GET /health mirrors the engine's /health. Standard library only; binds 127.0.0.1; logs no\nrequest content.\n\"\"\"\nfrom __future__ import annotations\n\nimport sys\nimport urllib.error\nimport urllib.request\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\nUPSTREAM = sys.argv[1].rstrip(\"/\")   # the engine on loopback, e.g. http://127.0.0.1:8000\nPORT = int(sys.argv[2])\n\n\ndef forward(method: str, path: str, data: bytes | None) -> tuple[int, bytes]:\n    req = urllib.request.Request(UPSTREAM + path, data=data, method=method,\n                                 headers={\"Content-Type\": \"application/json\"} if data is not None else {})\n    try:\n        with urllib.request.urlopen(req, timeout=300) as resp:\n            return resp.status, resp.read()\n    except urllib.error.HTTPError as exc:\n        return exc.code, exc.read()\n\n\nclass Handler(BaseHTTPRequestHandler):\n    protocol_version = \"HTTP/1.0\"\n\n    def log_message(self, *args):  # no request lines, no bodies\n        pass\n\n    def _send(self, code: int, data: bytes) -> None:\n        self.send_response(code)\n        self.send_header(\"Content-Type\", \"application/json\")\n        self.send_header(\"Content-Length\", str(len(data)))\n        self.end_headers()\n        self.wfile.write(data)\n\n    def do_GET(self):\n        if self.path != \"/health\":\n            return self._send(404, b'{\"error\": \"not found\"}')\n        try:\n            return self._send(*forward(\"GET\", \"/health\", None))\n        except Exception:  # noqa: BLE001 - not ready yet\n            return self._send(503, b'{\"ok\": false}')\n\n    def do_POST(self):\n        if self.path != \"/v1/systemone\":\n            return self._send(404, b'{\"error\": \"not found\"}')\n        body = self.rfile.read(int(self.headers.get(\"Content-Length\", 0)))\n        try:\n            status, data = forward(\"POST\", \"/v1/decisions\", body)\n        except Exception:  # noqa: BLE001 - engine unreachable\n            return self._send(502, b'{\"error\": \"engine unreachable\"}')\n        self._send(422 if status == 400 else status, data)\n\n\nif __name__ == \"__main__\":\n    print(\"SUROGATE_PROXY_READY\", flush=True)\n    HTTPServer((\"127.0.0.1\", PORT), Handler).serve_forever()\n",
+      "sha256": "ec0f6fc98e7c8f8b94007ca7047f74e5d64b3fbfa8b6efdecf4b70bcfff1cc9c"
+     }
+    ]
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:41Z"
