@@ -25,11 +25,9 @@ from dmlocal.runtimes.llamacpp import _safe_extract_tar as _safe_extract_llamacp
 from tests.helpers import model_with_variants, variant
 
 
-def _http_server_script(dependency=None):
-    dep = ""
-    if dependency is not None:
-        dep = f"urllib.request.urlopen('http://127.0.0.1:{dependency}/health', timeout=3).read()\n"
-    return "import urllib.request\n" + dep + """from http.server import BaseHTTPRequestHandler, HTTPServer
+def _http_server_script(check_dependency=False):
+    dep = "urllib.request.urlopen(f'http://127.0.0.1:{sys.argv[2]}/health', timeout=3).read()\n" if check_dependency else ""
+    return "import sys\nimport urllib.request\n" + dep + """from http.server import BaseHTTPRequestHandler, HTTPServer
 import sys
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -165,7 +163,7 @@ class RecipeRuntimeTests(unittest.TestCase):
                 "processes": [
                     {"name": "engine", "command": [sys.executable, "-c", _http_server_script(), "{port:engine}"],
                      "ready": {"url": "http://127.0.0.1:{port:engine}/health", "timeout_s": 8}},
-                    {"name": "api", "command": [sys.executable, "-c", _http_server_script("{port:engine}"), "{port:api}", "{port:engine}"],
+                    {"name": "api", "command": [sys.executable, "-c", _http_server_script(check_dependency=True), "{port:api}", "{port:engine}"],
                      "ready": {"url": "http://127.0.0.1:{port:api}/health", "timeout_s": 8}},
                 ],
                 "api": {"mode": "proxy_jev", "port": "api", "text_path": "/v1/systemone", "image_path": None,
@@ -177,20 +175,23 @@ class RecipeRuntimeTests(unittest.TestCase):
             candidate["install"] = recipe
             runtime = RecipeRuntime(model, candidate, root)
             runtime.ports = allocate_ports(root, model["slug"], recipe)
-            result = runtime.start()
-            self.assertEqual(result["started"], ["dm-local-fixture-model-engine", "dm-local-fixture-model-api"])
-            self.assertTrue(runtime.all_ready())
-            stopped = []
-            from dmlocal.runtimes import recipe as recipe_module
-            original_stop = recipe_module.stop_process
-            def record_stop(state_root, name, timeout=20):
-                stopped.append(name)
-                return original_stop(state_root, name, timeout)
-            with patch.object(recipe_module, "stop_process", side_effect=record_stop):
+            try:
+                result = runtime.start()
+                self.assertEqual(result["started"], ["dm-local-fixture-model-engine", "dm-local-fixture-model-api"])
+                self.assertTrue(runtime.all_ready())
+                stopped = []
+                from dmlocal.runtimes import recipe as recipe_module
+                original_stop = recipe_module.stop_process
+                def record_stop(state_root, name, timeout=20):
+                    stopped.append(name)
+                    return original_stop(state_root, name, timeout)
+                with patch.object(recipe_module, "stop_process", side_effect=record_stop):
+                    runtime.stop()
+                self.assertEqual(stopped, ["dm-local-fixture-model-api", "dm-local-fixture-model-engine"])
+                self.assertFalse(read_process(root, "dm-local-fixture-model-api")["running"])
+                self.assertFalse(read_process(root, "dm-local-fixture-model-engine")["running"])
+            finally:
                 runtime.stop()
-            self.assertEqual(stopped, ["dm-local-fixture-model-api", "dm-local-fixture-model-engine"])
-            self.assertFalse(read_process(root, "dm-local-fixture-model-api")["running"])
-            self.assertFalse(read_process(root, "dm-local-fixture-model-engine")["running"])
 
     def test_compose_env_is_expanded_and_secrets_are_removed(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -209,12 +210,12 @@ class RecipeRuntimeTests(unittest.TestCase):
             runtime.compose_dir = Path(tmp) / "compose"
             runtime.compose_dir.mkdir()
             path = runtime._write_compose_env()
-            text = path.read_text()
-            self.assertIn("API_PORT=45678", text)
-            self.assertIn("MODEL_DIR=" + str(Path(tmp) / "models/fixture-model"), text)
-            self.assertIn("TRANSFORMERS_OFFLINE=1", text)
-            self.assertNotIn("HF_TOKEN", text)
-            self.assertNotIn("OPENAI_API_KEY", text)
+            env = dict(line.split("=", 1) for line in path.read_text().splitlines())
+            self.assertEqual(env["API_PORT"], "45678")
+            self.assertEqual(Path(env["MODEL_DIR"]).resolve(), (Path(tmp) / "models/fixture-model").resolve())
+            self.assertEqual(env["TRANSFORMERS_OFFLINE"], "1")
+            self.assertNotIn("HF_TOKEN", env)
+            self.assertNotIn("OPENAI_API_KEY", env)
 
 
 class RecipeGatewayTests(unittest.TestCase):

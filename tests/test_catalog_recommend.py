@@ -93,5 +93,22 @@ class CatalogAndRecommendationTests(unittest.TestCase):
         apple_hw["arch"] = "arm64"
         self.assertEqual(plan_model(apple_model, apple_hw)["selected"], "mlx")
 
+    def test_windows_cpu_variant_supports_x64_and_rejects_arm64(self):
+        cpu = variant("windows-cpu-x64", runtime="venv", min_vram=0, recommended=0,
+                      benchmarked=False, platforms=["windows-cpu"])
+        cpu["install"]["requires"]["platforms"] = ["windows-x64"]
+        model = model_with_variants([cpu])
+
+        x64 = hardware(osname="windows", gpus=False)
+        self.assertEqual(plan_model(model, x64)["selected"], "windows-cpu-x64")
+        self.assertEqual(plan_model(model, x64)["variants"][0]["verdict"], "fits")
+
+        arm64 = {**x64, "arch": "arm64"}
+        result = plan_model(model, arm64)
+        self.assertIsNone(result["selected"])
+        self.assertEqual(result["variants"][0]["verdict"], "does_not_fit")
+        self.assertIn("unsupported operating system, architecture, or accelerator",
+                      result["variants"][0]["reasons"])
+
 
 if __name__ == "__main__": unittest.main()
