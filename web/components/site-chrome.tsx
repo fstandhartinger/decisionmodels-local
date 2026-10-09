@@ -1,14 +1,14 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ThemeToggle } from "@/components/theme-toggle";
 
+/* eslint-disable @next/next/no-img-element -- Fixed-size SVG marks use native images to avoid inline styles under the strict CSP. */
 export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="header-inner">
         <Link href="https://decisionmodels.io" aria-label="Decision Models home" className="brand-lockup">
-          <Image className="brand-light" src="/local/static/brand/dm-lockup-on-light.svg" width={190} height={27} alt="Decision Models" priority unoptimized />
-          <Image className="brand-dark" src="/local/static/brand/dm-lockup-on-dark.svg" width={190} height={27} alt="Decision Models" priority unoptimized />
+          <img className="brand-light" src="/local/static/brand/dm-lockup-on-light.svg" width={190} height={27} alt="Decision Models" loading="eager" />
+          <img className="brand-dark" src="/local/static/brand/dm-lockup-on-dark.svg" width={190} height={27} alt="Decision Models" loading="eager" />
         </Link>
         <nav aria-label="Main navigation" className="main-nav">
           <Link href="https://decisionmodels.io/models">Models</Link>

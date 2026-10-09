@@ -33,7 +33,7 @@ export type Model = {
   weights?: { repo?: string; revision?: string; url?: string; gated?: boolean };
   params?: { total_b?: number; active_b?: number };
   licence?: { spdx?: string; commercial_use?: string; redistribution?: string; notes?: string; evidence?: string[] };
-  jev_distillation?: { status?: string; evidence?: string; url?: string };
+  jev_distillation?: { display_note?: string; status?: string; evidence?: string; url?: string };
   installer_policy?: { status?: string; reason?: string };
   variants?: ModelVariant[];
   [key: string]: unknown;

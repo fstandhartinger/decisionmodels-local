@@ -84,6 +84,7 @@ export function cloudOptionsFor(model: Model, prices = loadHardwarePrices()): Cl
     .filter((row) => typeof row.source === "string" && /^https?:\/\//i.test(row.source))
     .filter((row) => typeof row.vram_gb === "number" && Number.isFinite(row.vram_gb) && row.vram_gb >= needed)
     .filter((row) => typeof row.usd_per_hour === "number" && Number.isFinite(row.usd_per_hour))
+    .map((row) => ({ ...row, source: sourceUrl(row.source) }))
     .sort((a, b) => Number(a.usd_per_hour) - Number(b.usd_per_hour));
 }
 
@@ -115,6 +116,10 @@ export function publicCloudProviderName(value?: string) {
 
 export function publicCloudInstanceName(value?: string) {
   return (value ?? "Instance not listed").replace(/\s*\(per GPU\s*=.*?\)/i, "").trim();
+}
+
+export function sourceUrl(value?: string): string | undefined {
+  return value?.match(/^https?:\/\/[^\s]+/i)?.[0];
 }
 
 export function dateText(value: unknown) {

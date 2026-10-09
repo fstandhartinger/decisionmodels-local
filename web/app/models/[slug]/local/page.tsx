@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { CopyCommand } from "@/components/copy-command";
 import { QuickStart } from "@/components/quick-start";
 import { benchmarkRank, getModel, loadCatalog, type Model, type ModelVariant } from "@/lib/catalog";
-import { cloudOptionsFor, cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, money, publicCloudInstanceName, publicCloudProviderName, suggestedDeviceFor } from "@/lib/hardware-data";
+import { cloudOptionsFor, cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, money, publicCloudInstanceName, publicCloudProviderName, sourceUrl, suggestedDeviceFor } from "@/lib/hardware-data";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -25,6 +25,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 function value(value: number | string | undefined | null, suffix = "") {
   return value === undefined || value === null || value === "" ? "—" : `${value}${suffix}`;
+}
+
+function runtimeLabel(variant: ModelVariant) {
+  const runtime = variant.runtime?.match(/vllm|mlx(?:_vlm)?|pytorch|transformers|llama\.cpp|ollama|onnx/i)?.[0];
+  if (!runtime) return "See model card";
+  const names: Record<string, string> = { vllm: "vLLM", mlx: "MLX", mlx_vlm: "MLX VLM", pytorch: "PyTorch", transformers: "Transformers", ollama: "Ollama", onnx: "ONNX" };
+  const version = variant.runtime_version?.match(/^(?:torch\s+)?(\d+\.\d+(?:\.\d+)?(?:\+[a-z0-9]+)?)(?:\s|$)/i)?.[1];
+  return `${names[runtime.toLowerCase()] ?? runtime}${version ? ` ${version}` : ""}`;
 }
 
 function safeJson(value: unknown) {
@@ -163,16 +171,16 @@ export default async function ModelLocalPage({ params }: PageProps) {
       </div>
     </section>
 
-    {excluded && <section className="section-wrap"><div className="callout muted"><strong>This model does not have a reviewed local install recipe.</strong><p>{model.installer_policy?.reason ?? "No local installer policy is recorded."}</p></div></section>}
+    {excluded && <section className="section-wrap"><div className="callout muted"><strong>This model is excluded from the local installer.</strong><p>{model.installer_policy?.reason ?? "No local installer policy is recorded."}</p></div></section>}
     {commercialOnly && <section className="section-wrap"><div className="callout"><strong>Personal and non-commercial use only.</strong><p>This installer entry is not cleared for commercial use. Read the model card before downloading or serving it.</p></div></section>}
 
     <section className="section-wrap section">
       <div className="section-heading"><div><p className="section-kicker">Hardware</p><h2>Will it run on my machine?</h2></div><p>Requirements are recorded per variant. A dash means the catalogue does not provide that value.</p></div>
       {(model.variants?.length ?? 0) ? <>
-        <div className="variant-table table-wrap"><table><thead><tr><th>Variant</th><th>Precision</th><th>Runtime</th><th>Benchmarked</th><th>Minimum / recommended VRAM</th><th>RAM</th><th>Disk</th><th>Platforms</th><th>Expected speed</th></tr></thead><tbody>{model.variants?.map((variant) => <tr key={variant.id ?? `${variant.runtime}-${variant.precision}`}><td>{variant.id ?? "Variant"}</td><td>{value(variant.precision)}</td><td>{value(variant.runtime)}{variant.runtime_version ? ` ${variant.runtime_version}` : ""}</td><td>{variant.benchmarked ? "Yes" : "No"}</td><td>{value(variant.min_vram_gb, " GB")} / {value(variant.recommended_vram_gb, " GB")}</td><td>{value(variant.min_ram_gb, " GB")}</td><td>{value(variant.disk_gb, " GB")}</td><td>{variant.platforms?.join(", ") || "—"}</td><td>{speedLabel(model, variant)}</td></tr>)}</tbody></table></div>
+        <div className="variant-table table-wrap"><table><thead><tr><th>Variant</th><th>Precision</th><th>Runtime</th><th>Benchmarked</th><th>Minimum / recommended VRAM</th><th>RAM</th><th>Disk</th><th>Platforms</th><th>Expected speed</th></tr></thead><tbody>{model.variants?.map((variant) => <tr key={variant.id ?? `${variant.runtime}-${variant.precision}`}><td>{variant.id ?? "Variant"}</td><td>{value(variant.precision)}</td><td>{runtimeLabel(variant)}</td><td>{variant.benchmarked ? "Yes" : "No"}</td><td>{value(variant.min_vram_gb, " GB")} / {value(variant.recommended_vram_gb, " GB")}</td><td>{value(variant.min_ram_gb, " GB")}</td><td>{value(variant.disk_gb, " GB")}</td><td>{variant.platforms?.join(", ") || "—"}</td><td>{speedLabel(model, variant)}</td></tr>)}</tbody></table></div>
         <div className="variant-cards">{model.variants?.map((variant) => <article className="panel variant-card" key={variant.id ?? `${variant.runtime}-${variant.precision}`}>
           <div className="model-meta"><span className="badge signal">{variant.id ?? "Variant"}</span><span className="badge">{value(variant.precision)}</span></div>
-          <dl><div><dt>Runtime</dt><dd>{value(variant.runtime)}{variant.runtime_version ? ` ${variant.runtime_version}` : ""}</dd></div><div><dt>VRAM</dt><dd>{value(variant.min_vram_gb, " GB")} minimum / {value(variant.recommended_vram_gb, " GB")} recommended</dd></div><div><dt>RAM</dt><dd>{value(variant.min_ram_gb, " GB")}</dd></div><div><dt>Disk</dt><dd>{value(variant.disk_gb, " GB")}</dd></div><div><dt>Platforms</dt><dd>{variant.platforms?.join(", ") || "—"}</dd></div><div><dt>Expected speed</dt><dd>{speedLabel(model, variant)}</dd></div></dl>
+          <dl><div><dt>Runtime</dt><dd>{runtimeLabel(variant)}</dd></div><div><dt>VRAM</dt><dd>{value(variant.min_vram_gb, " GB")} minimum / {value(variant.recommended_vram_gb, " GB")} recommended</dd></div><div><dt>RAM</dt><dd>{value(variant.min_ram_gb, " GB")}</dd></div><div><dt>Disk</dt><dd>{value(variant.disk_gb, " GB")}</dd></div><div><dt>Platforms</dt><dd>{variant.platforms?.join(", ") || "—"}</dd></div><div><dt>Expected speed</dt><dd>{speedLabel(model, variant)}</dd></div></dl>
         </article>)}</div>
       </> : <div className="callout muted"><strong>No installable variant is recorded.</strong><p>There are no memory, runtime, or speed figures to compare for this entry.</p></div>}
       {!excluded && <div className="command-line"><code>dm-local plan {model.slug}</code><CopyCommand value={`dm-local plan ${model.slug}`} /><span className="fine-print">Checks memory, disk, platform, and runtime against the catalogue.</span></div>}
@@ -203,8 +211,8 @@ export default async function ModelLocalPage({ params }: PageProps) {
           <p className="variant-note">The local installer has a separate <Link href="/local/licence">free and commercial licence</Link>.</p>
         </div>
       </div>
-      <aside className="stack"><div className="panel"><p className="section-kicker">Pre-installed hardware</p><h3>{suggestion?.name ?? "Need a ready-to-run system?"}</h3><p>{suggestion ? `Memory: ${suggestion.memory_gb} GB. Indicative quote, excluding shipping and VAT.` : "No auto-suggestable device currently meets a supported variant."}</p>
-        {suggestion ? <><p className="price">{suggestion.price_usd ? money(suggestion.price_usd, "USD") : suggestion.price_eur ? money(suggestion.price_eur, "EUR") : "Quote on request"}<span> indicative</span></p><p className="source-note">Price sources: {suggestion.source.map((item, index) => <span key={`${item.source}-${index}`}>{index ? " · " : ""}<a href={item.source}>{item.currency} {item.value} · {dateText(item.date)}</a></span>)}</p></> : null}
+      <aside className="stack"><div className="panel"><p className="section-kicker">Pre-installed hardware</p><h3>{suggestion?.name ?? "Need a ready-to-run system?"}</h3><p>{suggestion ? `Memory: ${suggestion.memory_gb} GB. Indicative quote, excluding shipping and VAT.` : "No listed configuration currently meets a supported variant."}</p>
+        {suggestion ? <><p className="price">{suggestion.price_usd ? money(suggestion.price_usd, "USD") : suggestion.price_eur ? money(suggestion.price_eur, "EUR") : "Quote on request"}<span> indicative</span></p><p className="source-note">Price sources: {suggestion.source.map((item, index) => <span key={`${item.source}-${index}`}>{index ? " · " : ""}{sourceUrl(item.source) ? <a href={sourceUrl(item.source)}>{item.currency} {item.value} · {dateText(item.date)}</a> : <span>{item.currency} {item.value} · {dateText(item.date)} · source link not supplied</span>}</span>)}</p></> : null}
         <Link href={`/hardware?model=${encodeURIComponent(model.slug)}`} className="button button-secondary">See hardware options</Link></div>
       </aside>
     </section>

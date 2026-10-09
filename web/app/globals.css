@@ -70,7 +70,7 @@ code,pre,.mono { font-family:var(--dm-font-mono); }
 .benefit h3 { margin:30px 0 8px; font-size:1.16rem; }
 .benefit p,.panel p,.model-card p,.price-card p { color:var(--muted); font-size:.93rem; }
 .panel { padding:28px; }
-.panel-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.panel-grid { align-items:start; display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 .dark-panel { background:#0b0c0e; border-color:#0b0c0e; color:#f5f6f3; }
 .dark-panel p { color:#b7bcb9; }
 .command-line { display:flex; align-items:center; gap:12px; justify-content:space-between; background:var(--surface-soft); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-top:18px; min-width:0; }
@@ -197,3 +197,9 @@ html,body { max-width:100%; overflow-x:clip; }
   .command-line { align-items:flex-start; flex-wrap:wrap; }
   .command-line code { min-width:0; flex:1 1 100%; }
 }
+
+/* Keep price emphasis above the shared paragraph styles. */
+.panel .price,.price-card .price { font-size:2.2rem; color:var(--ink); }
+.licence-card .licence-price { font-size:2.5rem; font-weight:600; }
+.dark-panel .command-line { background:#171c1d; border-color:#3b4141; color:#f5f6f3; }
+.hero-note a,.source-note a { overflow-wrap:anywhere; }

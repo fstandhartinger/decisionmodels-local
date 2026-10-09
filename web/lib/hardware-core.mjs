@@ -32,6 +32,11 @@ function deviceStreetPricesForCurrency(device, currency, definition) {
   return listed + (Number.isFinite(base) ? base : 0);
 }
 
+export function deviceDisplayName(device, definition) {
+  if (definition?.id !== "gpu-workstation") return device.name;
+  return `${device.name.replace(/,\s*card(?=\))/i, "")} workstation`;
+}
+
 export function deviceStreetPrices(device, definition) {
   const currencies = [...new Set((device.prices ?? []).map((price) => price.currency).filter(Boolean))];
   return Object.fromEntries(currencies.map((currency) => [currency, deviceStreetPricesForCurrency(device, currency, definition)]));
@@ -56,7 +61,7 @@ function requiredMemory(variant, definition) {
 }
 
 function compatibleVariant(model, device, variant, definition) {
-  if (!definition?.auto_suggest || !definition.device_ids?.includes(device.id)) return false;
+  if (!definition?.auto_suggest || (definition.device_ids && !definition.device_ids.includes(device.id))) return false;
   if (!(definition.platforms ?? []).some((platform) => (variant.platforms ?? []).includes(platform))) return false;
   const needed = requiredMemory(variant, definition);
   if (needed === null || !Number.isFinite(device.memory_gb) || device.memory_gb < needed) return false;
@@ -102,7 +107,7 @@ export function suggestDevice(model, devices, classes = defaultClasses) {
   const quotes = deviceQuotes(device, definition);
   return {
     id: device.id,
-    name: device.name,
+    name: deviceDisplayName(device, definition),
     class: device.class,
     memory_gb: device.memory_gb,
     memory_kind: device.memory_kind,

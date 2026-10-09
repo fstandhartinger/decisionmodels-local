@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import "./globals.css";
@@ -16,7 +17,9 @@ export const metadata: Metadata = {
   icons: { icon: "/local/static/brand/dm-glyph-mono-ink.svg" }
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Per-request CSP nonces must also be applied to Next.js hydration scripts.
+  await headers();
   return (
     <html lang="en" suppressHydrationWarning>
       <body>

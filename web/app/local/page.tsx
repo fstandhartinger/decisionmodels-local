@@ -10,9 +10,9 @@ type BenchmarkField = "jevbench" | "imagejevbench";
 
 function smallestHardware(model: Model) {
   const variants = model.variants ?? [];
-  const gpu = variants.filter((variant) => (variant.platforms ?? []).includes("linux-nvidia")).map((variant) => variant.min_vram_gb).filter((value): value is number => Number.isFinite(value) && value > 0);
-  const mac = variants.filter((variant) => (variant.platforms ?? []).includes("macos-arm64")).map((variant) => variant.min_ram_gb).filter((value): value is number => Number.isFinite(value) && value > 0);
-  const cpu = variants.filter((variant) => (variant.platforms ?? []).some((platform) => platform === "linux-cpu" || platform === "windows-cpu")).map((variant) => variant.min_ram_gb).filter((value): value is number => Number.isFinite(value) && value > 0);
+  const gpu = variants.filter((variant) => (variant.platforms ?? []).includes("linux-nvidia")).map((variant) => variant.min_vram_gb).filter((value): value is number => typeof value === "number" && Number.isFinite(value) && value > 0);
+  const mac = variants.filter((variant) => (variant.platforms ?? []).includes("macos-arm64")).map((variant) => variant.min_ram_gb).filter((value): value is number => typeof value === "number" && Number.isFinite(value) && value > 0);
+  const cpu = variants.filter((variant) => (variant.platforms ?? []).some((platform) => platform === "linux-cpu" || platform === "windows-cpu")).map((variant) => variant.min_ram_gb).filter((value): value is number => typeof value === "number" && Number.isFinite(value) && value > 0);
   const chips: string[] = [];
   if (gpu.length) {
     const memory = Math.min(...gpu);

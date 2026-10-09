@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactForm } from "@/components/contact-form";
 import { loadCatalog } from "@/lib/catalog";
-import { classRunsToday, cloudRequirement, dateText, hourlyMoney, loadDeviceClasses, loadHardwarePrices, money, publicCloudGpuName, publicCloudInstanceName, publicCloudProviderName, quoteSummary, suggestedDeviceFor, cheapestCloudOptionFor } from "@/lib/hardware-data";
-import type { Device, DeviceClass } from "@/lib/hardware-core.mjs";
+import { classRunsToday, cloudRequirement, dateText, hourlyMoney, loadDeviceClasses, loadHardwarePrices, money, publicCloudGpuName, publicCloudInstanceName, publicCloudProviderName, quoteSummary, sourceUrl, suggestedDeviceFor, cheapestCloudOptionFor } from "@/lib/hardware-data";
+import { deviceDisplayName, type Device, type DeviceClass } from "@/lib/hardware-core.mjs";
 
 export const metadata: Metadata = { alternates: { canonical: "/hardware" } };
 
@@ -21,13 +21,13 @@ function HardwareQuoteCard({ device, definition, selected }: { device: Device; d
   const quotes = quoteSummary(device, definition);
   return <article className={`price-card ${selected ? "featured" : ""}`}>
     <p className="section-kicker">{definition.title}</p>
-    <h3>{device.name}</h3>
+    <h3>{deviceDisplayName(device, definition)}</h3>
     <p>{classFit[definition.id] ?? "Compatibility depends on the model variant and memory requirement."}</p>
     <p className="variant-note">Memory: {typeof device.memory_gb === "number" && Number.isFinite(device.memory_gb) ? `${device.memory_gb} GB` : "Not listed"} {device.memory_kind ? `(${device.memory_kind})` : ""}</p>
     {quotes.map((item) => <div className="quote-card" key={item.currency}>
       <p className="price">{money(item.quote, item.currency)}<span> indicative</span></p>
       <p>Median sourced street price: {money(item.street, item.currency)} before the quote margin.</p>
-      <p className="source-note">Price sources: {item.sources.map((source, index) => <span key={`${source.source}-${index}`}>{index ? " · " : ""}<a href={source.source}>{source.seller ?? source.source} — {money(source.value, source.currency)} · {dateText(source.date)}</a></span>)}</p>
+      <p className="source-note">Price sources: {item.sources.map((source, index) => <span key={`${source.source}-${index}`}>{index ? " · " : ""}{sourceUrl(source.source) ? <a href={sourceUrl(source.source)}>{source.seller ?? "Price source"} — {money(source.value, source.currency)} · {dateText(source.date)}</a> : <span>Source link not supplied — {money(source.value, source.currency)} · {dateText(source.date)}</span>}</span>)}</p>
     </div>)}
     {!quotes.length && <p className="callout muted">No sourced price is available for this configuration. Ask us to confirm availability and pricing.</p>}
     {selected && <span className="badge signal">Suggested for your model</span>}
@@ -42,7 +42,7 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
   const definitions = loadDeviceClasses();
   const devices = prices.devices ?? [];
   const selectedSuggestion = selectedModel ? suggestedDeviceFor(selectedModel, prices) : null;
-  const suggestions = models.map((model) => ({ model, suggestion: suggestedDeviceFor(model, prices) })).filter((item) => item.suggestion);
+  const suggestions = models.map((model) => ({ model, suggestion: suggestedDeviceFor(model, prices) })).filter((item): item is { model: typeof item.model; suggestion: NonNullable<typeof item.suggestion> } => item.suggestion !== null);
   const cloudModels = models.map((model) => ({ model, requirement: cloudRequirement(model), offer: cheapestCloudOptionFor(model, prices) })).filter((item) => item.requirement !== null);
 
   return <>
@@ -55,7 +55,7 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
       {[["Privacy", "Prompts and decisions stay inside your deployment boundary when the machine and service are configured locally."], ["Latency", "Inference does not need a network round trip to a hosted model. Measure it on your intended device."], ["Cost at scale", "Compare a known hardware purchase and operating cost with the per-call costs of hosted inference."], ["Offline and air-gapped", "After downloading model files, an isolated system can serve without an external model connection."]].map(([title, copy], index) => <article className="benefit" key={title}><span className="index">0{index + 1}</span><h3>{title}</h3><p>{copy}</p></article>)}
     </div></section>
 
-    {selectedModel && <section className="section-wrap"><div className="callout"><strong>Selected model: {selectedModel.name}</strong><p>{selectedSuggestion?.name ?? "No auto-suggestable device currently meets its recorded requirements."} Compatibility depends on the model variant and the target configuration.</p><Link href={`/models/${selectedModel.slug}/local`}>View model requirements →</Link></div></section>}
+    {selectedModel && <section className="section-wrap"><div className="callout"><strong>Selected model: {selectedModel.name}</strong><p>{selectedSuggestion?.name ?? "No listed configuration currently meets its recorded requirements."} Compatibility depends on the model variant and the target configuration.</p><Link href={`/models/${selectedModel.slug}/local`}>View model requirements →</Link></div></section>}
 
     <section className="section-wrap section">
       <div className="section-heading"><div><p className="section-kicker">Device classes</p><h2>Compare sourced hardware</h2></div><p>Prices use the median sourced street price in each currency. Indicative quotes add 30%, or at least 150 currency units, and round up to the next amount ending in 9. Shipping and VAT are excluded.</p></div>
@@ -70,7 +70,7 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
       <details className="disclosure"><summary>How we price this</summary><p>For each currency, we take the median of the sourced street prices, add 30% or at least 150 units, then round upward to an amount ending in 9. For GPU workstations, the street price includes the GPU card plus a USD 1,500 / EUR 1,400 base system: CPU, 64–128 GB RAM, 2 TB NVMe, PSU, and case. The final quote is confirmed by email.</p></details>
     </section>
 
-    <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Model fit</p><h2>Which hardware for which model</h2></div><p>Suggestions choose the least expensive listed configuration that fits the smallest supported GPU or Apple Silicon variant. Device classes marked “on request” are not auto-suggested.</p></div>
+    <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Model fit</p><h2>Which hardware for which model</h2></div><p>Suggestions choose the least expensive listed configuration that fits the smallest supported GPU or Apple Silicon variant. Device classes marked “on request” need a compatibility check.</p></div>
       {!suggestions.length ? <div className="callout muted"><strong>No model currently has a complete hardware recommendation.</strong><p>Suggestions appear when a supported variant has a matching platform, memory target, and sourced device price.</p></div> : <div className="table-wrap"><table><thead><tr><th>Model</th><th>Smallest fitting option</th><th>Indicative price</th><th>Details</th></tr></thead><tbody>{suggestions.map(({ model, suggestion }) => {
         const price = suggestion.price_usd ? money(suggestion.price_usd, "USD") : suggestion.price_eur ? money(suggestion.price_eur, "EUR") : "Price on request";
         return <tr key={model.slug}><td>{model.name}</td><td>{suggestion.name}<div className="source-note">{suggestion.memory_gb} GB {suggestion.memory_kind ?? "memory"}</div></td><td>{price}</td><td><Link href={`/models/${model.slug}/local`}>Model requirements →</Link></td></tr>;

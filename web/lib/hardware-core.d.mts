@@ -3,6 +3,7 @@ export type Device = { id: string; name: string; class: string; memory_gb: numbe
 export type DeviceClass = { id: string; title: string; platforms: string[]; memory_kind?: string; device_ids: string[]; auto_suggest: boolean; base_system_by_currency?: Record<string, number>; composition?: string; accelerator?: string; availability_note?: string; runs_today_basis?: string };
 export type Variant = { id?: string; precision?: string; min_vram_gb?: number; recommended_vram_gb?: number; min_ram_gb?: number; platforms?: string[] };
 export type HardwareModel = { variants?: Variant[]; modalities?: string[]; params?: { total_b?: number }; installer_policy?: { status?: string } };
+export function deviceDisplayName(device: Device, definition?: DeviceClass): string;
 export function median(values: number[]): number | null;
 export function marginQuote(streetPrice: number): number | null;
 export function deviceStreetPrices(device: Device, definition?: DeviceClass): Record<string, number | null>;

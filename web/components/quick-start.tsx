@@ -16,7 +16,7 @@ export function QuickStart({ slug, excluded, cloudLines, cloudMemoryGb }: { slug
   ];
   const [active, setActive] = useState(tabs[0].id);
   const selected = tabs.find((tab) => tab.id === active) ?? tabs[0];
-  if (excluded) return <div className="callout muted"><strong>Installation is not available for this entry.</strong><p>{"The catalogue does not include a reviewed local runtime variant, so we do not provide an install command."}</p></div>;
+  if (excluded) return <div className="callout muted"><strong>Installation is not available for this entry.</strong><p>{"This entry is excluded from the local installer. See the model details for the reason."}</p></div>;
   return (
     <div className="tabs-card">
       <div className="tab-list" role="tablist" aria-label="Choose an installation platform">

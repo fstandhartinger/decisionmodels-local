@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { deviceFits, deviceQuotes, deviceStreetPrices, marginQuote, median, suggestDevice } from "../lib/hardware-core.mjs";
-import { loadCatalog } from "../lib/catalog";
+import { loadCatalog, type Model } from "../lib/catalog";
 import { classRunsToday, cloudOptionsFor, loadDeviceClasses, loadHardwarePrices, loadSuggestions } from "../lib/hardware-data";
 import { catalogRoot } from "../lib/catalog-root";
 
@@ -87,10 +87,11 @@ describe("hardware prices", () => {
     expect(suggestDevice(model, devices, classes)).toMatchObject({ id: "gpu", price_usd: 3259 });
     expect(deviceFits(model, devices[0], model.variants[0], classes)).toBe(true);
     expect(deviceFits(model, devices[1], model.variants[0], classes)).toBe(false);
+    expect(suggestDevice(model, devices, [{ ...classes[0], device_ids: ["other-gpu"] }, classes[1]])).toBeNull();
   });
 
   it("shows only cloud instances whose recorded VRAM meets the smallest supported GPU requirement", () => {
-    const model = { installer_policy: { status: "supported" }, variants: [
+    const model: Model = { slug: "cloud-test", name: "Cloud test", installer_policy: { status: "supported" }, variants: [
       { recommended_vram_gb: 48, platforms: ["linux-nvidia"] },
       { recommended_vram_gb: 32, platforms: ["macos-arm64"] }
     ] };
