@@ -147,7 +147,7 @@ def download_variant(model, variant, state_root, opener=_download_open):
     return download_files(files, model["weights"]["repo"], revision, destination, opener=opener)
 
 
-def download_files(files, repo, revision, destination, opener=urllib.request.urlopen):
+def download_files(files, repo, revision, destination, opener=_download_open):
     """Download and verify a file list from a pinned HF repo into destination."""
     destination = Path(destination)
     required = sum(int(spec["size"]) for spec in files)

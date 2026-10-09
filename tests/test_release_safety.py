@@ -1,6 +1,9 @@
 import json
+import hashlib
 import tempfile
+import threading
 import unittest
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from unittest.mock import patch
 from urllib.error import URLError
@@ -11,6 +14,34 @@ from tests.helpers import model_with_variants, variant
 
 
 class ReleaseSafetyTests(unittest.TestCase):
+    def test_extra_weight_download_default_refuses_http_redirect(self):
+        received = []
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args): pass
+            def do_GET(self):
+                if self.path == "/start":
+                    self.send_response(302)
+                    self.send_header("Location", f"http://127.0.0.1:{self.server.server_port}/target")
+                    self.end_headers()
+                else:
+                    received.append(self.headers.get("Authorization"))
+                    self.send_response(200)
+                    self.end_headers()
+                    self.wfile.write(b"model")
+        server = HTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with tempfile.TemporaryDirectory() as tmp, patch.object(storage, "hf_url", return_value=f"http://localhost:{server.server_port}/start"), patch.dict("os.environ", {"HF_TOKEN": "fake-test-token"}), patch.object(storage.time, "sleep"):
+                spec = {"path": "weights.bin", "size": 5, "sha256": hashlib.sha256(b"model").hexdigest()}
+                with self.assertRaisesRegex(OSError, "redirect must use HTTPS"):
+                    storage.download_files([spec], "a/b", "1" * 40, Path(tmp))
+                self.assertEqual(received, [])
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
     def test_model_redirect_keeps_token_only_on_same_origin(self):
         handler = storage._DownloadRedirect()
         request = Request("https://huggingface.co/a/b/resolve/pin/weights", headers={"Authorization": "Bearer private"})
