@@ -8,7 +8,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-FREE_TEXT = ("Free for individuals and companies with up to 10 employees and under USD 1M annual revenue. "
+FREE_TEXT = ("Free for individuals and companies with up to 10 employees and up to USD 1M annual recurring revenue (ARR). "
              "Larger companies need the Decision Models commercial licence (USD 1,000 once + USD 100/month): "
              "https://decisionmodels.io/local/licence")
 

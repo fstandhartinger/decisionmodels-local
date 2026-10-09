@@ -28,7 +28,9 @@ def _platform_supported(variant, hw):
             return True
         return "macos-x64" in supported
     if osname == "windows":
-        return "windows-x64" in supported or ("windows-nvidia" in supported and bool(hw.get("gpus")))
+        if machine not in ("x86_64", "amd64"):
+            return False
+        return "windows-x64" in supported or "windows-cpu" in supported or ("windows-nvidia" in supported and bool(hw.get("gpus")))
     return False
 
 
