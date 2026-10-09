@@ -81,7 +81,13 @@
           "--host",
           "127.0.0.1",
           "--port",
-          "{port}"
+          "{port}",
+          "--n-gpu-layers",
+          "0",
+          "--ctx-size",
+          "2048",
+          "--parallel",
+          "1"
         ]
       },
       "install": {
@@ -96,7 +102,13 @@
               "--host",
               "127.0.0.1",
               "--port",
-              "{port:api}"
+              "{port:api}",
+              "--n-gpu-layers",
+              "0",
+              "--ctx-size",
+              "2048",
+              "--parallel",
+              "1"
             ],
             "ready": {
               "url": "http://127.0.0.1:{port:api}/health",

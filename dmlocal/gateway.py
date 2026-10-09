@@ -470,9 +470,11 @@ def make_handler(gateway):
                 self._error(503, "model_unavailable", "The local model backend returned an invalid response.", retryable=True, status=503)
             except (ValueError, DuplicateKeyError, UnicodeDecodeError) as exc:
                 self._error(400, "invalid_request", str(exc))
-            except (urllib.error.URLError, TimeoutError, RuntimeError, OSError):
+            except (urllib.error.URLError, TimeoutError, RuntimeError, OSError) as exc:
+                self.log_error("Model backend failed (%s)", type(exc).__name__)
                 self._error(503, "model_unavailable", "The local model backend is unavailable.", retryable=True, status=503)
-            except Exception:
+            except Exception as exc:
+                self.log_error("Model backend returned an invalid response (%s)", type(exc).__name__)
                 self._error(503, "model_unavailable", "The local model backend returned an invalid response.", retryable=True, status=503)
 
         def log_message(self, fmt, *args):

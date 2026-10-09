@@ -82,6 +82,9 @@ jobs:
         run: |
           python dist/dm-local.pyz install test-tiny --usage individual --accept --yes --port 18484
           python dist/dm-local.pyz test test-tiny
+      - name: Diagnose failed real-model smoke
+        if: failure()
+        run: python dist/dm-local.pyz logs test-tiny --lines 80
       - name: Remove smoke-test weights
         if: always()
         run: python dist/dm-local.pyz uninstall test-tiny --yes
