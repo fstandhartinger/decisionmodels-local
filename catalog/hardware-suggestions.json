@@ -1,13 +1,14 @@
 {
-  "generated_utc": "2026-10-09T17:36:58.956Z",
+  "generated_utc": "2026-10-09T19:17:38.325Z",
   "suggestions": {
     "autojev-27b": {
       "id": "rtx-pro-6000-blackwell-96",
-      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
       "variant_id": "bf16-torch-author-server",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia"
       ],
@@ -39,11 +40,12 @@
     },
     "bobcat-flash-1.2": {
       "id": "rtx-pro-6000-blackwell-96",
-      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
       "variant_id": "bf16-fp8-on-load-vllm",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
@@ -81,6 +83,7 @@
       "memory_gb": 64,
       "memory_kind": "unified",
       "variant_id": "fp16-torch-mps",
+      "install_status": "ready_unverified",
       "platforms": [
         "macos-arm64"
       ],
@@ -107,11 +110,12 @@
     },
     "decisio-gemma-4-31b-v080": {
       "id": "rtx-pro-6000-blackwell-96",
-      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
       "variant_id": "bf16-fp8-on-load-vllm",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
@@ -144,11 +148,12 @@
     },
     "deck31b": {
       "id": "rtx-pro-6000-blackwell-96",
-      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
       "variant_id": "bf16-torchao-fp8-dynamic",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
@@ -181,11 +186,12 @@
     },
     "h2o-lightning-4b": {
       "id": "rtx-5090-32",
-      "name": "NVIDIA GeForce RTX 5090 (32 GB, card)",
+      "name": "NVIDIA GeForce RTX 5090 (32 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 32,
       "memory_kind": "vram",
       "variant_id": "bf16-vllm",
+      "install_status": "tested",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
@@ -211,6 +217,7 @@
       "memory_gb": 16,
       "memory_kind": "unified",
       "variant_id": "bf16-mlx-author-adapter",
+      "install_status": "ready_unverified",
       "platforms": [
         "macos-arm64"
       ],
@@ -237,11 +244,12 @@
     },
     "jev-omni": {
       "id": "rtx-pro-6000-blackwell-96",
-      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
       "variant_id": "fp32-backbone-bf16-autocast",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia"
       ],
@@ -278,6 +286,7 @@
       "memory_gb": 96,
       "memory_kind": "unified",
       "variant_id": "bf16-torch-mps",
+      "install_status": "ready_unverified",
       "platforms": [
         "macos-arm64"
       ],
@@ -304,11 +313,12 @@
     },
     "jpt-4b": {
       "id": "rtx-5090-32",
-      "name": "NVIDIA GeForce RTX 5090 (32 GB, card)",
+      "name": "NVIDIA GeForce RTX 5090 (32 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 32,
       "memory_kind": "vram",
       "variant_id": "bf16-vllm-llm2jev",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia"
       ],
@@ -333,6 +343,7 @@
       "memory_gb": 24,
       "memory_kind": "unified",
       "variant_id": "bf16-torch-mps",
+      "install_status": "ready_unverified",
       "platforms": [
         "macos-arm64"
       ],
@@ -364,6 +375,7 @@
       "memory_gb": 96,
       "memory_kind": "unified",
       "variant_id": "bf16-torch-mps",
+      "install_status": "ready_unverified",
       "platforms": [
         "macos-arm64"
       ],
@@ -395,6 +407,7 @@
       "memory_gb": 64,
       "memory_kind": "unified",
       "variant_id": "fp16-torch-mps",
+      "install_status": "ready_unverified",
       "platforms": [
         "macos-arm64"
       ],
@@ -421,11 +434,12 @@
     },
     "rene-1-31b-fp8": {
       "id": "rtx-pro-6000-blackwell-96",
-      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
       "variant_id": "fp8-dynamic-native",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
@@ -458,11 +472,12 @@
     },
     "shisa-de-1": {
       "id": "rtx-pro-6000-blackwell-96",
-      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
       "variant_id": "bf16-vllm",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia"
       ],
@@ -494,11 +509,12 @@
     },
     "surogate-rune-26b-a4b-v3": {
       "id": "rtx-pro-6000-blackwell-96",
-      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
       "variant_id": "bf16-surogate-engine",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia"
       ],
@@ -530,11 +546,12 @@
     },
     "torchcast-decision-12b": {
       "id": "rtx-pro-6000-blackwell-96",
-      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
       "variant_id": "bf16-vllm-shim",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
@@ -568,11 +585,12 @@
     "vjev-vision": null,
     "xor-26b-a4b": {
       "id": "rtx-pro-6000-blackwell-96",
-      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB, card)",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
       "variant_id": "bf16-sglang-author-bundle",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia"
       ],
