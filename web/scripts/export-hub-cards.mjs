@@ -5,8 +5,9 @@ import { deviceFits, deviceQuotes, suggestDevice } from "../lib/hardware-core.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const output = path.resolve(process.argv[2] || path.join(root, "out"));
-const modelDirectory = path.join(root, "catalog", "models");
-const prices = JSON.parse(fs.readFileSync(path.join(root, "catalog", "hardware-prices.json"), "utf8"));
+const catalogDir = process.env.CATALOG_DIR || (fs.existsSync(path.join(root, "catalog")) ? path.join(root, "catalog") : path.join(root, "..", "catalog"));
+const modelDirectory = path.join(catalogDir, "models");
+const prices = JSON.parse(fs.readFileSync(path.join(catalogDir, "hardware-prices.json"), "utf8"));
 const models = fs.existsSync(modelDirectory) ? fs.readdirSync(modelDirectory).filter((name) => name.endsWith(".json")).map((name) => JSON.parse(fs.readFileSync(path.join(modelDirectory, name), "utf8"))) : [];
 const devices = prices.devices ?? [];
 const shortLabel = (device) => {

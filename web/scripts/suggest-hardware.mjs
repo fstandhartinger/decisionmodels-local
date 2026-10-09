@@ -4,9 +4,10 @@ import { fileURLToPath } from "node:url";
 import { suggestDevice } from "../lib/hardware-core.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const modelsDirectory = path.join(root, "catalog", "models");
-const pricesPath = path.join(root, "catalog", "hardware-prices.json");
-const outputPath = path.join(root, "catalog", "hardware-suggestions.json");
+const catalogDir = process.env.CATALOG_DIR || (fs.existsSync(path.join(root, "catalog")) ? path.join(root, "catalog") : path.join(root, "..", "catalog"));
+const modelsDirectory = path.join(catalogDir, "models");
+const pricesPath = path.join(catalogDir, "hardware-prices.json");
+const outputPath = path.join(catalogDir, "hardware-suggestions.json");
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, "utf8"));

@@ -1,3 +1,4 @@
+import { catalogRoot } from "./catalog-root";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -38,7 +39,7 @@ export type Model = {
   [key: string]: unknown;
 };
 
-const modelDirectory = path.join(process.cwd(), "catalog", "models");
+const modelDirectory = path.join(catalogRoot(), "models");
 
 function isModel(value: unknown): value is Model {
   if (!value || typeof value !== "object") return false;

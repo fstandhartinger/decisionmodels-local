@@ -1,13 +1,15 @@
+# Build context: repository root (Coolify base_directory '/', dockerfile_location '/web/Dockerfile').
 FROM node:22-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY web/package.json web/package-lock.json ./
 RUN npm ci
 
 FROM node:22-alpine AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY web/ .
+COPY catalog ./catalog
 RUN npm run build
 
 FROM node:22-alpine AS runner

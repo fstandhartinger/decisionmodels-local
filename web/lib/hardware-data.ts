@@ -1,3 +1,4 @@
+import { catalogRoot } from "./catalog-root";
 import fs from "node:fs";
 import path from "node:path";
 import { deviceQuotes, deviceStreetPrices, suggestDevice, type Device } from "@/lib/hardware-core.mjs";
@@ -7,13 +8,13 @@ export type HardwarePrices = { retrieved_utc?: string; devices?: Device[]; cloud
 const root = process.cwd();
 
 export function loadHardwarePrices(): HardwarePrices {
-  try { return JSON.parse(fs.readFileSync(path.join(root, "catalog", "hardware-prices.json"), "utf8")) as HardwarePrices; }
+  try { return JSON.parse(fs.readFileSync(path.join(catalogRoot(), "hardware-prices.json"), "utf8")) as HardwarePrices; }
   catch { return { devices: [], cloud: [] }; }
 }
 
 export function loadSuggestions(): Record<string, ReturnType<typeof suggestDevice>> {
   try {
-    const data = JSON.parse(fs.readFileSync(path.join(root, "catalog", "hardware-suggestions.json"), "utf8")) as { suggestions?: Record<string, ReturnType<typeof suggestDevice>> };
+    const data = JSON.parse(fs.readFileSync(path.join(catalogRoot(), "hardware-suggestions.json"), "utf8")) as { suggestions?: Record<string, ReturnType<typeof suggestDevice>> };
     return data.suggestions ?? {};
   } catch { return {}; }
 }
