@@ -412,15 +412,19 @@ class RecipeRuntime:
                 arg.lower() in ("-c", "/c") or re.fullmatch(r"-[a-z]*c[a-z]*", arg.lower()) for arg in command[1:3]):
             raise RuntimeError("model processes may not invoke a shell with -c")
         if command and self.runtime_name in ("venv", "mlx") and self.python:
-            if command[0] in ("{python}", "python", "python3"):
+            if command[0] in ("{python}", "python", "python3", str(self.python)):
                 command[0] = self.python
             else:
                 executable = Path(command[0])
                 if not executable.is_absolute():
                     executable = self.runtime_dir / ("Scripts" if os.name == "nt" else "bin") / command[0]
+                # Venv entries (python, console scripts) may be symlinks into uv's interpreter store, so check the
+                # unresolved absolute path against the venv and the resolved path against weights/code directories.
+                unresolved = Path(os.path.abspath(executable))
                 executable = executable.resolve()
                 allowed_executables = [self.runtime_dir.resolve(), self.weights.resolve(), *(Path(path).resolve() for path in self.code_dirs.values())]
-                if not executable.is_file() or not any(executable == base or base in executable.parents for base in allowed_executables):
+                inside_venv = Path(os.path.abspath(self.runtime_dir)) in unresolved.parents
+                if not executable.is_file() or not (inside_venv or any(executable == base or base in executable.parents for base in allowed_executables)):
                     raise RuntimeError("process executable must be inside its venv, weights, or verified code directory")
                 command[0] = str(executable)
         if command and self.runtime_name == "llamacpp":
