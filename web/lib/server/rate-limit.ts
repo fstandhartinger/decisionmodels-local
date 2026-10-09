@@ -1,4 +1,5 @@
-import { createHash } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { isIP } from "node:net";
 
 type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
@@ -16,6 +17,15 @@ export function checkRateLimit(key: string, limit: number, windowMs: number, now
 }
 
 export function requestIp(request: Request) {
+  // Next.js handlers do not expose a trustworthy TCP peer. Authenticate the
+  // hub's client address instead of trusting a public custom header or subnet.
+  const secret = process.env.DM_PROXY_IP_SECRET;
+  const client = request.headers.get("x-dm-client-ip")?.trim();
+  const signature = request.headers.get("x-dm-client-ip-signature") ?? "";
+  if (secret && secret.length >= 32 && client && isIP(client) && /^[a-f0-9]{64}$/.test(signature)) {
+    const expected = createHmac("sha256", secret).update(`decisionmodels-client-ip-v1:${client}`, "utf8").digest();
+    if (timingSafeEqual(Buffer.from(signature, "hex"), expected)) return client;
+  }
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
     const hops = forwarded.split(",").map((hop) => hop.trim()).filter(Boolean);
