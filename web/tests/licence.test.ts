@@ -14,6 +14,8 @@ describe("licence keys", () => {
   it("accepts active and less-than-14-day past-due subscriptions", () => {
     const now = Date.UTC(2026, 9, 9);
     expect(licenceIsActive("active", null, now)).toBe(true);
+    expect(licenceIsActive("active", null, now, new Date(now - 1))).toBe(false);
+    expect(licenceIsActive("active", null, now, new Date(now + 86400_000))).toBe(true);
     expect(licenceIsActive("past_due", new Date(now - 13 * 86400_000), now)).toBe(true);
     expect(licenceIsActive("past_due", new Date(now - 14 * 86400_000), now)).toBe(false);
     expect(licenceIsActive("canceled", null, now)).toBe(false);

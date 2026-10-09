@@ -65,6 +65,19 @@ describe("paid-only licence delivery", () => {
     expect(client.calls.filter((call) => call.sql.startsWith("INSERT INTO outbound_emails"))).toHaveLength(2);
   });
 
+  it("keeps subscription activation separate from proof of checkout payment", async () => {
+    const client = fakeClient({ id: 1, status: "pending" });
+    await processEvent(client, stripeEvent("customer.subscription.updated", { id: "sub_123", status: "active", items: { data: [{ current_period_end: 1800000000 }] } }));
+    expect(client.calls[0].sql).toContain("status NOT IN ('pending','payment_failed')");
+    expect(client.calls[0].params[2]).toBe("2027-01-15T08:00:00.000Z");
+  });
+
+  it("uses paid invoice line periods rather than an invoice creation window for expiry", async () => {
+    const client = fakeClient();
+    await processEvent(client, stripeEvent("invoice.paid", { subscription: "sub_123", period_end: 1700000000, lines: { data: [{ period: { end: 1700000000 } }, { period: { end: 1800000000 } }] } }));
+    expect(client.calls[0].params[1]).toBe("2027-01-15T08:00:00.000Z");
+  });
+
   it("marks failed delayed payments unusable and lets a paid invoice restore an active subscription", async () => {
     const failed = fakeClient({ id: 1, status: "pending" });
     await processEvent(failed, stripeEvent("checkout.session.async_payment_failed", session));

@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import { BILLING_PORTAL_LOGIN_URL } from "@/lib/billing";
 import { createLicenceKey, hashLicenceKey } from "@/lib/licence-core";
 import { encryptMessage } from "@/lib/server-runtime.mjs";
 import type { WebhookDatabase } from "@/lib/webhook-core";
@@ -50,7 +51,7 @@ async function processCheckoutSession(client: EventClient, session: Stripe.Check
     if (!inserted.rows.length) return;
   }
   await client.query("INSERT INTO licence_deliveries (checkout_session_id, encrypted_key, expires_at) VALUES ($1,$2,now() + interval '1 hour') ON CONFLICT (checkout_session_id) DO NOTHING", [sessionId, encryptMessage(key)]);
-  await queueEmail(client, email, "Your Decision Models commercial licence key", `Your commercial installer licence key is:\n\n${key}\n\nActivate it with: dm-local licence activate ${key}\n\nModel licences are separate. Review each model's terms before use.`);
+  await queueEmail(client, email, "Your Decision Models commercial licence key", `Your commercial installer licence key is:\n\n${key}\n\nActivate it with: dm-local licence activate ${key}\n\nManage billing or cancel renewal at: ${BILLING_PORTAL_LOGIN_URL}\nSign in with the email used at checkout.\n\nModel licences are separate. Review each model's terms before use.`);
   await queueEmail(client, process.env.CONTACT_TO || "info@decisionmodels.io", "Commercial installer licence purchased", `Company: ${company}\nBuyer: ${email}\nCheckout session: ${sessionId}\nSubscription: ${subscriptionId ?? "not supplied"}`, email);
 }
 
@@ -69,10 +70,11 @@ export async function processStripeEvent(client: EventClient, event: Stripe.Even
     return;
   }
   if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
-    const subscription = event.data.object as Stripe.Subscription & { current_period_end?: number };
+    const subscription = event.data.object as Stripe.Subscription & { current_period_end?: number; items?: { data: Array<{ current_period_end?: number }> } };
     const status = event.type === "customer.subscription.deleted" ? "canceled" : subscription.status;
-    const expiry = subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null;
-    await client.query("UPDATE licence_records SET status = $2, expires_at = $3, past_due_since = CASE WHEN $2 = 'past_due' THEN COALESCE(past_due_since, now()) ELSE NULL END, updated_at = now() WHERE subscription_id = $1", [subscription.id, status, expiry]);
+    const periodEnd = subscription.current_period_end ?? subscription.items?.data?.[0]?.current_period_end;
+    const expiry = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
+    await client.query("UPDATE licence_records SET status = $2, expires_at = $3, past_due_since = CASE WHEN $2 = 'past_due' THEN COALESCE(past_due_since, now()) ELSE NULL END, updated_at = now() WHERE subscription_id = $1 AND status NOT IN ('pending','payment_failed')", [subscription.id, status, expiry]);
     return;
   }
   if (event.type === "invoice.payment_failed") {
@@ -84,7 +86,8 @@ export async function processStripeEvent(client: EventClient, event: Stripe.Even
   if (event.type === "invoice.paid") {
     const invoice = event.data.object as Stripe.Invoice & { subscription?: string | { id: string }; parent?: { subscription_details?: { subscription?: string | { id: string } } }; period_end?: number; lines?: { data?: Array<{ period?: { end?: number } }> } };
     const subscriptionId = idOf(invoice.subscription) ?? idOf(invoice.parent?.subscription_details?.subscription);
-    const periodEnd = invoice.period_end ?? invoice.lines?.data?.[0]?.period?.end;
+    const lineEnds = (invoice.lines?.data ?? []).map((line) => line.period?.end).filter((end): end is number => typeof end === "number" && Number.isFinite(end));
+    const periodEnd = lineEnds.length ? Math.max(...lineEnds) : invoice.period_end;
     if (subscriptionId) await client.query("UPDATE licence_records SET status = 'active', past_due_since = NULL, expires_at = COALESCE($2, expires_at), updated_at = now() WHERE subscription_id = $1 AND status IN ('active','past_due')", [subscriptionId, periodEnd ? new Date(periodEnd * 1000).toISOString() : null]);
   }
 }

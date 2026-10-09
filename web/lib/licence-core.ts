@@ -31,8 +31,12 @@ export function constantTimeHashMatch(candidate: string, stored: string) {
   return timingSafeEqual(Buffer.from(candidate, "hex"), Buffer.from(stored, "hex"));
 }
 
-export function licenceIsActive(status: string, pastDueSince: Date | string | null, now = Date.now()) {
-  if (status === "active") return true;
+export function licenceIsActive(status: string, pastDueSince: Date | string | null, now = Date.now(), expiresAt: Date | string | null = null) {
+  if (status === "active") {
+    if (!expiresAt) return true;
+    const expiry = expiresAt instanceof Date ? expiresAt.getTime() : Date.parse(expiresAt);
+    return Number.isFinite(expiry) && expiry > now;
+  }
   if (status !== "past_due" || !pastDueSince) return false;
   const start = pastDueSince instanceof Date ? pastDueSince.getTime() : Date.parse(pastDueSince);
   return Number.isFinite(start) && now - start < 14 * 24 * 60 * 60 * 1000;

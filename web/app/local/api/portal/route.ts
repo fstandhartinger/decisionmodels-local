@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { BILLING_PORTAL_CONFIGURATION } from "@/lib/billing";
 import { json, readJson } from "@/lib/server/http";
 import { getPool } from "@/lib/server-runtime.mjs";
 import { checkRateLimit, requestIp } from "@/lib/server/rate-limit";
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     const customer = result.rows[0]?.customer_id;
     if (typeof customer !== "string" || !customer) return json({ error: "No customer account is associated with this checkout." }, 404);
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const portal = await stripe.billingPortal.sessions.create({ customer, return_url: "https://decisionmodels.io/local/licence/success?session_id=" + encodeURIComponent(sessionId) });
+    const portal = await stripe.billingPortal.sessions.create({ customer, configuration: BILLING_PORTAL_CONFIGURATION, return_url: "https://decisionmodels.io/local/licence/success?session_id=" + encodeURIComponent(sessionId) });
     return json({ url: portal.url });
   } catch {
     return json({ error: "The billing portal could not be opened." }, 502);

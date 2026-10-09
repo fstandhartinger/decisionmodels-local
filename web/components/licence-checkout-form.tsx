@@ -28,7 +28,7 @@ export function LicenceCheckoutForm() {
       <label className="full-width">Company name<input name="company" autoComplete="organization" required maxLength={160} /></label>
       <label className="full-width">Work email<input name="email" type="email" autoComplete="email" required maxLength={254} /></label>
       <label className="checkbox-line full-width"><input type="checkbox" name="declaration" value="yes" required />My company has more than 10 employees or more than USD 1M in annual recurring revenue (ARR).</label>
-      <label className="checkbox-line full-width"><input type="checkbox" name="terms" value="yes" required />I agree to the <a href="/local/licence#pricing">commercial licence terms</a>.</label>
+      <label className="checkbox-line full-width"><input type="checkbox" name="terms" value="yes" required />I agree to the <a href="/local/licence#terms">commercial licence terms</a><span>.</span></label>
       <p className="fine-print full-width">Model licences are separate. Some model weights are not licensed for commercial use.</p>
       <button className="button button-primary" type="submit" disabled={busy}>{busy ? "Opening checkout…" : "Continue to secure checkout"}</button>
       {error && <p className="form-status error" role="alert">{error}</p>}
