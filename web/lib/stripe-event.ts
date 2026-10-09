@@ -38,7 +38,7 @@ async function processCheckoutSession(client: EventClient, session: Stripe.Check
     );
     return;
   }
-  if (existingStatus === "active") return;
+  if (existingStatus && !["pending", "payment_failed"].includes(existingStatus)) return;
   const key = createLicenceKey();
   const keyHash = hashLicenceKey(key);
   if (existing.rows.length) {
@@ -74,7 +74,7 @@ export async function processStripeEvent(client: EventClient, event: Stripe.Even
     const status = event.type === "customer.subscription.deleted" ? "canceled" : subscription.status;
     const periodEnd = subscription.current_period_end ?? subscription.items?.data?.[0]?.current_period_end;
     const expiry = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
-    await client.query("UPDATE licence_records SET status = $2, expires_at = $3, past_due_since = CASE WHEN $2 = 'past_due' THEN COALESCE(past_due_since, now()) ELSE NULL END, updated_at = now() WHERE subscription_id = $1 AND status NOT IN ('pending','payment_failed')", [subscription.id, status, expiry]);
+    await client.query("UPDATE licence_records SET status = $2, expires_at = $3, past_due_since = CASE WHEN $2 = 'past_due' THEN COALESCE(past_due_since, now()) ELSE NULL END, updated_at = now() WHERE subscription_id = $1 AND (status NOT IN ('pending','payment_failed') OR $2 IN ('canceled','incomplete_expired'))", [subscription.id, status, expiry]);
     return;
   }
   if (event.type === "invoice.payment_failed") {

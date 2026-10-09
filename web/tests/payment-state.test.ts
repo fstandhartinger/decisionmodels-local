@@ -78,6 +78,13 @@ describe("paid-only licence delivery", () => {
     expect(client.calls[0].params[1]).toBe("2027-01-15T08:00:00.000Z");
   });
 
+  it("does not revive a canceled licence on a delayed checkout-success event", async () => {
+    const client = fakeClient({ id: 1, status: "canceled" });
+    await processEvent(client, stripeEvent("checkout.session.async_payment_succeeded", { ...session, payment_status: "paid" }));
+    expect(client.calls.some((call) => call.sql.startsWith("UPDATE licence_records"))).toBe(false);
+    expect(client.calls.some((call) => call.sql.startsWith("INSERT INTO licence_deliveries"))).toBe(false);
+  });
+
   it("marks failed delayed payments unusable and lets a paid invoice restore an active subscription", async () => {
     const failed = fakeClient({ id: 1, status: "pending" });
     await processEvent(failed, stripeEvent("checkout.session.async_payment_failed", session));
