@@ -19,6 +19,7 @@ _managed_processes = {}
 # still verify its creation time and stop an orphaned subtree safely.
 _WINDOWS_SUPERVISOR = """
 import ctypes, json, subprocess, sys, time
+from pathlib import Path
 from ctypes import wintypes as w
 if sys.stdin.buffer.read(1) != b'1':
     sys.exit(1)
@@ -36,6 +37,11 @@ job = api.OpenJobObjectW(4, False, sys.argv[2])
 if not job:
     raise ctypes.WinError(ctypes.get_last_error())
 try:
+    # Keep the named job open before the parent releases its last handle.
+    ready = Path(sys.argv[3])
+    temporary = Path(sys.argv[3] + '.tmp')
+    temporary.write_bytes(b'1')
+    temporary.replace(ready)
     result = subprocess.call(json.loads(sys.argv[1]), stdin=subprocess.DEVNULL)
     while True:
         info = Accounting()
@@ -129,6 +135,30 @@ def _windows_record_handle(data):
     return api, None, None
 
 
+def _darwin_birth(pid):
+    """Microsecond creation identity from Apple's PROC_PIDTBSDINFO ABI.
+
+    Layout: xnu/bsd/sys/proc_info.h, struct proc_bsdinfo (MAXCOMLEN=16).
+    Binding the PID assigned by Popen allows framework launchers to change
+    argv[0] without accepting a recycled PID or changing command arguments.
+    """
+    class BSDInfo(ctypes.Structure):
+        _fields_ = [("ids", ctypes.c_uint32 * 12), ("comm", ctypes.c_char * 16),
+                    ("name", ctypes.c_char * 32), ("details", ctypes.c_uint32 * 6),
+                    ("start_sec", ctypes.c_uint64), ("start_usec", ctypes.c_uint64)]
+
+    api = ctypes.CDLL("/usr/lib/libproc.dylib", use_errno=True)
+    api.proc_pidinfo.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_uint64,
+                                ctypes.c_void_p, ctypes.c_int]
+    api.proc_pidinfo.restype = ctypes.c_int
+    info = BSDInfo()
+    if api.proc_pidinfo(int(pid), 3, 0, ctypes.byref(info), ctypes.sizeof(info)) != ctypes.sizeof(info):
+        raise OSError(ctypes.get_errno(), "cannot read process creation identity")
+    if info.ids[3] != int(pid):
+        raise OSError("process identity changed")
+    return [info.start_sec, info.start_usec]
+
+
 def _darwin_argv(pid):
     """Read NUL-delimited argv, rather than ps's lossy multiline rendering."""
     libc = ctypes.CDLL("/usr/lib/libSystem.B.dylib", use_errno=True)
@@ -175,6 +205,15 @@ def process_alive(pid):
             finally:
                 api.CloseHandle(handle)
         os.kill(pid, 0)
+        # kill(pid, 0) also succeeds for zombies. An exited leader must not
+        # prevent stopping its still-live detached descendants.
+        if sys.platform.startswith("linux"):
+            status = (Path("/proc") / str(pid) / "stat").read_text().rsplit(")", 1)[1].split()[0]
+            return status not in ("Z", "X")
+        if sys.platform == "darwin":
+            status = subprocess.run(["ps", "-p", str(pid), "-o", "stat="],
+                                    capture_output=True, text=True, check=False).stdout.strip()
+            return bool(status) and not status.startswith(("Z", "X"))
         return True
     except (OSError, ValueError, TypeError):
         return False
@@ -222,6 +261,11 @@ def _record_matches_process(data):
     if sys.platform == "darwin":
         try:
             actual = _darwin_argv(pid)
+            if data.get("darwin_birth") is not None:
+                return (data.get("command_sha256") == _command_digest(data["command"])
+                        and _darwin_birth(pid) == data["darwin_birth"]
+                        and len(actual) == len(expected) and actual[1:] == expected[1:])
+            # Older records must still match the full executable path.
             return (len(actual) == len(expected) and actual[1:] == expected[1:]
                     and Path(actual[0]).resolve() == Path(expected[0]).resolve())
         except (OSError, ValueError, IndexError):
@@ -248,6 +292,24 @@ def start_process(root, name, command, cwd=None, env=None):
             old = json.loads(record.read_text())
             if _record_matches_process(old):
                 raise RuntimeError(f"{name} is already running (pid {old['pid']})")
+            tree_active = False
+            if os.name == "nt" and old.get("windows_job"):
+                api = _windows_api()
+                job = api.OpenJobObjectW(0x0004, False, old["windows_job"])
+                if job:
+                    try:
+                        try:
+                            tree_active = bool(_windows_job_active(api, job))
+                        except OSError as exc:
+                            raise RuntimeError("refusing to replace an unverified Windows job record") from exc
+                    finally:
+                        api.CloseHandle(job)
+                elif ctypes.get_last_error() != 2:  # ERROR_FILE_NOT_FOUND
+                    raise RuntimeError("refusing to replace an inaccessible Windows job record")
+            if (tree_active or process_alive(old.get("pid"))
+                    or (os.name != "nt" and old.get("pid")
+                        and _session_has_member(old.get("pgid", old["pid"])))):
+                raise RuntimeError(f"refusing to replace {name}'s live process record: ownership cannot be verified")
         except (ValueError, OSError):
             pass
     log_path = run / (safe_slug(name) + ".log")
@@ -256,7 +318,7 @@ def start_process(root, name, command, cwd=None, env=None):
               "close_fds": True}
     if os.name == "nt": kwargs["creationflags"] = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
     else: kwargs["start_new_session"] = True
-    windows_identity = {}
+    native_identity = {}
     try:
         if os.name == "nt":
             # The supervisor cannot spawn the requested command until it is in
@@ -267,17 +329,25 @@ def start_process(root, name, command, cwd=None, env=None):
             if not job:
                 raise ctypes.WinError(ctypes.get_last_error())
             proc = None
+            ready = run / ("." + job_name + ".ready")
             try:
                 supervisor = [sys.executable, "-c", _WINDOWS_SUPERVISOR,
-                              json.dumps([os.fspath(arg) for arg in command]), job_name]
+                              json.dumps([os.fspath(arg) for arg in command]), job_name, str(ready.resolve())]
                 proc = subprocess.Popen(supervisor, stdin=subprocess.PIPE, **kwargs)
                 if not api.AssignProcessToJobObject(job, int(proc._handle)):
                     raise ctypes.WinError(ctypes.get_last_error())
-                windows_identity = {"windows_job": job_name,
+                native_identity = {"windows_job": job_name,
                                     "windows_birth": _windows_birth(api, int(proc._handle)),
                                     "command_sha256": _command_digest(list(command))}
                 proc.stdin.write(b"1")
                 proc.stdin.close()
+                deadline = time.monotonic() + 10
+                while not ready.exists():
+                    if proc.poll() is not None:
+                        raise RuntimeError(f"Windows process supervisor exited before acquiring its job; see {log_path}")
+                    if time.monotonic() >= deadline:
+                        raise RuntimeError(f"Windows process supervisor did not acquire its job; see {log_path}")
+                    time.sleep(.01)
             except BaseException:
                 if proc is not None:
                     api.TerminateJobObject(job, 1)
@@ -285,9 +355,22 @@ def start_process(root, name, command, cwd=None, env=None):
                     proc.wait(timeout=5)
                 raise
             finally:
+                ready.unlink(missing_ok=True)
+                Path(str(ready) + ".tmp").unlink(missing_ok=True)
                 api.CloseHandle(job)
         else:
             proc = subprocess.Popen(command, **kwargs)
+            if sys.platform == "darwin":
+                try:
+                    native_identity = {"darwin_birth": _darwin_birth(proc.pid),
+                                        "command_sha256": _command_digest(list(command))}
+                except OSError:
+                    # A command that exits immediately needs no ownership record.
+                    # Never leave a live tree unmanaged after a failed identity read.
+                    if proc.poll() is None:
+                        os.killpg(proc.pid, signal.SIGKILL)
+                        proc.wait(timeout=5)
+                        raise
     finally:
         handle.close()
     # This process is deliberately detached and supervised through its pidfile.
@@ -295,7 +378,7 @@ def start_process(root, name, command, cwd=None, env=None):
     proc._child_created = False
     _managed_processes[proc.pid] = proc
     payload = {"name": name, "pid": proc.pid, "pgid": proc.pid if os.name != "nt" else None,
-               "command": list(command), "started_at": int(time.time()), "log": str(log_path), **windows_identity}
+               "command": list(command), "started_at": int(time.time()), "log": str(log_path), **native_identity}
     tmp = record.with_suffix(".tmp")
     tmp.write_text(json.dumps(payload, indent=2) + "\n")
     os.replace(tmp, record)
@@ -316,8 +399,11 @@ def stop_process(root, name, timeout=20):
         except (OSError, ValueError, TypeError, KeyError):
             handle = None
         if not handle:
-            record.unlink(missing_ok=True)
-            return {"stopped": False, "reason": "process already stopped or ownership cannot be verified"}
+            if process_alive(pid):
+                raise RuntimeError("refusing to stop a live process whose ownership cannot be verified")
+            # A failed identity check is not proof that the job's descendants
+            # are dead. Preserve this recovery record even after leader exit.
+            return {"stopped": False, "reason": "ownership cannot be verified; pidfile retained"}
         try:
             if not api.TerminateJobObject(job, 1):
                 raise ctypes.WinError(ctypes.get_last_error())
@@ -338,7 +424,7 @@ def stop_process(root, name, timeout=20):
     pgid = data.get("pgid", pid)
     if pgid != pid:
         raise RuntimeError("managed process record has an unexpected process-group id")
-    if sys.platform == "darwin" and not leader_matches and process_alive(pid):
+    if not leader_matches and process_alive(pid):
         raise RuntimeError("refusing to stop a process whose command does not match its record")
     if not leader_matches and not _session_has_member(pgid):
         record.unlink(missing_ok=True)
@@ -364,6 +450,8 @@ def stop_process(root, name, timeout=20):
     if managed is not None:
         try: managed.wait(timeout=5)
         except (OSError, subprocess.TimeoutExpired): pass
+    if _session_has_member(pid):
+        raise RuntimeError(f"could not confirm {name}'s process tree stopped; pidfile retained")
     record.unlink(missing_ok=True)
     return {"stopped": True, "pid": pid}
 
