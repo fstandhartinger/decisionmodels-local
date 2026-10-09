@@ -25,8 +25,22 @@ function Verify-Hash($Path, $Expected) {
   if ($Actual -ne $Expected.ToLowerInvariant()) { throw "SHA-256 verification failed for $([IO.Path]::GetFileName($Path))." }
 }
 try {
+  $Sums = Join-Path $Temp 'SHA256SUMS'
+  $SumBundle = Join-Path $Temp 'SHA256SUMS.sigstore.json'
+  Download "$Release/SHA256SUMS" $Sums
+  Download "$Release/SHA256SUMS.sigstore.json" $SumBundle
+  $Cosign = Get-Command cosign -ErrorAction SilentlyContinue
+  if ($Cosign) { $CosignPath = $Cosign.Source }
+  else {
+    $CosignPath = Join-Path $Temp 'cosign.exe'
+    Download 'https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-windows-amd64.exe' $CosignPath
+    Verify-Hash $CosignPath '9b85a88ebff2d9dd30ff4984a6f61f2cedc232dd87d81fa7f2ff3c0ed96c241c'
+  }
+  & $CosignPath verify-blob --bundle $SumBundle --certificate-identity-regexp '^https://github.com/fstandhartinger/decisionmodels-local/\.github/workflows/release\.yml@refs/tags/v[0-9][^/]*$' --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' $Sums
+  if ($LASTEXITCODE -ne 0) { throw 'Release manifest signature verification failed.' }
   $Pins = Join-Path $Temp 'pins.py'
   Download "$Release/pins.py" $Pins
+  Verify-Hash $Pins (Get-PinnedHash $Sums 'pins.py')
   $PinText = Get-Content -Raw $Pins
   $UvVersion = [regex]::Match($PinText, 'UV_VERSION = "([^\"]+)"').Groups[1].Value
   $UvRelease = [regex]::Match($PinText, 'UV_RELEASE = "([^\"]+)"').Groups[1].Value
@@ -60,17 +74,9 @@ try {
     $UseUv = $true
   }
 
-  $PyZ = Join-Path $Temp 'dm-local.pyz'; $Sums = Join-Path $Temp 'SHA256SUMS'
+  $PyZ = Join-Path $Temp 'dm-local.pyz'
   Download "$Release/dm-local.pyz" $PyZ
-  Download "$Release/SHA256SUMS" $Sums
   Verify-Hash $PyZ (Get-PinnedHash $Sums 'dm-local.pyz')
-  $Cosign = Get-Command cosign -ErrorAction SilentlyContinue
-  if ($Cosign) {
-    $Bundle = Join-Path $Temp 'dm-local.pyz.sigstore.json'
-    Download "$Release/dm-local.pyz.sigstore.json" $Bundle
-    & $Cosign.Source verify-blob --bundle $Bundle --certificate-identity-regexp '^https://github.com/fstandhartinger/decisionmodels-local/' --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' $PyZ
-    if ($LASTEXITCODE -ne 0) { throw 'cosign signature verification failed.' }
-  }
   Copy-Item -LiteralPath $PyZ -Destination (Join-Path $Lib 'dm-local.pyz') -Force
   $PyzPath = Join-Path $Lib 'dm-local.pyz'
   $Cmd = Join-Path $Bin 'dm-local.cmd'

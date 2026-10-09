@@ -21,6 +21,28 @@ sha_check() {
   else echo "Need sha256sum or shasum to verify downloads." >&2; exit 1; fi
 }
 
+# Authenticate the manifest before trusting model installer or Python-bootstrap pins.
+get "$release/SHA256SUMS" "$tmp/SHA256SUMS"
+get "$release/SHA256SUMS.sigstore.json" "$tmp/SHA256SUMS.sigstore.json"
+if command -v cosign >/dev/null 2>&1; then
+  cosign_bin=$(command -v cosign)
+else
+  case "$(uname -s)/$(uname -m)" in
+    Linux/x86_64|Linux/amd64) cosign_file=cosign-linux-amd64; cosign_sha=c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74 ;;
+    Linux/aarch64|Linux/arm64) cosign_file=cosign-linux-arm64; cosign_sha=bedac92e8c3729864e13d4a17048007cfafa79d5deca993a43a90ffe018ef2b8 ;;
+    Darwin/arm64|Darwin/aarch64) cosign_file=cosign-darwin-arm64; cosign_sha=5fadd012ae6381a6a29ff86a7d39aa873878852f1073fc90b15995961ecfb084 ;;
+    Darwin/x86_64) cosign_file=cosign-darwin-amd64; cosign_sha=4c3e7af8372d3ca3296e62fa56f23fcbb5721cc6ac1827900d398f110d7cd280 ;;
+    *) echo 'No signature verifier for this OS/architecture.' >&2; exit 1 ;;
+  esac
+  get "https://github.com/sigstore/cosign/releases/download/v3.0.6/$cosign_file" "$tmp/cosign"
+  sha_check "$cosign_sha" "$tmp/cosign"
+  chmod 700 "$tmp/cosign"
+  cosign_bin="$tmp/cosign"
+fi
+"$cosign_bin" verify-blob --bundle "$tmp/SHA256SUMS.sigstore.json" \
+  --certificate-identity-regexp '^https://github.com/fstandhartinger/decisionmodels-local/\.github/workflows/release\.yml@refs/tags/v[0-9][^/]*$' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com "$tmp/SHA256SUMS" >/dev/null
+
 py=""
 for candidate in python3 python; do
   if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3,9) else 1)' >/dev/null 2>&1; then
@@ -31,6 +53,9 @@ done
 
 if [ -z "$py" ]; then
   get "$release/pins.py" "$tmp/pins.py"
+  pins_sha=$(sha_of "$tmp/SHA256SUMS" "pins.py")
+  [ -n "$pins_sha" ] || { echo 'pins.py is missing from the signed manifest.' >&2; exit 1; }
+  sha_check "$pins_sha" "$tmp/pins.py"
   uv_version=$(sed -n 's/^UV_VERSION = "\([^"]*\)"/\1/p' "$tmp/pins.py")
   uv_release=$(sed -n 's/^UV_RELEASE = "\([^"]*\)"/\1/p' "$tmp/pins.py")
   [ -n "$uv_version" ] && [ -n "$uv_release" ] || { echo "Release does not contain uv pin metadata." >&2; exit 1; }
@@ -61,16 +86,9 @@ else
 fi
 
 get "$release/dm-local.pyz" "$tmp/dm-local.pyz"
-get "$release/SHA256SUMS" "$tmp/SHA256SUMS"
 expected=$(sha_of "$tmp/SHA256SUMS" "dm-local.pyz")
 [ -n "$expected" ] || { echo "dm-local.pyz is missing from SHA256SUMS." >&2; exit 1; }
 sha_check "$expected" "$tmp/dm-local.pyz"
-if command -v cosign >/dev/null 2>&1; then
-  get "$release/dm-local.pyz.sigstore.json" "$tmp/dm-local.pyz.sigstore.json"
-  cosign verify-blob --bundle "$tmp/dm-local.pyz.sigstore.json" \
-    --certificate-identity-regexp '^https://github.com/fstandhartinger/decisionmodels-local/' \
-    --certificate-oidc-issuer https://token.actions.githubusercontent.com "$tmp/dm-local.pyz" >/dev/null
-fi
 cp "$tmp/dm-local.pyz" "$HOME/.decisionmodels/bin/dm-local.pyz"
 if [ "$uv_mode" -eq 1 ]; then
   cat > "$HOME/.local/bin/dm-local" <<'WRAPPER'
