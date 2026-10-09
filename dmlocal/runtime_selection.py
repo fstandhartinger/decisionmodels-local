@@ -255,7 +255,7 @@ def recipe_errors(variant):
         if not isinstance(requires, dict):
             errors.append("install.requires must be an object")
         else:
-            for key in ("cuda_min", "driver_min", "gpu_arch_min"):
+            for key in ("cuda_min", "driver_min", "gpu_arch_min", "macos_min"):
                 if key in requires and not isinstance(requires[key], str):
                     errors.append(f"install.requires.{key} must be a string")
             if "platforms" in requires and (not isinstance(requires["platforms"], list) or any(not isinstance(x, str) for x in requires["platforms"])):
@@ -312,6 +312,10 @@ def requires_errors(variant, hw):
     platforms = requires.get("platforms") or []
     if platforms and not _platform_names(hw).intersection(platforms):
         errors.append("requires platform " + " or ".join(platforms) + "; detected " + ", ".join(sorted(_platform_names(hw))) )
+    if requires.get("macos_min") and hw.get("os") == "darwin":
+        actual, wanted = _version_tuple(hw.get("os_version")), _version_tuple(requires["macos_min"])
+        if actual is None or wanted is None or actual < wanted:
+            errors.append(f"requires macOS {requires['macos_min']} or newer; detected {hw.get('os_version') or 'unknown version'}")
     cuda_min = requires.get("cuda_min")
     if cuda_min:
         detected = hw.get("cuda_version")

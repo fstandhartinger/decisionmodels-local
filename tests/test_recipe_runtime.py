@@ -82,6 +82,14 @@ class RecipeValidationTests(unittest.TestCase):
         self.assertEqual(requires_errors(candidate, {**old, "cuda_version": "12.8", "cuda_driver": "570.124",
                                                      "gpus": [{"vendor": "nvidia", "compute_cap": "8.6", "driver_version": "570.124"}]}), [])
 
+    def test_macos_wheel_minimum_blocks_old_or_unknown_os_before_install(self):
+        candidate = variant()
+        candidate["install"]["requires"] = {"macos_min": "14.0"}
+        hardware = {"os": "darwin", "arch": "arm64"}
+        for version in (None, "13.6"):
+            self.assertTrue(any("macOS 14.0" in error for error in requires_errors(candidate, {**hardware, "os_version": version})))
+        self.assertEqual(requires_errors(candidate, {**hardware, "os_version": "14.0.1"}), [])
+
 
 class RecipeRuntimeTests(unittest.TestCase):
     def test_placeholder_expansion_and_stable_port_allocation(self):
