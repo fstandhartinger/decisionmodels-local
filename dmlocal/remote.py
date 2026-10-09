@@ -8,6 +8,8 @@ import shlex
 import shutil
 import subprocess
 import sys
+import time
+import urllib.request
 from pathlib import Path
 
 from .paths import ensure_state
@@ -115,12 +117,25 @@ def _tunnel_name(host, local_port, remote_port):
 def start_tunnel(host, local_port=8484, remote_port=8484, port=None, identity=None):
     _validate_host(host)
     name = _tunnel_name(host, local_port, remote_port)
-    command = _ssh_args(port, identity) + ["-N", "-L", f"127.0.0.1:{int(local_port)}:127.0.0.1:{int(remote_port)}", host]
+    command = _ssh_args(port, identity) + ["-o", "ExitOnForwardFailure=yes", "-o", "BatchMode=yes",
+        "-o", "ServerAliveInterval=30", "-o", "ServerAliveCountMax=3",
+        "-N", "-L", f"127.0.0.1:{int(local_port)}:127.0.0.1:{int(remote_port)}", host]
     state = ensure_state()
     current = read_process(state, name)
     if current["running"]: return {"running": True, "pid": current["pid"], "name": name}
     data = start_process(state, name, command)
-    return {"running": True, "pid": data["pid"], "name": name}
+    deadline = time.monotonic() + 15
+    while time.monotonic() < deadline:
+        if not read_process(state, name)["running"]:
+            raise RuntimeError("SSH tunnel exited; check your SSH key and forwarding permissions")
+        try:
+            with urllib.request.urlopen(f"http://127.0.0.1:{int(local_port)}/health", timeout=1) as response:
+                if response.status == 200:
+                    return {"running": True, "pid": data["pid"], "name": name}
+        except (OSError, ValueError):
+            time.sleep(0.2)
+    stop_process(state, name)
+    raise RuntimeError("SSH tunnel did not reach the remote endpoint; check the remote service logs")
 
 
 def stop_tunnel(host, local_port=8484, remote_port=8484):

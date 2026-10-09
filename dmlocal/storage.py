@@ -16,6 +16,21 @@ _print_lock = threading.Lock()
 CHUNK = 1024 * 1024
 
 
+class _DownloadRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, msg, headers, newurl):
+        target = urllib.parse.urlparse(newurl)
+        if target.scheme != "https":
+            raise urllib.error.URLError("model download redirect must use HTTPS")
+        redirected = super().redirect_request(request, fp, code, msg, headers, newurl)
+        if redirected is not None and target.netloc != urllib.parse.urlparse(request.full_url).netloc:
+            redirected.remove_header("Authorization")
+        return redirected
+
+
+def _download_open(request, timeout=60):
+    return urllib.request.build_opener(_DownloadRedirect()).open(request, timeout=timeout)
+
+
 def hf_url(repo, revision, remote_path):
     endpoint = os.environ.get("HF_ENDPOINT", "https://huggingface.co").rstrip("/")
     if not endpoint.startswith("https://"):
@@ -44,7 +59,7 @@ def verify_file(path, size, sha256):
     return sha256_file(path) == sha256
 
 
-def _download_one(spec, target, repo, revision, opener=urllib.request.urlopen, retries=4):
+def _download_one(spec, target, repo, revision, opener=_download_open, retries=4):
     path_value = str(spec.get("path", ""))
     if not path_value or "\\" in path_value or Path(path_value).is_absolute() or ".." in Path(path_value).parts:
         raise OSError("unsafe relative download path")
@@ -61,6 +76,11 @@ def _download_one(spec, target, repo, revision, opener=urllib.request.urlopen, r
     except (ValueError, IndexError): raise OSError("weight target escapes the model directory")
     url = hf_url(repo, revision, spec["path"])
     token = os.environ.get("HF_TOKEN")
+    if partial.exists() and partial.stat().st_size >= spec["size"]:
+        if verify_file(partial, spec["size"], spec["sha256"]):
+            os.replace(partial, target)
+            return target
+        partial.unlink()
     for attempt in range(retries):
         offset = partial.stat().st_size if partial.exists() else 0
         headers = {"User-Agent": "dm-local/0.1"}
@@ -113,7 +133,7 @@ def _download_one(spec, target, repo, revision, opener=urllib.request.urlopen, r
     raise OSError(f"download failed for {spec['path']}")
 
 
-def download_variant(model, variant, state_root, opener=urllib.request.urlopen):
+def download_variant(model, variant, state_root, opener=_download_open):
     files = variant.get("files", [])
     required = sum(int(spec["size"]) for spec in files)
     destination = Path(state_root) / "models" / model["slug"]

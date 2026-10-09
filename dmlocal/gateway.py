@@ -1,5 +1,6 @@
 """Jev-compatible local HTTP gateway implemented with the standard library."""
 import base64
+import hmac
 import json
 import math
 import re
@@ -410,7 +411,7 @@ def make_handler(gateway):
             self._send(status, {"error": {"code": name, "message": message, "request_id": "req_" + uuid.uuid4().hex[:16], "retryable": retryable}})
 
         def do_GET(self):
-            if gateway.api_key and self.headers.get("Authorization") != "Bearer " + gateway.api_key:
+            if gateway.api_key and not hmac.compare_digest(self.headers.get("Authorization", "").encode(), ("Bearer " + gateway.api_key).encode()):
                 self._error(401, "invalid_api_key", "A valid bearer token is required.", status=401)
                 return
             if self.path == "/health":
@@ -425,7 +426,7 @@ def make_handler(gateway):
             if self.path not in ("/v1/systemone", "/v1/multimodal"):
                 self._error(404, "unknown_model", "Endpoint not found.", status=404)
                 return
-            if gateway.api_key and self.headers.get("Authorization") != "Bearer " + gateway.api_key:
+            if gateway.api_key and not hmac.compare_digest(self.headers.get("Authorization", "").encode(), ("Bearer " + gateway.api_key).encode()):
                 self._error(401, "invalid_api_key", "A valid bearer token is required.", status=401)
                 return
             try:

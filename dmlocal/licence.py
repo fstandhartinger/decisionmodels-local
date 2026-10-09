@@ -13,6 +13,10 @@ FREE_TEXT = ("Free for individuals and companies with up to 10 employees and und
              "https://decisionmodels.io/local/licence")
 
 
+class LicenceRejected(RuntimeError):
+    """An explicit service refusal must never receive network outage grace."""
+
+
 def _read_config(path):
     try: return json.loads(Path(path).read_text(encoding="utf-8"))
     except (OSError, ValueError): return {}
@@ -41,12 +45,12 @@ def activate(key, state_root, opener=urllib.request.urlopen):
     except Exception as exc:
         raise RuntimeError(f"licence verification failed: {exc}") from exc
     if not result.get("valid") or result.get("plan") != "commercial":
-        raise RuntimeError("licence key is invalid or is not a commercial plan")
+        raise LicenceRejected("licence key is invalid or is not a commercial plan")
     if result.get("expires_at"):
         try:
             expiry = datetime.fromisoformat(str(result["expires_at"]).replace("Z", "+00:00"))
             if expiry.tzinfo is None: expiry = expiry.replace(tzinfo=timezone.utc)
-            if expiry.timestamp() <= time.time(): raise RuntimeError("commercial licence has expired")
+            if expiry.timestamp() <= time.time(): raise LicenceRejected("commercial licence has expired")
         except ValueError as exc:
             raise RuntimeError("licence service returned an invalid expires_at value") from exc
     config_path = Path(state_root) / "config.json"
@@ -84,6 +88,8 @@ def _check_commercial(config, state_root, opener):
         return
     try:
         activate(key, state_root, opener=opener)
+    except LicenceRejected:
+        raise
     except Exception as exc:
         if verified_at and now - verified_at < 44 * 86400 and licence.get("valid"):
             return  # documented 14-day offline grace after a 30-day cache
