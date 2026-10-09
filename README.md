@@ -1,3 +1,84 @@
-# Decision Models — local installer
+# dm-local
 
-Work in progress.
+`dm-local` installs a reviewed open-weights decision model on your machine or an SSH-accessible GPU node, then exposes a **Jev-compatible** local HTTP API. Weights are downloaded directly from the pinned Hugging Face revision and checked against the catalog's size and SHA-256 values; Decision Models does not rehost model weights.
+
+## Quick start
+
+Linux and macOS:
+
+```sh
+curl -fsSL https://github.com/fstandhartinger/decisionmodels-local/releases/latest/download/install.sh | sh
+dm-local doctor
+dm-local list
+dm-local plan <model-slug>
+dm-local install <model-slug>
+```
+
+Windows PowerShell 5.1 or later:
+
+```powershell
+irm https://github.com/fstandhartinger/decisionmodels-local/releases/latest/download/install.ps1 | iex
+dm-local doctor
+dm-local list
+dm-local plan <model-slug>
+dm-local install <model-slug>
+```
+
+The installer uses Python 3.9+ when available. Otherwise it downloads the pinned `uv` runtime and uses Python 3.12. The first install asks whether the software is used by an individual, an eligible small company, or a larger company. Non-interactive installs must pass `--usage individual|small_company|company --accept`. Company installs need an activated commercial licence.
+
+The gateway listens on `127.0.0.1:8484` by default. Set `--listen 0.0.0.0` only when you also set `--api-key`; remote clients must send `Authorization: Bearer <key>`. Do not expose an unauthenticated gateway to a network.
+
+## Remote machines and cloud VMs
+
+Install through SSH using the system OpenSSH client. The command copies the running zipapp to the host, checks for Python 3.9+, bootstraps pinned `uv` if needed, runs the requested command, then opens a localhost tunnel for installs and starts:
+
+```sh
+dm-local remote -p 22 -i ~/.ssh/id_ed25519 user@gpu-host -- install <model-slug> --port 8484
+```
+
+The local endpoint is then `http://127.0.0.1:8484`. Manage that tunnel with:
+
+```sh
+dm-local tunnel user@gpu-host status
+dm-local tunnel user@gpu-host stop
+```
+
+This works with AWS, Azure, GCP, RunPod, Lium, CoreWeave, and self-managed SSH nodes when their OS, GPU, drivers, and catalog variant are supported. SSH keys stay with OpenSSH; `dm-local` does not copy them.
+
+## Commands
+
+- `doctor [--json]` reports OS, CPU, RAM, free disk, GPUs, CUDA driver, Docker/NVIDIA runtime, Python/uv, and DMI vendor data.
+- `list [--json]` shows catalog models and this machine's fit result.
+- `plan <slug> [--json]` compares variants, memory needs, and available catalog guidance.
+- `install <slug> [--variant ID] [--runtime docker|venv|llamacpp|mlx] [--port 8484] [--yes] [--no-start]` verifies the licence, selects a variant, downloads weights, prepares the runtime, starts the gateway, and runs its sample decisions.
+- `start|stop|status|logs|test <slug>` manages or checks an installation.
+- `service <slug> --enable|--disable` configures a systemd user service on Linux or launchd agent on macOS.
+- `licence status|declare|activate <key>` checks or manages the local usage declaration and commercial licence.
+- `uninstall <slug> [--keep-weights]` removes one installation; `uninstall --all [--yes]` removes the state directory and only the exact containers recorded by `dm-local`.
+- `version` prints the CLI version.
+
+## Verify downloads and releases
+
+Model files are fetched from `https://huggingface.co/<repo>/resolve/<revision>/<path>` (or an HTTPS `HF_ENDPOINT` mirror), resumed with HTTP Range, and verified before atomic rename. Set `HF_TOKEN` only for gated repositories. The token is sent as an authorization header and is never printed.
+
+Release downloads include `SHA256SUMS`, a keyless Sigstore bundle, and a GitHub build-provenance attestation. `install.sh` and `install.ps1` always verify the zipapp hash. When `cosign` is installed, they also verify the bundle against the GitHub Actions OIDC issuer and this repository's certificate identity. To verify manually:
+
+```sh
+sha256sum -c SHA256SUMS
+cosign verify-blob --bundle dm-local.pyz.sigstore.json \
+  --certificate-identity-regexp '^https://github.com/fstandhartinger/decisionmodels-local/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com dm-local.pyz
+```
+
+No telemetry is sent. The CLI's outbound requests are limited to Hugging Face model downloads, pinned runtime downloads, pinned Docker image pulls, and the commercial licence verification endpoint.
+
+## Troubleshooting
+
+- **No models listed:** only catalog entries with pinned revisions, weight hashes, serving recipes, and licence evidence are shipped. Check `dm-local list` after installing a release that includes a reviewed catalog.
+- **Does not fit:** use `dm-local plan <slug>` for minimum memory and supported remote-machine guidance. A variant marked quantized may be unbenchmarked; its result is not the benchmarked revision's performance.
+- **Docker variant unavailable:** Linux/WSL2 NVIDIA variants need Docker, an NVIDIA driver, and the NVIDIA container runtime. Windows vLLM/SGLang use WSL2; run `wsl --install -d Ubuntu`, restart Windows, then `wsl --update` and install the current NVIDIA driver with WSL support.
+- **llama.cpp unavailable:** `dm-local` refuses to run an unpinned binary. At this release the official llama.cpp GitHub release provides source but no per-platform binary assets, so those paths remain disabled until a SHA-256 pin is available.
+- **Download fails:** check disk space (the installer requires model size plus a 10% margin), HTTPS access to Hugging Face, the revision, and `HF_TOKEN` for gated repositories. A verified partial download can resume on the next install attempt.
+- **Gateway is not healthy:** run `dm-local status <slug>` and `dm-local logs <slug>`. Local logs contain process output; request bodies and answers are not logged by the gateway.
+
+All installer state lives under `~/.decisionmodels/` (Windows: `%LOCALAPPDATA%\DecisionModels`): models, runtimes, process records, logs, and `config.json`.

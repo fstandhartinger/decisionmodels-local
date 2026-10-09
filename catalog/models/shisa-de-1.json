@@ -1,0 +1,201 @@
+{
+ "schema": "decisionmodels-local-catalog/1",
+ "slug": "shisa-de-1",
+ "name": "shisa-de-1",
+ "author": "shisa-ai",
+ "lists": [
+  "imagejevbench-top10"
+ ],
+ "benchmarks": {
+  "imagejevbench": {
+   "version": "v0.3.0",
+   "key": "shisa_de_1",
+   "capability_rank": 10,
+   "capability": 51.46,
+   "p50_s_raw": 0.1696,
+   "p50_s_adjusted": 0.4893,
+   "official_rank_in_v0.3_ranking": 15,
+   "page": "https://benchmarkheaven.com/image-jev-bench"
+  }
+ },
+ "modalities": [
+  "text",
+  "image"
+ ],
+ "question_types": {
+  "choice": "native",
+  "noul": "native",
+  "score": "native"
+ },
+ "weights": {
+  "repo": "shisa-ai/shisa-de-1",
+  "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+  "url": "https://huggingface.co/shisa-ai/shisa-de-1/tree/9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+  "gated": false,
+  "role": "fine-tune of Gemma 4 26B-A4B-it; vision encoder untouched"
+ },
+ "code": {
+  "repo": "https://github.com/shisa-ai/jevbench-results",
+  "revision": "ae4bdf4e7ab9f5216c541c1bf30bef520ee7fb1f",
+  "note": "readout code (vendored in intake, sha256 per file in VENDOR-SOURCE.json)"
+ },
+ "base_model": {
+  "repo": "google/gemma-4-26B-A4B-it",
+  "revision": "UNVERIFIED (card names no revision; HEAD 4d7ae498 fetched)",
+  "licence": "apache-2.0 (base card at HEAD)"
+ },
+ "params": {
+  "total_b": 25.2,
+  "active_b": 3.8
+ },
+ "licence": {
+  "spdx": "apache-2.0",
+  "commercial_use": "yes",
+  "redistribution": "yes",
+  "notes": "Card model-details table: Apache-2.0. Base Gemma 4 card: Apache-2.0 (licence link to Google's Gemma 4 page).",
+  "evidence": [
+   "https://huggingface.co/shisa-ai/shisa-de-1/raw/9111f4746a96d6cdf9f1a23a88afd5b57244508b/README.md"
+  ]
+ },
+ "jev_distillation": {
+  "status": "unclear",
+  "evidence": "\"we trained on 3,632 training examples for specific use cases, including compaction, fraud detection, anti-slop, and safety guardrails\" - no source named; no statement about Jev outputs; Jev appears as a hosted comparison row",
+  "url": "https://huggingface.co/shisa-ai/shisa-de-1/raw/9111f4746a96d6cdf9f1a23a88afd5b57244508b/README.md",
+  "display_note": "The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs."
+ },
+ "installer_policy": {
+  "status": "supported",
+  "reason": "Open licence (apache-2.0). The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs.",
+  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
+  "worker_proposal": "excluded"
+ },
+ "readout": {
+  "type": "letter_logprobs",
+  "endpoint": "openai",
+  "backend_agnostic": false,
+  "notes": "Client reads option-letter logprobs from vLLM /v1/completions (logprobs=20, prompt_logprobs fallback). Requires a runtime that returns completion logprobs for the letter tokens. llama.cpp and MLX not verified.",
+  "portable_notes": "No portable unmodified backend established. Author readout/vllm_scoring.py L139–141 uses standard logprobs first, but L155–163 falls back to vLLM prompt_logprobs for missing candidate labels. That fallback is necessary for a full option distribution; therefore backend_agnostic=false. https://raw.githubusercontent.com/shisa-ai/jevbench-results/ae4bdf4e7ab9f5216c541c1bf30bef520ee7fb1f/readout/vllm_scoring.py. No author CPU/MPS server or same-author GGUF/MLX readout found at the pinned revisions. BF16 weights are 51.612 GB despite only 4B active parameters."
+ },
+ "image_input": {
+  "transport": "UNVERIFIED: model card and vendor readout show text-only prompts",
+  "limits": "UNVERIFIED",
+  "source": "https://huggingface.co/shisa-ai/shisa-de-1 README 'Serving'"
+ },
+ "variants": [
+  {
+   "id": "bf16-vllm",
+   "precision": "bf16",
+   "benchmarked": true,
+   "runtime": "vLLM (mainline; author serve-de1.sh)",
+   "runtime_version": "UNVERIFIED (vendor serve script names no version)",
+   "image": null,
+   "platforms": [
+    "linux-nvidia"
+   ],
+   "gpu_arch_min": "UNVERIFIED",
+   "min_vram_gb": 53,
+   "recommended_vram_gb": 80,
+   "min_ram_gb": 68,
+   "disk_gb": 51.64,
+   "files": [
+    {
+     "path": "README.md",
+     "size": 13540,
+     "sha256": "fba8383a4dc40f54410caa17f0c83d94f7017cca09fe4c7f1a1662f5102fa582",
+     "repo": "shisa-ai/shisa-de-1",
+     "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+     "role": "shisa-de-1 weights"
+    },
+    {
+     "path": "chat_template.jinja",
+     "size": 18683,
+     "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+     "repo": "shisa-ai/shisa-de-1",
+     "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+     "role": "shisa-de-1 weights"
+    },
+    {
+     "path": "config.json",
+     "size": 4183,
+     "sha256": "2d9b548d7d4c26173d64a61c6da58fd7ee91d5aa0f0855a064303197089612ad",
+     "repo": "shisa-ai/shisa-de-1",
+     "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+     "role": "shisa-de-1 weights"
+    },
+    {
+     "path": "generation_config.json",
+     "size": 204,
+     "sha256": "098fa7dccb5c1cc397998b9ec6110e6ecf4863301b9d9ed3de46cdd5578a1ff8",
+     "repo": "shisa-ai/shisa-de-1",
+     "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+     "role": "shisa-de-1 weights"
+    },
+    {
+     "path": "model-00001-of-00002.safetensors",
+     "size": 49323334202,
+     "sha256": "3d1625f861be37b242f73a35a5759be2942e471a76dd928e6ffea535da4621a4",
+     "repo": "shisa-ai/shisa-de-1",
+     "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+     "role": "shisa-de-1 weights"
+    },
+    {
+     "path": "model-00002-of-00002.safetensors",
+     "size": 2288675130,
+     "sha256": "82334796068473758bbad0076f4d5a643c13e456242c126444455619ccd82073",
+     "repo": "shisa-ai/shisa-de-1",
+     "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+     "role": "shisa-de-1 weights"
+    },
+    {
+     "path": "model.safetensors.index.json",
+     "size": 103196,
+     "sha256": "f47f16055c885bd4234beddf9d0b898409adad6d1c1fd42e2c4ff5c9ee9554eb",
+     "repo": "shisa-ai/shisa-de-1",
+     "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+     "role": "shisa-de-1 weights"
+    },
+    {
+     "path": "processor_config.json",
+     "size": 1689,
+     "sha256": "32bdf45d2ad4cc29a0822ddd157a182de76644f0419a6228d151495256e9813c",
+     "repo": "shisa-ai/shisa-de-1",
+     "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+     "role": "shisa-de-1 weights"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 32169626,
+     "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+     "repo": "shisa-ai/shisa-de-1",
+     "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+     "role": "shisa-de-1 weights"
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 3082,
+     "sha256": "9f4fec4b1dc6ecddf8f4a92e9caea5971c0e67d81309f3f9066a2bee8c362633",
+     "repo": "shisa-ai/shisa-de-1",
+     "revision": "9111f4746a96d6cdf9f1a23a88afd5b57244508b",
+     "role": "shisa-de-1 weights"
+    }
+   ],
+   "serve": {
+    "recipe_source": "intake vendor shisa_de_1 (serve-de1.sh kept for reference, never executed) and jevbench-results readout",
+    "port": 8021,
+    "steps": [
+     "vllm serve shisa-ai/shisa-de-1  (author README)",
+     "./serve-de1.sh (author wrapper: --max-model-len 8192, port 8021; GPUS/TP env)",
+     "Readout (client side): render the systemone scaffold, POST /v1/completions with max_tokens=1, temperature=0, logprobs=20; read option-letter logprobs at the answer position (readout/vllm_scoring.py)"
+    ]
+   },
+   "measured": {
+    "gpu": "UNVERIFIED for BH; the author's own run was 2 x NVIDIA H20-3e at TP2",
+    "p50_ms": 169.6,
+    "source": "imagejev-v03.json ranking shisa_de_1; run03/final-gpu/shisa_de_1.json (run common-v03-3)"
+   },
+   "expected_speed": "About 0.17 s raw p 50 per decision on the BH measurement box (0.49 s adjusted). Author: 12 ms p 50 at concurrency 1 on its fraud-detect suite (2 x H 20-3e) - not comparable to ImageJev. Provisioning class: H 100 80 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
+   "notes": "51.6 GB BF16 weights in 2 shards; ROSTER estimate ~53 GB + <1 GB activations (min 53). Recommended 80 GB for a single card with KV headroom at 8192 context (derived). The author's TP2 run reported 129 GB per GPU reserved by vLLM, which is a vLLM reservation, not a requirement. Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+  }
+ ],
+ "sources_checked_utc": "2026-10-09T16:41Z"
+}
