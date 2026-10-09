@@ -81,3 +81,6 @@ try {
   $env:LOCALAPPDATA = $originalLocalAppData
   if (Test-Path -LiteralPath $testRoot) { Remove-Item -LiteralPath $testRoot -Recurse -Force }
 }
+# Successful negative cases deliberately leave LASTEXITCODE=37. The regression
+# itself succeeds only after every assertion and final cleanup above completed.
+exit 0
