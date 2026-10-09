@@ -10,9 +10,9 @@
   "jevbench": {
    "version": "v1.6.1",
    "key": "decider-12b",
-   "capability_rank": 12,
+   "capability_rank": 8,
    "capability": 72.5,
-   "p50_s_raw": 0.0541,
+   "p50_s_raw": 0.054131726268678904,
    "page": "https://benchmarkheaven.com/jev-models/decider-12b"
   }
  },
@@ -85,7 +85,7 @@
    ],
    "gpu_arch_min": "sm_80",
    "min_vram_gb": 60,
-   "recommended_vram_gb": 96,
+   "recommended_vram_gb": 64,
    "min_ram_gb": 32,
    "disk_gb": 23.95,
    "files": [

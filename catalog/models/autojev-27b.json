@@ -27,7 +27,8 @@
     "cost 7.0× Jev (v1.5 reference)"
    ],
    "open_board_rank": 66,
-   "page": "https://benchmarkheaven.com/jev-models/autojev-27b"
+   "page": "https://benchmarkheaven.com/jev-models/autojev-27b",
+   "p50_s_raw": 0.09737715951632708
   }
  },
  "modalities": [

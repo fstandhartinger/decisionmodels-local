@@ -27,7 +27,8 @@
     "latency 4.6× Jev (v1.5 reference)"
    ],
    "open_board_rank": 59,
-   "page": "https://benchmarkheaven.com/jev-models/reflex-4b"
+   "page": "https://benchmarkheaven.com/jev-models/reflex-4b",
+   "p50_s_raw": 1.3577107690507546
   }
  },
  "modalities": [
@@ -106,7 +107,7 @@
    ],
    "gpu_arch_min": "UNVERIFIED (BH ran RTX PRO 6000 Blackwell)",
    "min_vram_gb": 12,
-   "recommended_vram_gb": 16,
+   "recommended_vram_gb": 12,
    "min_ram_gb": 16,
    "disk_gb": 9.34,
    "files": [

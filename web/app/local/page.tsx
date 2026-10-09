@@ -1,33 +1,72 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CopyCommand } from "@/components/copy-command";
-import { benchmarkRank, loadCatalog, sortedByBenchmark } from "@/lib/catalog";
-import { dateText } from "@/lib/hardware-data";
+import { benchmarkRank, loadCatalog, sortedByBenchmark, type Model } from "@/lib/catalog";
+import { loadHardwarePrices, suggestedDeviceFor } from "@/lib/hardware-data";
 
 export const metadata: Metadata = { alternates: { canonical: "/local" } };
 
-function ModelTable({ title, models, field }: { title: string; models: ReturnType<typeof loadCatalog>; field: "jevbench" | "imagejevbench" }) {
-  return (
-    <div className="section">
-      <div className="section-heading"><div><p className="section-kicker">Published catalogue</p><h2>{title}</h2></div><p>Rank and memory figures are shown only when the catalog includes a sourced record.</p></div>
-      {!models.length ? <div className="callout muted"><strong>No published entries are available yet.</strong><p>Model pages appear here after their source, benchmark row, and local variant have been reviewed.</p></div> :
-        <div className="table-wrap"><table><thead><tr><th>Rank</th><th>Model</th><th>Size</th><th>Minimum VRAM</th><th>Runs on</th></tr></thead><tbody>
-          {models.map((model) => {
-            const benchmark = model.benchmarks?.[field];
-            const rank = benchmarkRank(benchmark);
-            const vram = (model.variants ?? []).map((variant) => variant.min_vram_gb).filter((value): value is number => Number.isFinite(value));
-            return <tr key={model.slug}><td className="rank">{rank !== null ? <a href={benchmark?.page ?? "https://benchmarkheaven.com/jev-models"}>#{rank}</a> : "—"}{rank !== null ? <div className="source-note"><a href={benchmark?.page ?? "https://benchmarkheaven.com/jev-models"}>{benchmark?.version ?? "Benchmark source"} · {dateText(model.sources_checked_utc)}</a></div> : null}</td><td><Link href={`/models/${model.slug}/local`}>{model.name}</Link></td><td>{model.params?.total_b ? `${model.params.total_b}B` : "—"}{model.params?.total_b && model.weights?.url ? <div className="source-note"><a href={model.weights.url}>Weights source · {dateText(model.sources_checked_utc)}</a></div> : null}</td><td>{vram.length ? `${Math.min(...vram)} GB` : "Not listed"}{vram.length ? <div className="source-note"><a href="https://decisionmodels.io/local/api/catalog.json">Variant catalog · {dateText(model.sources_checked_utc)}</a></div> : null}</td><td>{vram.length ? (model.variants ?? []).flatMap((variant) => variant.platforms ?? []).map((platform) => platform.replaceAll("-", " ")).filter((item, index, all) => all.indexOf(item) === index).join(", ") || "See model page" : "Not listed"}</td></tr>;
-          })}
-        </tbody></table></div>}
-    </div>
-  );
+type BenchmarkField = "jevbench" | "imagejevbench";
+
+function smallestHardware(model: Model) {
+  const variants = model.variants ?? [];
+  const gpu = variants.filter((variant) => (variant.platforms ?? []).includes("linux-nvidia")).map((variant) => variant.min_vram_gb).filter((value): value is number => Number.isFinite(value) && value > 0);
+  const mac = variants.filter((variant) => (variant.platforms ?? []).includes("macos-arm64")).map((variant) => variant.min_ram_gb).filter((value): value is number => Number.isFinite(value) && value > 0);
+  const cpu = variants.filter((variant) => (variant.platforms ?? []).some((platform) => platform === "linux-cpu" || platform === "windows-cpu")).map((variant) => variant.min_ram_gb).filter((value): value is number => Number.isFinite(value) && value > 0);
+  const chips: string[] = [];
+  if (gpu.length) {
+    const memory = Math.min(...gpu);
+    chips.push(memory <= 24 ? "RTX 4090 24 GB+" : memory <= 32 ? "RTX 5090 32 GB+" : `GPU, ${memory} GB+`);
+  }
+  if (mac.length) chips.push(`Mac with ${Math.min(...mac)} GB+`);
+  if (cpu.length) chips.push(`CPU, ${Math.min(...cpu)} GB RAM`);
+  return chips.length ? chips : ["Hardware requirements on model page"];
+}
+
+function commercialBadge(model: Model) {
+  const use = model.licence?.commercial_use;
+  if (use === "yes") return { label: "Commercial use", tone: "signal" };
+  if (use === "no") return { label: "Non-commercial", tone: "warn" };
+  if (use === "conditional") return { label: "Conditional terms", tone: "warn" };
+  return { label: "Licence not stated", tone: "" };
+}
+
+function modelSummary(model: Model) {
+  const size = model.params?.total_b ? `${model.params.total_b}B ` : "";
+  const modality = model.modalities?.length ? model.modalities.join(" and ") : "open-weight";
+  return `${size}${modality} model.`;
+}
+
+function ModelCard({ model, field, excluded = false }: { model: Model; field: BenchmarkField; excluded?: boolean }) {
+  const benchmark = model.benchmarks?.[field];
+  const rank = benchmarkRank(benchmark);
+  const score = benchmark?.capability;
+  const badge = commercialBadge(model);
+  const size = model.params?.total_b ? `${model.params.total_b}B` : "Size not listed";
+  const benchmarkPage = benchmark?.page ?? (field === "jevbench" ? "https://benchmarkheaven.com/jev-models" : "https://benchmarkheaven.com/image-jev-bench");
+  return <article className={`model-card ranked-model-card ${excluded ? "excluded-model-card" : ""}`}>
+    <div className="model-meta"><a className={`badge ${rank !== null ? "signal" : ""}`} href={benchmarkPage}>{rank !== null ? `#${rank}` : "Rank not listed"}</a><span className="badge">{size}</span><span className={`badge ${badge.tone}`}>{badge.label}</span>{excluded && <span className="badge warn">Not installable</span>}</div>
+    <h3><Link href={`/models/${model.slug}/local`}>{model.name}</Link></h3>
+    <p className="capability-score">{Number.isFinite(score) ? `Capability score ${Number(score).toFixed(2)}` : "Capability score not listed"}</p>
+    <div className="model-meta hardware-chips">{smallestHardware(model).map((chip) => <span className="badge" key={chip}>{chip}</span>)}</div>
+    {excluded ? <p className="excluded-reason">{model.installer_policy?.reason ?? "This model is not available in the local installer."}</p> : <Link className="fine-print" href={`/models/${model.slug}/local`}>View hardware and model terms →</Link>}
+  </article>;
+}
+
+function RankingSection({ title, models, field, excludedModel }: { title: string; models: Model[]; field: BenchmarkField; excludedModel?: Model }) {
+  const ordered = models.filter((model) => model.slug !== excludedModel?.slug);
+  return <section className="section-wrap section ranking-section"><div className="section-heading"><div><p className="section-kicker">Published benchmark</p><h2>{title}</h2></div><p>Capability rank and score are read from the current catalogue. Model licences and local hardware requirements still apply.</p></div>
+    <div className="model-grid ranked-model-grid">{ordered.map((model) => <ModelCard key={model.slug} model={model} field={field} />)}{excludedModel && <ModelCard key={excludedModel.slug} model={excludedModel} field={field} excluded />}</div>
+  </section>;
 }
 
 export default function LocalOverviewPage() {
   const models = loadCatalog();
+  const prices = loadHardwarePrices();
   const textTop = sortedByBenchmark(models, "jevbench").filter((model) => model.lists?.includes("jevbench-top10"));
   const imageTop = sortedByBenchmark(models, "imagejevbench").filter((model) => model.lists?.includes("imagejevbench-top10"));
-  const supported = models.filter((model) => model.installer_policy?.status === "supported" || model.installer_policy?.status === "supported_noncommercial_only");
+  const excludedVision = imageTop.find((model) => model.slug === "vjev-vision" && model.installer_policy?.status === "excluded");
+  const installable = models.filter((model) => model.installer_policy?.status === "supported" || model.installer_policy?.status === "supported_noncommercial_only");
   return <>
     <section className="section-wrap hero">
       <div className="hero-grid">
@@ -37,23 +76,28 @@ export default function LocalOverviewPage() {
     </section>
 
     <section className="section-wrap section"><div className="benefit-grid">
-      {["Your data stays on your machine", "No network round trip to the model", "One endpoint shape across local runtimes", "No telemetry; loopback by default"].map((benefit, index) => <article className="benefit" key={benefit}><span className="index">0{index + 1}</span><h3>{benefit}</h3><p>{["Prompts and decisions stay within the environment you choose.", "Measure response time on the device and network you plan to use.", "Call the same typed /v1/systemone shape used by hosted systems.", "The local service binds to 127.0.0.1 unless you change it." ][index]}</p></article>)}
+      {["Your data stays on your machine", "No network round trip to the model", "One endpoint shape across local runtimes", "No telemetry; loopback by default"].map((benefit, index) => <article className="benefit" key={benefit}><span className="index">0{index + 1}</span><h3>{benefit}</h3><p>{["Prompts and decisions stay within the environment you choose.", "Measure response time on the device and network you plan to use.", "Call the same typed /v1/systemone shape used by hosted systems.", "The local service binds to 127.0.0.1 unless you change it."][index]}</p></article>)}
     </div></section>
 
-    <section className="section-wrap section" id="models"><div className="section-heading"><div><p className="section-kicker">Model catalogue</p><h2>Choose a verified local variant</h2></div><p>{supported.length} entries currently include a supported local install policy. Each model page shows its source, runtime, and licence details.</p></div>
-      {!supported.length ? <div className="callout muted"><strong>The first reviewed installer variants are being added.</strong><p>Entries with no verified serving recipe are not shown as installable.</p></div> : <div className="model-grid">{supported.map((model) => <article className="model-card" key={model.slug}><div className="model-meta"><span className="badge signal">{model.installer_policy?.status === "supported_noncommercial_only" ? "Non-commercial only" : "Supported"}</span>{model.modalities?.map((modality) => <span className="badge" key={modality}>{modality}</span>)}</div><h3><Link href={`/models/${model.slug}/local`}>{model.name}</Link></h3><p>{model.description ?? `${model.author ?? "Open-weight"} model · ${model.params?.total_b ? `${model.params.total_b}B parameters` : "model details on page"}`}</p><span className="fine-print">{model.variants?.length ?? 0} catalogued variant(s)</span></article>)}</div>}
+    <RankingSection title="JevBench top 10 (text)" models={textTop} field="jevbench" />
+    <RankingSection title="ImageJevBench top 10 (image)" models={imageTop} field="imagejevbench" excludedModel={excludedVision} />
+
+    <section className="section-wrap section" id="models"><div className="section-heading"><div><p className="section-kicker">Local model catalogue</p><h2>Choose a local model</h2></div><p>{installable.length} entries currently have a supported local install policy. Model pages show the recorded runtime, memory requirements, and licence.</p></div>
+      {!installable.length ? <div className="callout muted"><strong>Local install recipes are being reviewed.</strong><p>Each entry will be shown as installable when its serving path and hardware requirements are recorded.</p></div> : <div className="model-grid">{installable.map((model) => {
+        const suggestion = suggestedDeviceFor(model, prices);
+        const licence = commercialBadge(model);
+        return <article className="model-card" key={model.slug}><div className="model-meta"><span className="badge signal">{model.installer_policy?.status === "supported_noncommercial_only" ? "Non-commercial only" : "Supported"}</span><span className={`badge ${licence.tone}`}>{licence.label}</span>{model.modalities?.map((modality) => <span className="badge" key={modality}>{modality}</span>)}</div><h3><Link href={`/models/${model.slug}/local`}>{model.name}</Link></h3><p>{modelSummary(model)}</p><span className="fine-print">{suggestion ? `Suggested hardware: ${suggestion.name}` : "Hardware recommendation on request"}</span></article>;
+      })}</div>}
     </section>
 
     <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">How it works</p><h2>Inspect before the weights arrive</h2></div><p>Installer plans use the pinned model revision and the constraints recorded for each local variant.</p></div><div className="timeline">
-      {[ ["Detect", "Read CPU, GPU, memory, disk, and runtime capabilities."], ["Recommend", "Pick a compatible precision and serving runtime."], ["Download", "Fetch files from the official source and verify recorded checksums."], ["Serve", "Start a Jev-compatible API bound to loopback."], ["Self-test", "Check the endpoint before sending real requests." ] ].map(([title, copy]) => <div className="timeline-item" key={title}><strong>{title}</strong>{copy}</div>)}
+      {[ ["Detect", "Read CPU, GPU, memory, disk, and runtime capabilities."], ["Recommend", "Pick a compatible precision and serving runtime."], ["Download", "Fetch files from the official source and verify recorded checksums."], ["Serve", "Start a Jev-compatible API bound to loopback."], ["Self-test", "Check the endpoint before sending real requests."] ].map(([title, copy]) => <div className="timeline-item" key={title}><strong>{title}</strong>{copy}</div>)}
     </div></section>
 
     <section className="section-wrap section panel-grid"><article className="panel dark-panel"><p className="section-kicker">Local by default</p><h2>Control the boundary.</h2><p>Installer releases are signed, model downloads are checked against their recorded hashes, and the local API listens on loopback unless configured otherwise. No telemetry is sent.</p><div className="command-line"><code>cosign verify-blob --bundle install.sigstore.json install.sh</code><CopyCommand value="cosign verify-blob --bundle install.sigstore.json install.sh" /></div><p className="fine-print">Verify commands and release files are published alongside each installer release.</p></article><article className="panel"><p className="section-kicker">Licence, separately</p><h3>Model terms still apply.</h3><p>Using the installer does not change a model&apos;s licence. Some weights limit commercial use or redistribution.</p><div className="hero-actions"><Link className="button button-secondary" href="/local/licence">Read the installer licence</Link></div></article></section>
 
-    <section className="section-wrap" id="rankings"><ModelTable title="JevBench Capability" models={textTop} field="jevbench" /><ModelTable title="ImageJevBench Capability" models={imageTop} field="imagejevbench" /></section>
-
     <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Questions</p><h2>Before you install</h2></div></div><div className="faq">
-      {[ ["Will every model run on a laptop?", "No. Each page lists the recorded memory requirements and supported platforms. Use the plan command to check the machine you intend to use."], ["Where do model files come from?", "The catalogue pins a model repository and revision. The installer uses that official source and checks recorded file hashes."], ["Does local installation include commercial rights?", "No. Model licences are separate from the installer licence; review the model's own terms before use."], ["Can I use my own GPU server?", "Yes. The remote command connects to a machine you control over SSH. The remote host still needs a supported runtime and compatible hardware."] ].map(([question, answer]) => <details className="disclosure" key={question}><summary>{question}</summary><p>{answer}</p></details>)}
+      {[ ["Will every model run on a laptop?", "No. Each page lists the recorded memory requirements and supported platforms. Use the plan command to check the machine you intend to use."], ["Where do model files come from?", "The catalogue pins a model repository and revision. The installer uses that official source and checks recorded file hashes."], ["Does local installation include commercial rights?", "No. Model licences are separate from the installer licence; review the model's own terms before commercial use."], ["Can I use my own GPU server?", "Yes. The remote command connects to a machine you control over SSH. The remote host still needs a supported runtime and compatible hardware."] ].map(([question, answer]) => <details className="disclosure" key={question}><summary>{question}</summary><p>{answer}</p></details>)}
     </div></section>
   </>;
 }

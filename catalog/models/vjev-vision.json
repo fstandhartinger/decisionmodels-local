@@ -88,7 +88,7 @@
    ],
    "gpu_arch_min": "UNVERIFIED",
    "min_vram_gb": 12,
-   "recommended_vram_gb": 16,
+   "recommended_vram_gb": 12,
    "min_ram_gb": 16,
    "disk_gb": 9.1,
    "files": [

@@ -12,7 +12,7 @@
    "key": "quyet-1-0-large",
    "capability_rank": 1,
    "capability": 81.69,
-   "p50_s_raw": 0.1158,
+   "p50_s_raw": 0.11577823059633374,
    "page": "https://benchmarkheaven.com/jev-models/quyet-1-0-large"
   }
  },
@@ -87,7 +87,7 @@
    ],
    "gpu_arch_min": "sm_80",
    "min_vram_gb": 70,
-   "recommended_vram_gb": 96,
+   "recommended_vram_gb": 80,
    "min_ram_gb": 80,
    "disk_gb": 62.58,
    "files": [

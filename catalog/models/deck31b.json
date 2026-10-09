@@ -10,9 +10,9 @@
   "jevbench": {
    "version": "v1.6.1",
    "key": "deck31b",
-   "capability_rank": 4,
+   "capability_rank": 3,
    "capability": 77.59,
-   "p50_s_raw": 0.1275,
+   "p50_s_raw": 0.12746820924803615,
    "page": "https://benchmarkheaven.com/jev-models/deck31b"
   }
  },

@@ -11,9 +11,9 @@
   "jevbench": {
    "version": "v1.6.1",
    "key": "surogate-rune-26b-a4b-v3-v16",
-   "capability_rank": 11,
+   "capability_rank": 7,
    "capability": 73.47,
-   "p50_s_raw": 0.1162,
+   "p50_s_raw": 0.1161980559991207,
    "page": "https://benchmarkheaven.com/jev-models/surogate-rune-26b-a4b-v3-v16"
   },
   "imagejevbench": {
@@ -22,7 +22,9 @@
    "rank": 3,
    "score": 42.45660909190766,
    "page": "https://benchmarkheaven.com/image-jev-bench",
-   "note": "data/imagejev-v03.json ranking rank 3 (the brief said #2; the file says 3)"
+   "note": "data/imagejev-v03.json ranking rank 3 (the brief said #2; the file says 3)",
+   "capability_rank": 2,
+   "capability": 64.81
   }
  },
  "modalities": [
@@ -94,7 +96,7 @@
    ],
    "gpu_arch_min": "sm_120",
    "min_vram_gb": 80,
-   "recommended_vram_gb": 96,
+   "recommended_vram_gb": 80,
    "min_ram_gb": 68,
    "disk_gb": 51.64,
    "files": [

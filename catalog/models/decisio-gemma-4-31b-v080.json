@@ -12,7 +12,7 @@
    "key": "decisio-gemma-4-31b-v080",
    "capability_rank": 2,
    "capability": 79.57,
-   "p50_s_raw": 0.0471,
+   "p50_s_raw": 0.047096215188503265,
    "page": "https://benchmarkheaven.com/jev-models/decisio-gemma-4-31b-v080"
   }
  },
@@ -86,7 +86,7 @@
    ],
    "gpu_arch_min": "sm_89",
    "min_vram_gb": 48,
-   "recommended_vram_gb": 96,
+   "recommended_vram_gb": 48,
    "min_ram_gb": 80,
    "disk_gb": 62.58,
    "files": [

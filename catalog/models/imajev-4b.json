@@ -94,7 +94,7 @@
    ],
    "gpu_arch_min": "UNVERIFIED (BH ran RTX 5090, Blackwell sm_120; older cards untested)",
    "min_vram_gb": 12,
-   "recommended_vram_gb": 16,
+   "recommended_vram_gb": 12,
    "min_ram_gb": 16,
    "disk_gb": 9.83,
    "files": [

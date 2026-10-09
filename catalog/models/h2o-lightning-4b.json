@@ -10,9 +10,9 @@
   "jevbench": {
    "version": "v1.6.1",
    "key": "h2o-lightning-4b",
-   "capability_rank": 7,
+   "capability_rank": 5,
    "capability": 75.0,
-   "p50_s_raw": 0.0293,
+   "p50_s_raw": 0.02928461297415197,
    "page": "https://benchmarkheaven.com/jev-models/h2o-lightning-4b"
   }
  },
@@ -84,7 +84,7 @@
    ],
    "gpu_arch_min": "sm_80",
    "min_vram_gb": 24,
-   "recommended_vram_gb": 96,
+   "recommended_vram_gb": 24,
    "min_ram_gb": 16,
    "disk_gb": 8.43,
    "files": [

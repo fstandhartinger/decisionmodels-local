@@ -26,8 +26,8 @@ export type Model = {
   description?: string;
   lists?: string[];
   benchmarks?: {
-    jevbench?: { version?: string; capability_rank?: number; rank?: number; capability?: number; page?: string };
-    imagejevbench?: { version?: string; capability_rank?: number; rank?: number; capability?: number; page?: string };
+    jevbench?: { version?: string; capability_rank?: number; rank?: number; capability?: number; p50_s_raw?: number; page?: string };
+    imagejevbench?: { version?: string; capability_rank?: number; rank?: number; capability?: number; p50_s_raw?: number; page?: string };
   };
   modalities?: string[];
   weights?: { repo?: string; revision?: string; url?: string; gated?: boolean };
@@ -81,22 +81,31 @@ export function getModel(slug: string): Model | undefined {
 }
 
 export function publicCatalog(models = loadCatalog()): Model[] {
-  const stripRecipePaths = (value: unknown): unknown => {
-    if (Array.isArray(value)) return value.map(stripRecipePaths);
+  const internalKeys = new Set(["recipe_source", "notes", "note", "evidence", "expected_speed", "portable_notes", "worker_proposal", "decided_by"]);
+  const stripInternalCopy = (value: unknown, parentKey = ""): unknown => {
+    if (Array.isArray(value)) return value.map((child) => stripInternalCopy(child, parentKey)).filter((child) => child !== undefined);
+    if (typeof value === "string" && /^(?:\/home\/|\/tmp\/|\/opt\/)/.test(value)) return undefined;
     if (!value || typeof value !== "object") return value;
-    return Object.fromEntries(Object.entries(value).filter(([key]) => key !== "recipe_source").map(([key, child]) => [key, stripRecipePaths(child)]));
+    return Object.fromEntries(Object.entries(value)
+      .filter(([key]) => !internalKeys.has(key) && !(parentKey === "measured" && ["source", "gpu"].includes(key)))
+      .map(([key, child]) => [key, stripInternalCopy(child, key)])
+      .filter(([, child]) => child !== undefined));
   };
-  return models.map((model) => stripRecipePaths(model) as Model);
+  return models.map((model) => stripInternalCopy(model) as Model);
 }
 
 export function sortedByBenchmark(models: Model[], benchmark: "jevbench" | "imagejevbench"): Model[] {
   return models
-    .filter((model) => benchmarkRank(model.benchmarks?.[benchmark]) !== null)
-    .sort((a, b) => (benchmarkRank(a.benchmarks?.[benchmark]) ?? Infinity) - (benchmarkRank(b.benchmarks?.[benchmark]) ?? Infinity));
+    .filter((model) => Boolean(model.benchmarks?.[benchmark]))
+    .sort((a, b) => {
+      const left = benchmarkRank(a.benchmarks?.[benchmark]) ?? Infinity;
+      const right = benchmarkRank(b.benchmarks?.[benchmark]) ?? Infinity;
+      return left - right || a.name.localeCompare(b.name);
+    });
 }
 
 export function benchmarkRank(benchmark?: { capability_rank?: number; rank?: number }) {
-  const rank = benchmark?.capability_rank ?? benchmark?.rank;
+  const rank = benchmark?.capability_rank;
   return Number.isFinite(rank) ? rank as number : null;
 }
 

@@ -10,9 +10,9 @@
   "jevbench": {
    "version": "v1.6.1",
    "key": "torchcast-decision-12b",
-   "capability_rank": 15,
+   "capability_rank": 11,
    "capability": 71.74,
-   "p50_s_raw": 0.0372,
+   "p50_s_raw": 0.037151537369936705,
    "page": "https://benchmarkheaven.com/jev-models/torchcast-decision-12b"
   }
  },
@@ -86,7 +86,7 @@
    ],
    "gpu_arch_min": "sm_80",
    "min_vram_gb": 40,
-   "recommended_vram_gb": 96,
+   "recommended_vram_gb": 48,
    "min_ram_gb": 32,
    "disk_gb": 23.95,
    "files": [

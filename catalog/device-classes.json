@@ -1,0 +1,64 @@
+{
+  "schema": "decisionmodels.device-classes.v1",
+  "classes": [
+    {
+      "id": "apple-silicon",
+      "title": "Apple Silicon",
+      "platforms": ["macos-arm64"],
+      "memory_kind": "unified",
+      "device_ids": [
+        "mac-mini-m6-16-256",
+        "mac-mini-m5pro-24-512",
+        "mac-mini-m5pro-64-1tb",
+        "mac-studio-m5max-36-512",
+        "mac-studio-m5max-64-1tb",
+        "mac-studio-m5ultra-96-1tb"
+      ],
+      "auto_suggest": true,
+      "runs_today_basis": "Top-10 models with a supported macos-arm64 variant whose minimum RAM fits a listed Mac configuration."
+    },
+    {
+      "id": "gpu-workstation",
+      "title": "GPU workstation",
+      "platforms": ["linux-nvidia"],
+      "memory_kind": "vram",
+      "device_ids": ["rtx-5090-32", "rtx-pro-6000-blackwell-96"],
+      "auto_suggest": true,
+      "base_system_by_currency": { "USD": 1500, "EUR": 1400 },
+      "composition": "GPU card street price plus a base system with CPU, 64–128 GB RAM, 2 TB NVMe, PSU, and case.",
+      "runs_today_basis": "Top-10 models with a supported linux-nvidia variant whose recommended VRAM fits a listed GPU tier."
+    },
+    {
+      "id": "gb10",
+      "title": "DGX Spark class",
+      "platforms": ["linux-arm64"],
+      "accelerator": "NVIDIA GB10",
+      "memory_kind": "unified",
+      "device_ids": ["dgx-spark-128", "asus-ascent-gx10-1tb", "dell-hp-lenovo-msi-gb10"],
+      "auto_suggest": false,
+      "availability_note": "Compatibility check per model on request. Our current recipes are x86_64 CUDA builds.",
+      "runs_today_basis": "Top-10 models with a supported linux-arm64 variant and matching memory requirement."
+    },
+    {
+      "id": "jetson",
+      "title": "Jetson Orin edge",
+      "platforms": ["linux-arm64"],
+      "accelerator": "NVIDIA Jetson Orin",
+      "memory_kind": "unified",
+      "device_ids": ["jetson-orin-nano-super-8", "jetson-agx-orin-64"],
+      "auto_suggest": false,
+      "availability_note": "Suited to small (≤4B) quantised models; none of today’s top-10 packages runs on it yet — ask us.",
+      "runs_today_basis": "Top-10 models with a supported linux-arm64 quantised variant of at most 4B parameters."
+    },
+    {
+      "id": "android",
+      "title": "Strong Android device",
+      "platforms": ["android"],
+      "memory_kind": "ram",
+      "device_ids": ["galaxy-s26-ultra-256"],
+      "auto_suggest": false,
+      "availability_note": "Suited to small (≤4B) quantised models; none of today’s top-10 packages runs on it yet — ask us.",
+      "runs_today_basis": "Top-10 models with a supported Android quantised variant of at most 4B parameters."
+    }
+  ]
+}

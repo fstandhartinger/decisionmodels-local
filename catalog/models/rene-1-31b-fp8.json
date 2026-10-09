@@ -10,9 +10,9 @@
   "jevbench": {
    "version": "v1.6.1",
    "key": "rene-1-31b-fp8",
-   "capability_rank": 6,
+   "capability_rank": 4,
    "capability": 75.95,
-   "p50_s_raw": 0.1097,
+   "p50_s_raw": 0.10970725817605853,
    "page": "https://benchmarkheaven.com/jev-models/rene-1-31b-fp8"
   }
  },
@@ -84,7 +84,7 @@
    ],
    "gpu_arch_min": "sm_89",
    "min_vram_gb": 48,
-   "recommended_vram_gb": 96,
+   "recommended_vram_gb": 48,
    "min_ram_gb": 44,
    "disk_gb": 33.31,
    "files": [

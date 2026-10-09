@@ -10,9 +10,9 @@
   "jevbench": {
    "version": "v1.6.1",
    "key": "xor-26b-a4b",
-   "capability_rank": 13,
+   "capability_rank": 9,
    "capability": 72.41,
-   "p50_s_raw": 0.0586,
+   "p50_s_raw": 0.058566353749483824,
    "page": "https://benchmarkheaven.com/jev-models/xor-26b-a4b"
   }
  },
@@ -81,7 +81,7 @@
    ],
    "gpu_arch_min": "sm_80",
    "min_vram_gb": 64,
-   "recommended_vram_gb": 96,
+   "recommended_vram_gb": 64,
    "min_ram_gb": 68,
    "disk_gb": 51.64,
    "files": [

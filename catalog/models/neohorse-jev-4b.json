@@ -89,7 +89,7 @@
    ],
    "gpu_arch_min": "UNVERIFIED",
    "min_vram_gb": 12,
-   "recommended_vram_gb": 16,
+   "recommended_vram_gb": 12,
    "min_ram_gb": 16,
    "disk_gb": 9.1,
    "files": [
@@ -656,7 +656,7 @@
    ],
    "gpu_arch_min": "sm_90 tested by author; other CUDA architectures unverified",
    "min_vram_gb": 12,
-   "recommended_vram_gb": 16,
+   "recommended_vram_gb": 12,
    "min_ram_gb": 16,
    "disk_gb": 5.17,
    "files": [
@@ -827,7 +827,7 @@
    ],
    "gpu_arch_min": "sm_90 tested by author; other CUDA architectures unverified",
    "min_vram_gb": 12,
-   "recommended_vram_gb": 16,
+   "recommended_vram_gb": 12,
    "min_ram_gb": 16,
    "disk_gb": 3.39,
    "files": [
