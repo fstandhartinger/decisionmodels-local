@@ -38,7 +38,10 @@ jobs:
           docker run -d --name dm-local-ci --network none dm-local-ci
           trap 'docker logs dm-local-ci; docker rm -f dm-local-ci' EXIT
           for attempt in $(seq 1 30); do
-            if docker exec dm-local-ci node -e "fetch('http://127.0.0.1:3000/local').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"; then exit 0; fi
+            if docker exec dm-local-ci node -e "fetch('http://127.0.0.1:3000/local').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"; then
+              docker exec dm-local-ci sh -c "curl -s -X 'GET' -f 'http://localhost:3000/local/api/health' > /dev/null || wget -q -O- 'http://localhost:3000/local/api/health' > /dev/null || exit 1"
+              exit 0
+            fi
             sleep 1
           done
           exit 1
