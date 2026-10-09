@@ -1,0 +1,245 @@
+{
+  "generated_utc": "2026-10-09T16:54:35.751Z",
+  "suggestions": {
+    "autojev-27b": null,
+    "bobcat-flash-1.2": {
+      "id": "asus-ascent-gx10-1tb",
+      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
+      "class": "gb10",
+      "memory_gb": 128,
+      "memory_kind": "unified",
+      "variant_id": "bf16-fp8-on-load-vllm",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 4409,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 3384.23
+      },
+      "source": [
+        {
+          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
+          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "currency": "USD",
+          "value": 3384.23
+        }
+      ]
+    },
+    "decider-12b": {
+      "id": "mac-mini-m5pro-64-1tb",
+      "name": "Apple Mac mini M5 Pro (18-core CPU, 20-core GPU, 64 GB, 1 TB)",
+      "class": "apple-silicon",
+      "memory_gb": 64,
+      "memory_kind": "unified",
+      "variant_id": "fp16-torch-mps",
+      "platforms": [
+        "macos-arm64"
+      ],
+      "price_usd": 2469,
+      "price_eur": 2889,
+      "street_prices": {
+        "USD": 1899,
+        "EUR": 2219
+      },
+      "source": [
+        {
+          "source": "https://www.apple.com/shop/buy-mac/mac-mini/m5-pro-chip-18-core-cpu-20-core-gpu-64gb-memory-1tb-storage",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 1899
+        },
+        {
+          "source": "https://www.apple.com/de/shop/buy-mac/mac-mini",
+          "date": "2026-10-09",
+          "currency": "EUR",
+          "value": 2219
+        }
+      ]
+    },
+    "decisio-gemma-4-31b-v080": {
+      "id": "asus-ascent-gx10-1tb",
+      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
+      "class": "gb10",
+      "memory_gb": 128,
+      "memory_kind": "unified",
+      "variant_id": "bf16-fp8-on-load-vllm",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 4409,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 3384.23
+      },
+      "source": [
+        {
+          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
+          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "currency": "USD",
+          "value": 3384.23
+        }
+      ]
+    },
+    "deck31b": {
+      "id": "asus-ascent-gx10-1tb",
+      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
+      "class": "gb10",
+      "memory_gb": 128,
+      "memory_kind": "unified",
+      "variant_id": "bf16-torchao-fp8-dynamic",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 4409,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 3384.23
+      },
+      "source": [
+        {
+          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
+          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "currency": "USD",
+          "value": 3384.23
+        }
+      ]
+    },
+    "h2o-lightning-4b": {
+      "id": "asus-ascent-gx10-1tb",
+      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
+      "class": "gb10",
+      "memory_gb": 128,
+      "memory_kind": "unified",
+      "variant_id": "bf16-vllm",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 4409,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 3384.23
+      },
+      "source": [
+        {
+          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
+          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "currency": "USD",
+          "value": 3384.23
+        }
+      ]
+    },
+    "imajev-4b": null,
+    "jev-omni": null,
+    "jevify-gemma4-26b-a4b": null,
+    "jpt-4b": null,
+    "neohorse-jev-4b": null,
+    "quyet-1-0-large": {
+      "id": "asus-ascent-gx10-1tb",
+      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
+      "class": "gb10",
+      "memory_gb": 128,
+      "memory_kind": "unified",
+      "variant_id": "bf16-transformers-inprocess",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 4409,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 3384.23
+      },
+      "source": [
+        {
+          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
+          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "currency": "USD",
+          "value": 3384.23
+        }
+      ]
+    },
+    "reflex-4b": null,
+    "rene-1-31b-fp8": {
+      "id": "asus-ascent-gx10-1tb",
+      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
+      "class": "gb10",
+      "memory_gb": 128,
+      "memory_kind": "unified",
+      "variant_id": "fp8-dynamic-native",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 4409,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 3384.23
+      },
+      "source": [
+        {
+          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
+          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "currency": "USD",
+          "value": 3384.23
+        }
+      ]
+    },
+    "shisa-de-1": null,
+    "surogate-rune-26b-a4b-v3": null,
+    "torchcast-decision-12b": {
+      "id": "asus-ascent-gx10-1tb",
+      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
+      "class": "gb10",
+      "memory_gb": 128,
+      "memory_kind": "unified",
+      "variant_id": "bf16-vllm-shim",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 4409,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 3384.23
+      },
+      "source": [
+        {
+          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
+          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "currency": "USD",
+          "value": 3384.23
+        }
+      ]
+    },
+    "vjev-vision": null,
+    "xor-26b-a4b": {
+      "id": "asus-ascent-gx10-1tb",
+      "name": "ASUS Ascent GX10 (GB10, 1 TB SSD)",
+      "class": "gb10",
+      "memory_gb": 128,
+      "memory_kind": "unified",
+      "variant_id": "bf16-sglang-author-bundle",
+      "platforms": [
+        "linux-nvidia"
+      ],
+      "price_usd": 4409,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 3384.23
+      },
+      "source": [
+        {
+          "source": "https://texas.gs.shi.com/product/50613797/ASUS-Ascent-GX10-Mini-PC-GB10-Grace-Blackwell-Superchip-v9.2-A",
+          "date": "2026-10-09 (listing snapshot; date not shown)",
+          "currency": "USD",
+          "value": 3384.23
+        }
+      ]
+    }
+  }
+}

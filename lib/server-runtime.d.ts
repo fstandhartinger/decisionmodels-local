@@ -1,0 +1,12 @@
+import type { Pool } from "pg";
+export function getPool(): Pool;
+export function encryptMessage(value: string): string;
+export function decryptMessage(value: string): string;
+export function createMailer(): unknown | null;
+export function sendPlainEmail(message: { to: string; subject: string; text: string; replyTo?: string }): Promise<boolean>;
+export function runMigrations(): Promise<{ skipped: boolean; migrations?: number }>;
+export function retryQueuedMail(): Promise<Record<string, unknown>>;
+export function retryHardwareInquiryMail(): Promise<Record<string, unknown>>;
+export function retryAllQueuedMail(): Promise<Record<string, unknown>>;
+export function databaseReady(): boolean;
+export function getEncryptionKeyReady(): boolean;

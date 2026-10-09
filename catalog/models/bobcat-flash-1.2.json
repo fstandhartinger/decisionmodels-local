@@ -1,0 +1,209 @@
+{
+ "schema": "decisionmodels-local-catalog/1",
+ "slug": "bobcat-flash-1.2",
+ "name": "Bobcat Flash 1.2",
+ "author": "Foxl AI / The Bobcat Authors (admin@foxl.ai)",
+ "lists": [
+  "jevbench-top10"
+ ],
+ "benchmarks": {
+  "jevbench": {
+   "version": "v1.6.1",
+   "key": "bobcat-flash-1.2",
+   "capability_rank": 10,
+   "capability": 73.49,
+   "p50_s_raw": 0.061,
+   "page": "https://benchmarkheaven.com/jev-models/bobcat-flash-1.2"
+  }
+ },
+ "modalities": [
+  "text"
+ ],
+ "question_types": {
+  "choice": "native",
+  "noul": "native",
+  "score": "native"
+ },
+ "weights": {
+  "repo": "sanghwa-na/bobcat-flash-1.2",
+  "revision": "58d15456937ce58625b13a5e3d982846554a3aef",
+  "url": "https://huggingface.co/sanghwa-na/bobcat-flash-1.2/tree/58d15456937ce58625b13a5e3d982846554a3aef",
+  "gated": false
+ },
+ "code": {
+  "repo": "https://github.com/foxl-ai/bobcat",
+  "revision": "43387a09bbc0310edcf57e2b21fa59ea81ac4166"
+ },
+ "base_model": {
+  "repo": "google/gemma-4-26B-A4B-it",
+  "licence": "apache-2.0",
+  "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52"
+ },
+ "params": {
+  "total_b": 26.0,
+  "active_b": 4.0
+ },
+ "licence": {
+  "spdx": "apache-2.0",
+  "commercial_use": "yes",
+  "redistribution": "yes",
+  "notes": "Apache-2.0 in README front matter and LICENSE at the pinned revision; code repo Apache-2.0 per the readiness file (not re-read here). Base Gemma 4 26B-A4B-it is Apache-2.0 on its card.",
+  "evidence": [
+   "https://huggingface.co/sanghwa-na/bobcat-flash-1.2/raw/58d15456937ce58625b13a5e3d982846554a3aef/LICENSE",
+   "https://huggingface.co/sanghwa-na/bobcat-flash-1.2/raw/58d15456937ce58625b13a5e3d982846554a3aef/README.md"
+  ]
+ },
+ "jev_distillation": {
+  "status": "none_found",
+  "evidence": "\"No output of Jev was used for training, distillation, reward or calibration, and no JevBench item was used for training, calibration, selection or prompt design\" (README, Training and distillation). Teachers named: GLM-5.3-Flash and the Bobcat 1.1 adapter. TypeSafe examples are used for evaluation only.",
+  "url": "https://huggingface.co/sanghwa-na/bobcat-flash-1.2/raw/58d15456937ce58625b13a5e3d982846554a3aef/README.md"
+ },
+ "installer_policy": {
+  "status": "supported",
+  "reason": "Apache-2.0 weights and code, and the card states no Jev output was used in training. The author ships its own server.",
+  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
+  "worker_proposal": "supported"
+ },
+ "readout": {
+  "type": "author_server",
+  "endpoint": "jev",
+  "backend_agnostic": false,
+  "notes": "Author server bobcat.flash_server (--engine vllm, 127.0.0.1:8000) with its own typed-decision protocol (protocol.py) and per-question-type temperatures; output tokens are 0 by construction (one forward pass, first answer position). Not an OpenAI logprobs call, so not backend-agnostic.",
+  "portable_notes": "No portable variant for flash-1.2: src/bobcat/flash_server.py uses VLLMFlashScorer from api_server.py; api_server.py L219 creates vLLM AsyncEngineArgs(dtype=\"bfloat16\", quantization=...). The separate student/serve PyTorch CPU code is for different checkpoint formats and is not a flash-1.2 readout. https://raw.githubusercontent.com/foxl-ai/bobcat/43387a09bbc0310edcf57e2b21fa59ea81ac4166/src/bobcat/flash_server.py. VLLMFlashScorer uses native vLLM first-position logprob_token_ids (api_server.py L260), not an OpenAI shim; backend_agnostic=false."
+ },
+ "variants": [
+  {
+   "id": "bf16-fp8-on-load-vllm",
+   "precision": "fp8 on load (weights bf16 on disk)",
+   "benchmarked": true,
+   "runtime": "vllm (author server)",
+   "runtime_version": "vllm 0.30.0 (author install line, uv-managed Python 3.12)",
+   "image": null,
+   "platforms": [
+    "linux-nvidia",
+    "wsl2-nvidia"
+   ],
+   "gpu_arch_min": "sm_89",
+   "min_vram_gb": 80,
+   "recommended_vram_gb": 80,
+   "min_ram_gb": 68,
+   "disk_gb": 51.68,
+   "files": [
+    {
+     "path": "model-00001-of-00002.safetensors",
+     "size": 49907246508,
+     "sha256": "02e5f6ff5977f57722681537b543ff9a245920ed02e89b4fb9ca80e495aa9a5a",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00002-of-00002.safetensors",
+     "size": 1704763408,
+     "sha256": "b433835dc71d9bfc5ff8534691a2d245b5dc32ee4e45995105343687689b8954",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model.safetensors.index.json",
+     "size": 103196,
+     "sha256": "907826a6e46ff454272bd6db1fee629d5531a2303be22986d825a0871d7dc7a7",
+     "git_blob_sha1": "889ab10e12aca96c43c9804a041fb1780de1e5ca"
+    },
+    {
+     "path": "config.json",
+     "size": 3815,
+     "sha256": "ed0c1eb3633de771906e9ba004a44cc5635bcc06ee2062077c3d2e88a50707d3",
+     "git_blob_sha1": "f42adcca257bb0865c506947671e7d0af52ac9c4"
+    },
+    {
+     "path": "generation_config.json",
+     "size": 208,
+     "sha256": "d4226bbe3117d2d253ba4609720ba82c6c4ce4627a9a6ae05387c78983ac03de",
+     "git_blob_sha1": "e605bb4523b1462ea9d9a3810b9e3ecf7ab7b1f6"
+    },
+    {
+     "path": "processor_config.json",
+     "size": 1689,
+     "sha256": "32bdf45d2ad4cc29a0822ddd157a182de76644f0419a6228d151495256e9813c",
+     "git_blob_sha1": "5465974d23e1eca2c46c2809b26c997946ce0d90"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 32169626,
+     "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 3082,
+     "sha256": "9f4fec4b1dc6ecddf8f4a92e9caea5971c0e67d81309f3f9066a2bee8c362633",
+     "git_blob_sha1": "6068e357379d36f823c377e30efb101fa2c67fe4"
+    },
+    {
+     "path": "chat_template.jinja",
+     "size": 18683,
+     "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+     "git_blob_sha1": "4741bf6e4132ba23a5537f9d6e74e9a6d613d7cd"
+    },
+    {
+     "path": "bobcat-identifiers.json",
+     "size": 2321,
+     "sha256": "0d4264fba3bc0dee9bf4e88105657dbd6e0ee81952d9c65635ae17f3de35e08b",
+     "git_blob_sha1": "caa32d0e153e1bde11bfdcbd8419ee4d9d64bd8f"
+    },
+    {
+     "path": "bobcat-merge.json",
+     "size": 1981,
+     "sha256": "52d7161b1d2d2c5a0f3e4be3bdd3cd251781815d6b4b79851fb56874e02b9b11",
+     "git_blob_sha1": "f65f9c04e56867ea86138bf9e616af484f052422"
+    },
+    {
+     "path": "compiler/config.json",
+     "size": 3815,
+     "sha256": "ed0c1eb3633de771906e9ba004a44cc5635bcc06ee2062077c3d2e88a50707d3",
+     "git_blob_sha1": "f42adcca257bb0865c506947671e7d0af52ac9c4"
+    },
+    {
+     "path": "compiler/tokenizer.json",
+     "size": 32169626,
+     "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "compiler/tokenizer_config.json",
+     "size": 3082,
+     "sha256": "9f4fec4b1dc6ecddf8f4a92e9caea5971c0e67d81309f3f9066a2bee8c362633",
+     "git_blob_sha1": "6068e357379d36f823c377e30efb101fa2c67fe4"
+    },
+    {
+     "path": "compiler/chat_template.jinja",
+     "size": 18683,
+     "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+     "git_blob_sha1": "4741bf6e4132ba23a5537f9d6e74e9a6d613d7cd"
+    },
+    {
+     "path": "compiler/bobcat-download.json",
+     "size": 2629,
+     "sha256": "bcced4b6f1825c0c0ec167325ed45e4da24fff7ad44647364349a4eb2ec293b3",
+     "git_blob_sha1": "9a4911ea5c0c76d9169cb15da871b69574266ffa"
+    }
+   ],
+   "serve": {
+    "recipe_source": "/home/flori/jobs/jevbench-add-requests-20260919/r57/serve/serve-bobcat.sh (= jevbench-languages-full-20261007/tools/remaining-native-followon-packages/bobcat-flash-1.2/ORIGINAL-NATIVE.sh); author model card Quickstart",
+    "port": 8000,
+    "steps": [
+     "Install the author package (github.com/foxl-ai/bobcat @ 43387a09) with vllm==0.30.0 on the author install line.",
+     "Download sanghwa-na/bobcat-flash-1.2 @ 58d15456 (bf16 on disk, served FP8).",
+     "python -m bobcat.flash_server --engine vllm --model <snapshot> --compiler-model <snapshot>/compiler --quantization fp8 --temperature choice=0.594604,noul=0.353553,score=0.529732 --name bobcat-flash-1.2 --max-num-seqs 64 --max-model-len 98368 --engine-arg max_num_batched_tokens=16384 --engine-arg attention_backend=TRITON_ATTN --identifiers <snapshot>/bobcat-identifiers.json --host 127.0.0.1 --port 8000 --local",
+     "Adapter: jevbench typesafe, endpoint http://127.0.0.1:8000, model bobcat-flash-1.2."
+    ]
+   },
+   "measured": {
+    "gpu": "NVIDIA H100 80GB (readiness metadata: H100/80GB historical; serve script max-model-len is the BH H100 contingency value)",
+    "p50_ms": 61.0,
+    "source": "data/jevbench-latest.json (p50_s_raw)"
+   },
+   "expected_speed": "About 61 ms p 50 per decision on the BH H 100 (raw, serial). Long inputs (61K+ tokens) are slower; see the author README. Provisioning class: H 100 80 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
+   "notes": "min_vram_gb left null: no measured minimum in the files read. Not run by this slice. The readiness file records that the BH row still needs a current native admission, and that the per-type temperatures must stay exactly as published. Base google/gemma-4-26B-A4B-it @ 4d7ae498 (the two LoRA adapters are merged into these weights). Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. VRAM provisioning floor for unchanged BH recipe: H100 80 GB (recorded historical GPU). BF16 shards total 51.612 GB; FP8-on-load is about 25.806 GB before scales/unquantized components. max-model-len 98368, max-num-seqs 64 and max_num_batched_tokens 16384 leave a substantial KV/activation requirement. 80 GB conservatively retains the measured hardware class; a 48 GB short-context recipe was not verified. Exact minimum is not a measured fit threshold."
+  }
+ ],
+ "sources_checked_utc": "2026-10-09T16:40Z"
+}

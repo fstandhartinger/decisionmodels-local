@@ -1,0 +1,400 @@
+{
+ "schema": "decisionmodels-local-catalog/1",
+ "slug": "jev-omni",
+ "name": "Jev-Omni",
+ "author": "akhilaaa3",
+ "lists": [
+  "imagejevbench-top10"
+ ],
+ "benchmarks": {
+  "imagejevbench": {
+   "version": "v0.3.0",
+   "key": "jev_omni",
+   "capability_rank": 8,
+   "capability": 54.25,
+   "p50_s_raw": 0.0874,
+   "p50_s_adjusted": 0.3248,
+   "official_rank_in_v0.3_ranking": 7,
+   "page": "https://benchmarkheaven.com/image-jev-bench"
+  },
+  "jevbench": {
+   "version": "v1.6.1",
+   "key": "jev-omni",
+   "capability_rank": 16,
+   "capability": 71.29,
+   "within_caps": true,
+   "not_eligible_reasons": null,
+   "open_board_rank": 12,
+   "page": "https://benchmarkheaven.com/jev-models/jev-omni"
+  }
+ },
+ "modalities": [
+  "text",
+  "image"
+ ],
+ "question_types": {
+  "choice": "native",
+  "noul": "native",
+  "score": "native"
+ },
+ "weights": {
+  "repo": "akhilaaa3/Jev-Omni",
+  "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+  "url": "https://huggingface.co/akhilaaa3/Jev-Omni/tree/c050d51354147985d13286cf4acf90f562f2c631",
+  "gated": false,
+  "role": "merged Gemma 4 12B checkpoint + 256-way decision head"
+ },
+ "code": null,
+ "base_model": {
+  "repo": "google/gemma-4-12B-it",
+  "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "licence": "apache-2.0"
+ },
+ "params": {
+  "total_b": 12.0,
+  "active_b": 12.0
+ },
+ "licence": {
+  "spdx": "apache-2.0",
+  "commercial_use": "yes",
+  "redistribution": "yes",
+  "notes": "Card: Apache-2.0 \"following Gemma 4\". \"Dataset rights remain separate\". Base google/gemma-4-12B-it card: Apache-2.0. The card's evaluation dataset akhilaaa3/decision-bench says its scenarios were generated with Claude Opus 5 - Anthropic terms for those outputs are an open question if they were used in training.",
+  "evidence": [
+   "https://huggingface.co/akhilaaa3/Jev-Omni/raw/c050d51354147985d13286cf4acf90f562f2c631/README.md",
+   "https://huggingface.co/datasets/akhilaaa3/decision-bench/raw/main/README.md"
+  ]
+ },
+ "jev_distillation": {
+  "status": "none_found",
+  "evidence": "\"nothing in it was trained on Jev output.\" (author note: \"not affiliated with, endorsed by, sponsored by, or derived from TypeSafe AI or its Jev model\"). The card has no training-data section; this is the author's statement, not an audit.",
+  "url": "https://huggingface.co/akhilaaa3/Jev-Omni/raw/c050d51354147985d13286cf4acf90f562f2c631/README.md"
+ },
+ "installer_policy": {
+  "status": "supported",
+  "reason": "Apache-2.0 model and an explicit author statement that no Jev output was used. Open questions: training data is not described, and the evaluation dataset's Claude-generated content.",
+  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
+  "worker_proposal": "supported"
+ },
+ "readout": {
+  "type": "other",
+  "endpoint": "jev",
+  "backend_agnostic": false,
+  "notes": "In-process: load_jev_omni(path) returns a classifier that answers noul, choice and score with calibrated probabilities (256-way head). The card's typed-decision interface maps to Jev's shape. No HTTP server in the BH run.",
+  "portable_notes": "No unmodified portable path: jev_omni.py L113–116 accepts a device argument but explicitly refuses anything except CUDA; inference L104 hard-codes torch.autocast(\"cuda\"). https://huggingface.co/akhilaaa3/Jev-Omni/raw/c050d51354147985d13286cf4acf90f562f2c631/jev_omni.py . The trained 256-way head is in-process, so backend_agnostic=false. Loading the BF16 checkpoint into a different generic runtime would lose the native readout."
+ },
+ "image_input": {
+  "transport": "Python API: predict(..., media='/path/to/file', modality='image'); no HTTP field documented",
+  "limits": "UNVERIFIED for image size (card caps audio at 30 s and video at 16 frames)",
+  "source": "https://huggingface.co/akhilaaa3/Jev-Omni README ('media=' example)"
+ },
+ "variants": [
+  {
+   "id": "fp32-backbone-bf16-autocast",
+   "precision": "fp32 weights, bf16 autocast",
+   "benchmarked": true,
+   "runtime": "transformers 5.17.0 + torch 2.8.0+cu128 (in-process adapter)",
+   "runtime_version": "transformers 5.17.0; torch 2.8.0+cu128",
+   "image": "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35",
+   "platforms": [
+    "linux-nvidia"
+   ],
+   "gpu_arch_min": "UNVERIFIED (BH ran Blackwell RTX PRO 6000 and a 48 GB L40)",
+   "min_vram_gb": 40,
+   "recommended_vram_gb": 48,
+   "min_ram_gb": 92,
+   "disk_gb": 71.62,
+   "files": [
+    {
+     "path": "README.md",
+     "size": 4106,
+     "sha256": "42995cac5590c55bc79bdedd427ccfb0d717ed1d183ddf402a7e8d6ea3dc0aa9",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/config.json",
+     "size": 3082,
+     "sha256": "577ddd681814a81728720a9c3db729409bcef69a9c3004f273fc3b3a58fd02ba",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00001-of-00013.safetensors",
+     "size": 4026531976,
+     "sha256": "9a8f104173b8c1041f73c5bcb97b64387ceec7143c9d24e5ca7b88338d66d38c",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00002-of-00013.safetensors",
+     "size": 3775136372,
+     "sha256": "385935464075db64675c9e7fede42db8a229dbb6a1a4425192ead38bc9c656ec",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00003-of-00013.safetensors",
+     "size": 3893100448,
+     "sha256": "ea3bece64e07097aca4d7e31e217fac31642a87b941f2ff5df065c37d81bb8ac",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00004-of-00013.safetensors",
+     "size": 3893100464,
+     "sha256": "3a9f78f87ae06e4f650c944777c3c91d14fe25bac03899a5dea759c5b6eed57b",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00005-of-00013.safetensors",
+     "size": 3956079628,
+     "sha256": "02ba5ca16c7ee14abdd08b53459b6a70b39c52f9229cae27e80332f9601e4a18",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00006-of-00013.safetensors",
+     "size": 3948148920,
+     "sha256": "be8871ea81779b97850d79b2434497606125debe520363350021af251fe2a08d",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00007-of-00013.safetensors",
+     "size": 3893100504,
+     "sha256": "b4b4a1ad4b76ebf4b75d9ca43f7d295b016c1e5cb0155ebc331b872c77d9febc",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00008-of-00013.safetensors",
+     "size": 3987536796,
+     "sha256": "a9db6226909dee05921f9de5563965ef617ae2456fb8350b15aeb7459c25206c",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00009-of-00013.safetensors",
+     "size": 3916691744,
+     "sha256": "f4acf5e7e4d91a8d7d88e807bfdf3294de4e704684ccbd2c7b3fbcae49f5ad9a",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00010-of-00013.safetensors",
+     "size": 3893100504,
+     "sha256": "a1e82c624be3089e972ab86bab64e51bbd0b3930daabf2ba92e21d3ddc892ffe",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00011-of-00013.safetensors",
+     "size": 3987536796,
+     "sha256": "518067119b85b3491038f89fd490f6b92888818bcb836fc57594062aa178887e",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00012-of-00013.safetensors",
+     "size": 3987472560,
+     "sha256": "333ddb85529c6d4bc81439fcd6bd70d1401922ee69f6578f2aadae3ab3c0f774",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model-00013-of-00013.safetensors",
+     "size": 471936760,
+     "sha256": "2eb18abde4f2a8e2dc1b96372031d7afab9662de0c02f4d05c676b871515509a",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "backbone/model.safetensors.index.json",
+     "size": 51412,
+     "sha256": "422095beab2bc50d3dec10986c5811010cbcea8e231f16b51c0f1b4057a32ae6",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "chat_template.jinja",
+     "size": 18683,
+     "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "decision_config.json",
+     "size": 1174,
+     "sha256": "2cf5e5781871ed86be130abe0fccda8dbad35f32c6deebe08cd8f92f5f452200",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "head.pt",
+     "size": 3966079,
+     "sha256": "8c81edecd733f7db327604803c14cf9ecbee53d2af055eeb09f78b64bcbf2638",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "jev_omni.py",
+     "size": 6215,
+     "sha256": "9d212e7c200d78f4a87b5495dcb738290535d15ad69cfe9ae68568139a1c1cce",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "load_model.py",
+     "size": 3423,
+     "sha256": "2cd40e2dd7271fcea255e8257e61b80b53e0f28c839a4fb08cd77c928fce2728",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "requirements.txt",
+     "size": 118,
+     "sha256": "999186f24891c0e073a185401070ad877cfcb8e430f394b247e20f8608763db8",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "runtime_buffers.pt",
+     "size": 19676,
+     "sha256": "7310daabb66cf8521f9d893a87b699e935ce75a39a006764b5d9c492d175f74c",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "sha256.json",
+     "size": 3171,
+     "sha256": "91dc90f6cd3402a15e779cf98aef54135b031a2434636add1fc44cde100ae330",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 32169626,
+     "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 3735,
+     "sha256": "3776d16773f89b8047057deace4a362c0dc70853abadb2102bc1c19fc4b7af90",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "verification.json",
+     "size": 350,
+     "sha256": "30b1c33769dd764afd8eed3bbc867b9d277d936f3c0705c09d9faef710b2f7ca",
+     "repo": "akhilaaa3/Jev-Omni",
+     "revision": "c050d51354147985d13286cf4acf90f562f2c631",
+     "role": "Jev-Omni backbone (fp32), head, buffers, loader"
+    },
+    {
+     "path": "chat_template.jinja",
+     "size": 18683,
+     "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+     "repo": "google/gemma-4-12B-it",
+     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+     "role": "base google/gemma-4-12B-it multimodal components"
+    },
+    {
+     "path": "config.json",
+     "size": 4423,
+     "sha256": "478c46e8d2c52d5c2d85bf67e3b3e8c90e7c9d91086cee27e3c267907e936bd9",
+     "repo": "google/gemma-4-12B-it",
+     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+     "role": "base google/gemma-4-12B-it multimodal components"
+    },
+    {
+     "path": "generation_config.json",
+     "size": 260,
+     "sha256": "a8349d9bd64cc5841297fcb5002f0fdc4749c473c8f1b10ea337f9ce4ee7014e",
+     "repo": "google/gemma-4-12B-it",
+     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+     "role": "base google/gemma-4-12B-it multimodal components"
+    },
+    {
+     "path": "model.safetensors",
+     "size": 23919549408,
+     "sha256": "5a84cb313260ac447237b890387116dfa8682e49a6b44bc585ae8353abbff18d",
+     "repo": "google/gemma-4-12B-it",
+     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+     "role": "base google/gemma-4-12B-it multimodal components"
+    },
+    {
+     "path": "processor_config.json",
+     "size": 1382,
+     "sha256": "6b938e76555b3e9946890770e1abcd442a4718f34041a58e8139dc8ad34545c9",
+     "repo": "google/gemma-4-12B-it",
+     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+     "role": "base google/gemma-4-12B-it multimodal components"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 32169626,
+     "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+     "repo": "google/gemma-4-12B-it",
+     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+     "role": "base google/gemma-4-12B-it multimodal components"
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 3089,
+     "sha256": "a62f4e85a47c0c136edaaa3a4f591fd6783717299a9def47e5ad03a49f6a5eb9",
+     "repo": "google/gemma-4-12B-it",
+     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+     "role": "base google/gemma-4-12B-it multimodal components"
+    }
+   ],
+   "serve": {
+    "recipe_source": "BH /home/flori/jobs/jevbench-v16-run-20261001/harness/images/jev-omni (Dockerfile, serve.sh, omni_v15.py, stage_hf.py) and the v1.4.1 JevOmniLocalAdapter; BH meta min_vram_gb 40",
+    "port": null,
+    "steps": [
+     "pip install -r requirements.txt  (author; ffmpeg needed for audio)",
+     "path = snapshot_download('akhilaaa3/Jev-Omni'); sys.path.insert(0, path); from jev_omni import load_jev_omni",
+     "BH used an in-process adapter (no HTTP server): load_model.py builds Gemma4UnifiedTextModel from backbone/ in fp32 on CPU, casts nn.Linear weights to bf16, moves to CUDA, runs bf16 autocast, reads the 256-way head",
+     "A Jev-compatible endpoint needs our wrapper; not part of the BH recipe"
+    ]
+   },
+   "measured": {
+    "gpu": "RTX PRO 6000 Blackwell 97,887 MiB (ROSTER notes, historical run); v0.3 run GPU not named",
+    "p50_ms": 87.4,
+    "source": "imagejev-v03.json ranking jev_omni; run03/final-gpu/jev_omni.json (run extra-v03-2)"
+   },
+   "expected_speed": "About 0.09 s raw p 50 per decision on the BH measurement box (0.32 s adjusted). Model load reads ~50 GB of fp 32 backbone shards, so load time and CPU RAM are the practical limits. Provisioning class: L 40S 48 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
+   "notes": "Files: fp32 backbone 13 shards (~50 GB) + base Gemma 4 12B multimodal components (23.9 GB, the author loader downloads them). Disk 74 GB is required because both are needed. The repo's unified/model.safetensors (23.9 GB, bf16) is not used by the BH loader and is excluded. VRAM min 40 from BH meta; recommended 48 (BH run 8 used a 48 GB L40 with the bf16 cast). head.pt and runtime_buffers.pt are loaded with weights_only=True (author loader); sha256.json and verification.json are included for checking. Host RAM provisioning estimate: pinned weight files sum to 71.553 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 92 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+  }
+ ],
+ "sources_checked_utc": "2026-10-09T16:40Z"
+}

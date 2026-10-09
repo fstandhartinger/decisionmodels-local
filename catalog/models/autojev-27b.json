@@ -1,0 +1,533 @@
+{
+ "schema": "decisionmodels-local-catalog/1",
+ "slug": "autojev-27b",
+ "name": "AutoJev-27B",
+ "author": "denis-pplx",
+ "lists": [
+  "imagejevbench-top10"
+ ],
+ "benchmarks": {
+  "imagejevbench": {
+   "version": "v0.3.0",
+   "key": "autojev_27b",
+   "capability_rank": 3,
+   "capability": 62.15,
+   "p50_s_raw": 0.1668,
+   "p50_s_adjusted": 0.4837,
+   "official_rank_in_v0.3_ranking": 11,
+   "page": "https://benchmarkheaven.com/image-jev-bench"
+  },
+  "jevbench": {
+   "version": "v1.6.1",
+   "key": "autojev-27b",
+   "capability_rank": null,
+   "capability": 71.62,
+   "within_caps": false,
+   "not_eligible_reasons": [
+    "cost 7.0× Jev (v1.5 reference)"
+   ],
+   "open_board_rank": 66,
+   "page": "https://benchmarkheaven.com/jev-models/autojev-27b"
+  }
+ },
+ "modalities": [
+  "text",
+  "image"
+ ],
+ "question_types": {
+  "choice": "native",
+  "noul": "native",
+  "score": "native"
+ },
+ "weights": {
+  "repo": "denis-pplx/autojev-27b",
+  "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+  "url": "https://huggingface.co/denis-pplx/autojev-27b/tree/6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+  "gated": false,
+  "role": "full fine-tune of Qwen3.8-27B; weights standalone"
+ },
+ "code": {
+  "repo": "https://github.com/denis-pplx/autojev",
+  "revision": "ee63c1515980491a742f0bd0685c8dc5ca1f00c3",
+  "note": "code licence MIT (LICENSE in the repo); server.py/types.py byte-identical to BH copy"
+ },
+ "base_model": {
+  "repo": "Qwen/Qwen3.8-27B",
+  "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+  "licence": "apache-2.0"
+ },
+ "params": {
+  "total_b": 27.0,
+  "active_b": 27.0
+ },
+ "licence": {
+  "spdx": "apache-2.0",
+  "commercial_use": "yes",
+  "redistribution": "yes",
+  "notes": "Weights: Apache-2.0 (LICENSE file linked from the card). Code: MIT. Base Qwen3.8-27B is Apache-2.0 per its card. The card says \"While the weights are private, authenticate\" but the HF API reports gated=false and public tree access worked; the discrepancy is open.",
+  "evidence": [
+   "https://huggingface.co/denis-pplx/autojev-27b/raw/6f5b557e037f5edb25c7dc92dbc6553e5a19c015/README.md",
+   "https://huggingface.co/denis-pplx/autojev-27b/raw/6f5b557e037f5edb25c7dc92dbc6553e5a19c015/LICENSE"
+  ]
+ },
+ "jev_distillation": {
+  "status": "unclear",
+  "evidence": "\"The exact curated training corpus is not bundled.\" and \"Independent implementation inspired by Jev.\" Results table compares to Jev; no statement that labels came from Jev outputs.",
+  "url": "https://huggingface.co/denis-pplx/autojev-27b/raw/6f5b557e037f5edb25c7dc92dbc6553e5a19c015/README.md",
+  "display_note": "The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs."
+ },
+ "installer_policy": {
+  "status": "supported",
+  "reason": "Open licence (apache-2.0). The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs.",
+  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
+  "worker_proposal": "excluded"
+ },
+ "readout": {
+  "type": "author_server",
+  "endpoint": "jev",
+  "backend_agnostic": false,
+  "notes": "Author FastAPI server (autojev.server) with the PyTorch model; readout.safetensors and temperature from the checkpoint. Not OpenAI completions.",
+  "portable_notes": "CPU-only automatic fallback exists in the unmodified HTTP server: https://raw.githubusercontent.com/denis-pplx/autojev/ee63c1515980491a742f0bd0685c8dc5ca1f00c3/src/autojev/model.py L123: self.device_name = device or (\"cuda\" if torch.cuda.is_available() else \"cpu\"); L154: dtype = torch.bfloat16 if self.device_name.startswith(\"cuda\") else torch.float32; L174: self.to(self.device_name). https://raw.githubusercontent.com/denis-pplx/autojev/ee63c1515980491a742f0bd0685c8dc5ca1f00c3/src/autojev/server.py L122: service.model = await run_in_threadpool(DecisionModel, checkpoint=service.checkpoint). The server does not expose device selection and chooses only cuda/cpu, so no MPS variant is added. CPU loads FP32: ~104.35 GB weights, ~130.43 GB with 25% allowance, so this is a technically supported high-memory route, not practical on ordinary laptops. In-process trained head => backend_agnostic=false."
+ },
+ "image_input": {
+  "transport": "JSON 'images' list inside the decision input: 'data:image/...;base64,...' strings or local file paths (BH copy: types.py ImageInput, model.py open_image)",
+  "limits": "no size or token cap in the code; UNVERIFIED. Card: image support is not a natural-image accuracy claim.",
+  "source": "BH recipe autojev-27b/autojev/model.py; https://huggingface.co/denis-pplx/autojev-27b README"
+ },
+ "variants": [
+  {
+   "id": "bf16-torch-author-server",
+   "precision": "bf16",
+   "benchmarked": true,
+   "runtime": "pytorch 2.14 (author autojev-serve; BH image)",
+   "runtime_version": "torch 2.14.0+cu126, torchvision 0.29.0, transformers 5.17.0, accelerate 1.15.0, pillow 12.3.0, fastapi 0.141.1, uvicorn 0.52.4 (BH Dockerfile)",
+   "image": "pytorch/pytorch:2.14.0-cuda12.6-cudnn9-runtime@sha256:a77983eb7a3042ccf41a94da547a7f54a47fb70da15c36d67a8e8a329ebaa098",
+   "platforms": [
+    "linux-nvidia"
+   ],
+   "gpu_arch_min": "UNVERIFIED (BH ran H100 sm_90; blackwell_ok false in BH meta)",
+   "min_vram_gb": 80,
+   "recommended_vram_gb": 80,
+   "min_ram_gb": 60,
+   "disk_gb": 52.19,
+   "files": [
+    {
+     "path": "LICENSE",
+     "size": 11544,
+     "sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "NOTICE",
+     "size": 566,
+     "sha256": "3dff2fbb00cc77e3f9102e529b1f40af3ff9022073e24b67e4320d640e10f8e5",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "README.md",
+     "size": 2450,
+     "sha256": "dacacecbfcf72b565e91e1d80c9756bdcceb2a7de4074bc9a9a1ed25dc15f15c",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "chat_template.jinja",
+     "size": 8952,
+     "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "config.json",
+     "size": 3757,
+     "sha256": "687f20bf493b8ee787dadaf338cf6df644dad44e32bcd2c3677a47c6c213d8b3",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "decision_config.json",
+     "size": 6482,
+     "sha256": "bacbcbb281a53af5ef5cc6c9028601097d155bf981129f18a727219517921dcd",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00001-of-00011.safetensors",
+     "size": 4997471976,
+     "sha256": "58569725c35cadab80cb8c979bc2f86dd060a7156c09ef69bc7cd759512da341",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00002-of-00011.safetensors",
+     "size": 4965144568,
+     "sha256": "1b2a3af03da7f7997d4e88f6d1c1c7173a8d241165c3f06b040be41827846f4c",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00003-of-00011.safetensors",
+     "size": 4933789248,
+     "sha256": "f72a874e019dfe8a0cb02e5d0105d3481743b8a163ea4a4275f1b0de26e5e6a6",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00004-of-00011.safetensors",
+     "size": 4965227496,
+     "sha256": "5912f502fbe9cf9d0e326f15ab0a50555efc411da32c8ec035b4678e84238c2e",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00005-of-00011.safetensors",
+     "size": 4974750552,
+     "sha256": "1a070c547f61d143662a3eb7a705f59fbad79141a91d0dfc93beeb0ae4e04433",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00006-of-00011.safetensors",
+     "size": 4924266240,
+     "sha256": "7d9baeef76e6bf2e898ecef17cc7998292038f494900a2504a722c4aca1df5a3",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00007-of-00011.safetensors",
+     "size": 4974750560,
+     "sha256": "087eb8ead9cdec86d9f30ee5af04aefc4ec2271c0f25ff2899fdebce5a72ba7f",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00008-of-00011.safetensors",
+     "size": 4902229944,
+     "sha256": "8c15e947d1fb961817b9fac90ff99df3a0677e4c95c6085e420fa0ce4c1f018d",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00009-of-00011.safetensors",
+     "size": 4996786840,
+     "sha256": "5e2821efd5ed9abfe4fca2c8e7bf7a278a928a754d74dc1de4164bb7b27fdad0",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00010-of-00011.safetensors",
+     "size": 4902229960,
+     "sha256": "a1a54045af3155fefcf2f36cd1a4b7dfd3c22e0f305ee8466e7a3bdd4b314649",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00011-of-00011.safetensors",
+     "size": 2634155256,
+     "sha256": "7c849c5bcf4d5e8d4d14c8ad13a4cc320b9090f31bb865edee6354b2d4106007",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model.safetensors.index.json",
+     "size": 103954,
+     "sha256": "dc39d771cb240f775399e1845b11d081d8e007f14eecae3b780bc6272b128a46",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "processor_config.json",
+     "size": 1218,
+     "sha256": "abb488b9a03a53407dc9c8e43c0a2caec9142e5fc7a1203807fdf54b2149cc8f",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "readout.safetensors",
+     "size": 2611288,
+     "sha256": "5b397c635e8677de8fcc971fcd33b9c6d2ecfe2b0e5690d4fc49c6cc0b78fd92",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "release-manifest.json",
+     "size": 9967,
+     "sha256": "6df40131dcd61d492614f958201cbeffcdd1ad8488c88d17499540e39839ec46",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 19989492,
+     "sha256": "6f32ce20dc35f57a7f9ad1eac03525bd7d30f9df8cea6507e958279cc3657706",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 1165,
+     "sha256": "09564f0b57b433b55d536630be3044b4183dbe04d0cbc7b1e9b1154db3671b0b",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    }
+   ],
+   "serve": {
+    "recipe_source": "BH /home/flori/jobs/jevbench-v16-run-20261001/harness/images/autojev-27b (serve.sh, Dockerfile, meta.json)",
+    "port": 8000,
+    "steps": [
+     "AUTOJEV_CHECKPOINT=<snapshot dir> python -c 'from autojev.server import main; main()'  (BH serve.sh; author: uv run autojev-serve with the code at denis-pplx/autojev ee63c15)",
+     "health: GET http://127.0.0.1:8000/health; AUTOJEV_API_KEY unset in BH (set it for any exposed service)",
+     "decision: POST /v1/systemone (choice, noul, score; optional base64 images)"
+    ]
+   },
+   "measured": {
+    "gpu": "H100 80 GB (BH v1.4.3 gpu lane and recipe meta.gpu; v0.3 GPU not named in receipts)",
+    "p50_ms": 166.8,
+    "source": "imagejev-v03.json ranking autojev_27b; run03/final-gpu/autojev_27b.json (run common-v03-3)"
+   },
+   "expected_speed": "About 0.17 s raw p 50 per decision on an H 100 (0.48 s adjusted). Needs an 80 GB card for the 52 GB BF 16 weights. Provisioning class: H 100 80 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
+   "notes": "Min and recommended VRAM 80 GB from BH meta.json (min_vram_gb 80); weights 52.2 GB in 11 shards plus readout; ROSTER estimate ~58 GB VRAM and >=60 GB host RAM (min_ram_gb 60). Blackwell not validated by BH. The author's documented install says about 49 GiB BF16 plus overhead."
+  },
+  {
+   "id": "fp32-torch-cpu",
+   "precision": "fp32",
+   "benchmarked": false,
+   "runtime": "PyTorch / transformers (unmodified author server)",
+   "runtime_version": "Author pinned code; CPU/MPS runtime versions and parity not measured",
+   "image": null,
+   "platforms": [
+    "linux-cpu",
+    "windows-cpu"
+   ],
+   "gpu_arch_min": null,
+   "min_vram_gb": 0,
+   "recommended_vram_gb": 0,
+   "min_ram_gb": 136,
+   "disk_gb": 52.19,
+   "files": [
+    {
+     "path": "LICENSE",
+     "size": 11544,
+     "sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "NOTICE",
+     "size": 566,
+     "sha256": "3dff2fbb00cc77e3f9102e529b1f40af3ff9022073e24b67e4320d640e10f8e5",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "README.md",
+     "size": 2450,
+     "sha256": "dacacecbfcf72b565e91e1d80c9756bdcceb2a7de4074bc9a9a1ed25dc15f15c",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "chat_template.jinja",
+     "size": 8952,
+     "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "config.json",
+     "size": 3757,
+     "sha256": "687f20bf493b8ee787dadaf338cf6df644dad44e32bcd2c3677a47c6c213d8b3",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "decision_config.json",
+     "size": 6482,
+     "sha256": "bacbcbb281a53af5ef5cc6c9028601097d155bf981129f18a727219517921dcd",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00001-of-00011.safetensors",
+     "size": 4997471976,
+     "sha256": "58569725c35cadab80cb8c979bc2f86dd060a7156c09ef69bc7cd759512da341",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00002-of-00011.safetensors",
+     "size": 4965144568,
+     "sha256": "1b2a3af03da7f7997d4e88f6d1c1c7173a8d241165c3f06b040be41827846f4c",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00003-of-00011.safetensors",
+     "size": 4933789248,
+     "sha256": "f72a874e019dfe8a0cb02e5d0105d3481743b8a163ea4a4275f1b0de26e5e6a6",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00004-of-00011.safetensors",
+     "size": 4965227496,
+     "sha256": "5912f502fbe9cf9d0e326f15ab0a50555efc411da32c8ec035b4678e84238c2e",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00005-of-00011.safetensors",
+     "size": 4974750552,
+     "sha256": "1a070c547f61d143662a3eb7a705f59fbad79141a91d0dfc93beeb0ae4e04433",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00006-of-00011.safetensors",
+     "size": 4924266240,
+     "sha256": "7d9baeef76e6bf2e898ecef17cc7998292038f494900a2504a722c4aca1df5a3",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00007-of-00011.safetensors",
+     "size": 4974750560,
+     "sha256": "087eb8ead9cdec86d9f30ee5af04aefc4ec2271c0f25ff2899fdebce5a72ba7f",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00008-of-00011.safetensors",
+     "size": 4902229944,
+     "sha256": "8c15e947d1fb961817b9fac90ff99df3a0677e4c95c6085e420fa0ce4c1f018d",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00009-of-00011.safetensors",
+     "size": 4996786840,
+     "sha256": "5e2821efd5ed9abfe4fca2c8e7bf7a278a928a754d74dc1de4164bb7b27fdad0",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00010-of-00011.safetensors",
+     "size": 4902229960,
+     "sha256": "a1a54045af3155fefcf2f36cd1a4b7dfd3c22e0f305ee8466e7a3bdd4b314649",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model-00011-of-00011.safetensors",
+     "size": 2634155256,
+     "sha256": "7c849c5bcf4d5e8d4d14c8ad13a4cc320b9090f31bb865edee6354b2d4106007",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "model.safetensors.index.json",
+     "size": 103954,
+     "sha256": "dc39d771cb240f775399e1845b11d081d8e007f14eecae3b780bc6272b128a46",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "processor_config.json",
+     "size": 1218,
+     "sha256": "abb488b9a03a53407dc9c8e43c0a2caec9142e5fc7a1203807fdf54b2149cc8f",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "readout.safetensors",
+     "size": 2611288,
+     "sha256": "5b397c635e8677de8fcc971fcd33b9c6d2ecfe2b0e5690d4fc49c6cc0b78fd92",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "release-manifest.json",
+     "size": 9967,
+     "sha256": "6df40131dcd61d492614f958201cbeffcdd1ad8488c88d17499540e39839ec46",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 19989492,
+     "sha256": "6f32ce20dc35f57a7f9ad1eac03525bd7d30f9df8cea6507e958279cc3657706",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 1165,
+     "sha256": "09564f0b57b433b55d536630be3044b4183dbe04d0cbc7b1e9b1154db3671b0b",
+     "repo": "denis-pplx/autojev-27b",
+     "revision": "6f5b557e037f5edb25c7dc92dbc6553e5a19c015",
+     "role": "AutoJev-27B full fine-tune weights"
+    }
+   ],
+   "serve": {
+    "recipe_source": "https://github.com/denis-pplx/autojev",
+    "port": 8000,
+    "steps": [
+     "Install pinned author code using CPU PyTorch and the author server dependencies.",
+     "CUDA_VISIBLE_DEVICES=\"\" AUTOJEV_CHECKPOINT=<pinned snapshot> python -c \"from autojev.server import main; main()\"",
+     "POST /v1/systemone, same checkpoint readout and temperature."
+    ]
+   },
+   "measured": null,
+   "expected_speed": "Estimate only: 27B FP 32 on a high-memory CPU host is likely tens of seconds or longer per 300–1500-token prefill. Not an interactive laptop recommendation; no CPU benchmark/parity measured.",
+   "notes": "CPU-only automatic fallback exists in the unmodified HTTP server: https://raw.githubusercontent.com/denis-pplx/autojev/ee63c1515980491a742f0bd0685c8dc5ca1f00c3/src/autojev/model.py L123: self.device_name = device or (\"cuda\" if torch.cuda.is_available() else \"cpu\"); L154: dtype = torch.bfloat16 if self.device_name.startswith(\"cuda\") else torch.float32; L174: self.to(self.device_name). https://raw.githubusercontent.com/denis-pplx/autojev/ee63c1515980491a742f0bd0685c8dc5ca1f00c3/src/autojev/server.py L122: service.model = await run_in_threadpool(DecisionModel, checkpoint=service.checkpoint). The server does not expose device selection and chooses only cuda/cpu, so no MPS variant is added. CPU loads FP32: ~104.35 GB weights, ~130.43 GB with 25% allowance, so this is a technically supported high-memory route, not practical on ordinary laptops. In-process trained head => backend_agnostic=false. Memory estimate: 52.173 GB downloaded weights × 2 for fp32 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified."
+  }
+ ],
+ "sources_checked_utc": "2026-10-09T16:40Z"
+}

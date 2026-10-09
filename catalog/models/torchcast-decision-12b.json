@@ -1,0 +1,168 @@
+{
+ "schema": "decisionmodels-local-catalog/1",
+ "slug": "torchcast-decision-12b",
+ "name": "torchcast-decision-12b",
+ "author": "Torchcast AI",
+ "lists": [
+  "jevbench-top10"
+ ],
+ "benchmarks": {
+  "jevbench": {
+   "version": "v1.6.1",
+   "key": "torchcast-decision-12b",
+   "capability_rank": 15,
+   "capability": 71.74,
+   "p50_s_raw": 0.0372,
+   "page": "https://benchmarkheaven.com/jev-models/torchcast-decision-12b"
+  }
+ },
+ "modalities": [
+  "text"
+ ],
+ "question_types": {
+  "choice": "native",
+  "noul": "native",
+  "score": "native"
+ },
+ "weights": {
+  "repo": "torchcast-ai/torchcast-decision-12b",
+  "revision": "49107b5589bf2dc4ec3f5acd54316971dd5978b1",
+  "url": "https://huggingface.co/torchcast-ai/torchcast-decision-12b/tree/49107b5589bf2dc4ec3f5acd54316971dd5978b1",
+  "gated": false
+ },
+ "code": {
+  "repo": "https://github.com/Torchcast-AI/torchcast-decision-12b",
+  "revision": "d7f84468f7c4a21c8aeed52df845d98c59afae04"
+ },
+ "base_model": {
+  "repo": "google/gemma-4-12B-it",
+  "licence": "apache-2.0",
+  "revision": null,
+  "revision_note": "card says \"finetune\" of google/gemma-4-12B-it, no revision given; 707f0a3b is a reference only"
+ },
+ "params": {
+  "total_b": 12.0,
+  "active_b": 12.0
+ },
+ "licence": {
+  "spdx": "cc-by-nc-4.0",
+  "commercial_use": "no",
+  "redistribution": "conditional",
+  "notes": "Weights are CC BY-NC 4.0 (non-commercial), and the card says this label does not clear every training-source right. Serving code is MIT. Gemma Prohibited Use Policy applies. Preserve LICENSE, LICENSE-gemma-Apache-2.0 and LICENSE-serving-MIT.",
+  "evidence": [
+   "https://huggingface.co/torchcast-ai/torchcast-decision-12b/raw/49107b5589bf2dc4ec3f5acd54316971dd5978b1/README.md",
+   "https://huggingface.co/torchcast-ai/torchcast-decision-12b/raw/49107b5589bf2dc4ec3f5acd54316971dd5978b1/LICENSE"
+  ]
+ },
+ "jev_distillation": {
+  "status": "none_found",
+  "evidence": "\"trained on a 50/50 mix of gold labels and a larger instruction model's option distributions (not TypeSafe/Jev outputs)\" (README). Training data includes ZefanCai/Open-Jev-v1.1 (train split): its card says labels come from exact rules, stochastic constructions, human annotations or uniform sets, and that the generated rows are CC0. Open question: the dataset name contains \"Jev\" and some customer-control rows contain question descriptions from TypeSafe documentation (licence not verified).",
+  "url": "https://huggingface.co/torchcast-ai/torchcast-decision-12b/raw/49107b5589bf2dc4ec3f5acd54316971dd5978b1/README.md"
+ },
+ "installer_policy": {
+  "status": "supported_noncommercial_only",
+  "reason": "The model licence (cc-by-nc-4.0) allows non-commercial use only.",
+  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
+  "worker_proposal": "supported_noncommercial_only"
+ },
+ "readout": {
+  "type": "author_shim",
+  "endpoint": "jev",
+  "backend_agnostic": false,
+  "notes": "Author shim torchcast_shim.py (stdlib only) calls vLLM POST /v1/chat/completions with logprobs=true, top_logprobs=20 (SHIM_TOP_LOGPROBS) and chat_template_kwargs enable_thinking=false, sums option-letter probability mass at the answer slot, applies readout_config.json temperatures (choice 1.0, score 1.0, noul 0.2). OpenAI-style chat logprobs; llama.cpp parity not verified and MLX (mlx_lm.server) not checked, so backend_agnostic is false.",
+  "portable_notes": "No portable variant: the pinned shim requires vLLM structured_outputs choice masking and chat_template_kwargs in addition to standard logprobs, so an arbitrary OpenAI endpoint does not preserve the readout. https://raw.githubusercontent.com/Torchcast-AI/torchcast-decision-12b/d7f84468f7c4a21c8aeed52df845d98c59afae04/serving/torchcast_shim.py L294: \"top_logprobs\": TOP_LOGPROBS,; L295: \"chat_template_kwargs\": CHAT_TEMPLATE_KWARGS,; L296: \"structured_outputs\": {\"choice\": allowed_letters},"
+ },
+ "variants": [
+  {
+   "id": "bf16-vllm-shim",
+   "precision": "bf16",
+   "benchmarked": true,
+   "runtime": "vllm",
+   "runtime_version": "0.30.0 (unmodified, image pinned)",
+   "image": "vllm/vllm-openai@sha256:8a69ffad015f138d7170c4ddc429e230a3bc1c1719f67e14324749df200a4b90",
+   "platforms": [
+    "linux-nvidia",
+    "wsl2-nvidia"
+   ],
+   "gpu_arch_min": "sm_80",
+   "min_vram_gb": 40,
+   "recommended_vram_gb": 96,
+   "min_ram_gb": 32,
+   "disk_gb": 23.95,
+   "files": [
+    {
+     "path": "model.safetensors",
+     "size": 23919549408,
+     "sha256": "f8553c9e625fa24853d57e938a1b1475975d9bce4bb79fccff2e8bfaaf6caa4e",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "config.json",
+     "size": 4953,
+     "sha256": "7ca788d720debf5be59819bbb7d08530c6c68b71f6da7c025c4d60751b2d31e3",
+     "git_blob_sha1": "588ac32806053552d51443d29f941cf39f842d26"
+    },
+    {
+     "path": "generation_config.json",
+     "size": 255,
+     "sha256": "7314a722deaae4ceac6d26f8cd3826ec84aa031e2f69809cf05b7b9edfc69907",
+     "git_blob_sha1": "176f5ef77c3a8df2a1fa98519d20348ec2ad9723"
+    },
+    {
+     "path": "processor_config.json",
+     "size": 1382,
+     "sha256": "6b938e76555b3e9946890770e1abcd442a4718f34041a58e8139dc8ad34545c9",
+     "git_blob_sha1": "b889adcd78015bf5a0139438c5fb0b7067529a61"
+    },
+    {
+     "path": "readout_config.json",
+     "size": 982,
+     "sha256": "8a4de5ef4a26a24d8be69c123a6a6622016f487693b0bc8fc683b92f0d7ade97",
+     "git_blob_sha1": "ccd1601d3582e6b5fdd2c97314c35ead154a4b2c"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 32169626,
+     "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 3089,
+     "sha256": "a62f4e85a47c0c136edaaa3a4f591fd6783717299a9def47e5ad03a49f6a5eb9",
+     "git_blob_sha1": "6520cdc25462a5eba96fdac6d8cf3caa461feb35"
+    },
+    {
+     "path": "chat_template.jinja",
+     "size": 18683,
+     "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+     "git_blob_sha1": "4741bf6e4132ba23a5537f9d6e74e9a6d613d7cd"
+    },
+    {
+     "path": "torchcast_shim.py",
+     "size": 20297,
+     "sha256": "1dff956ead46f251fe7c60d91b4cf08b241d56a69a45eba835463bf4fc252694",
+     "git_blob_sha1": "96701f6d8dc5560f38dbb19a01e24a9010547d6e"
+    }
+   ],
+   "serve": {
+    "recipe_source": "/home/flori/jobs/jevbench-v16-run-20261001/harness/images/torchcast-decision-12b (Dockerfile, serve.sh, spec.json, NOTES.md, torchcast_shim.py, readout_config.json)",
+    "port": 8011,
+    "steps": [
+     "Use the pinned vLLM image (see image) and verify model.safetensors sha256 f8553c9e... and torchcast_shim.py sha256 1dff956e... / readout_config.json sha256 8a4de5ef....",
+     "vllm serve <snapshot> --served-model-name torchcast-decision-12b --host 127.0.0.1 --port 8890 --max-model-len 16384 --gpu-memory-utilization 0.90",
+     "SHIM_VLLM=http://127.0.0.1:8890/v1/chat/completions SHIM_MODEL=torchcast-decision-12b SHIM_PORT=8011 python3 torchcast_shim.py (readout_config.json beside it).",
+     "Adapter: jevbench typesafe, endpoint http://127.0.0.1:8011, model torchcast-decision-12b, timeout 120 s."
+    ]
+   },
+   "measured": {
+    "gpu": "RTX PRO 6000 96GB (BH meta.json gpu RTXPRO6000; NOTES: H100 unavailable at the price cap)",
+    "p50_ms": 37.2,
+    "source": "data/jevbench-latest.json (p50_s_raw)"
+   },
+   "expected_speed": "About 37 ms p 50 per decision (raw, serial) on the BH card. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
+   "notes": "min_vram_gb 40 from BH meta.json; recommended 96 is the BH card. Weights 23.9 GB bf16. Non-commercial only: the installer may only offer it under that label. Host RAM provisioning estimate: pinned weight files sum to 23.920 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 32 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+  }
+ ],
+ "sources_checked_utc": "2026-10-09T16:41Z"
+}

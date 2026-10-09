@@ -1,0 +1,227 @@
+{
+ "schema": "decisionmodels-local-catalog/1",
+ "slug": "vjev-vision",
+ "name": "vjev-vision",
+ "author": "yah01",
+ "lists": [
+  "imagejevbench-top10"
+ ],
+ "benchmarks": {
+  "imagejevbench": {
+   "version": "v0.3.0",
+   "key": "vjev_vision",
+   "capability_rank": 6,
+   "capability": 55.66,
+   "p50_s_raw": 0.0681,
+   "p50_s_adjusted": 0.2863,
+   "official_rank_in_v0.3_ranking": 29,
+   "page": "https://benchmarkheaven.com/image-jev-bench"
+  }
+ },
+ "modalities": [
+  "text",
+  "image"
+ ],
+ "question_types": {
+  "choice": "native",
+  "noul": "native",
+  "score": "native"
+ },
+ "weights": {
+  "repo": "yah01/vjev-vision",
+  "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+  "url": "https://huggingface.co/yah01/vjev-vision/tree/2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+  "gated": false,
+  "role": "merged Qwen3.5-4B checkpoint; no separate base download"
+ },
+ "code": null,
+ "base_model": {
+  "repo": "Qwen/Qwen3.5-4B",
+  "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "licence": "apache-2.0"
+ },
+ "params": {
+  "total_b": 4.0,
+  "active_b": 4.0
+ },
+ "licence": {
+  "spdx": "apache-2.0",
+  "commercial_use": "yes",
+  "redistribution": "yes",
+  "notes": "Card: Apache-2.0; base Qwen3.5-4B Apache-2.0. The licence is not in question; the Jev-distillation statement below is.",
+  "evidence": [
+   "https://huggingface.co/yah01/vjev-vision/raw/2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2/README.md"
+  ]
+ },
+ "jev_distillation": {
+  "status": "stated",
+  "evidence": "\"QLoRA on ~145k typed questions with soft labels from the Jev API plus human-labelled corpora; KL to the teacher distribution for choice/score, soft BCE for noul.\" (README, 'How it was trained', step 1)",
+  "url": "https://huggingface.co/yah01/vjev-vision/raw/2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2/README.md"
+ },
+ "installer_policy": {
+  "status": "excluded",
+  "reason": "The author states the model was trained on outputs of TypeSafe's Jev API. TypeSafe's terms do not allow distilling Jev, so we do not offer an installer for it.",
+  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
+  "worker_proposal": "supported_noncommercial_only"
+ },
+ "readout": {
+  "type": "other",
+  "endpoint": "jev",
+  "backend_agnostic": false,
+  "notes": "vjev_infer.Vjev reads choice/noul/score probabilities from one forward pass over an 'Answer: (A) (B) ...' slot (listwise, options see each other). The shape mirrors the Jev API but the BH run calls the class directly. The author's console (github.com/BubbleCal/vjev-serve) was not evaluated."
+ },
+ "image_input": {
+  "transport": "images inside the state (Python API); no HTTP field documented on the card",
+  "limits": "images resized to a 512 px longer side (training resolution); several images via 'Picture 1:' 'Picture 2:' labels, trained on single images",
+  "source": "https://huggingface.co/yah01/vjev-vision README ('Limitations', 'Use it')"
+ },
+ "variants": [
+  {
+   "id": "bf16-transformers-infer",
+   "precision": "bf16",
+   "benchmarked": true,
+   "runtime": "transformers (vjev_infer.py, CUDA)",
+   "runtime_version": "UNVERIFIED (BH intake pins not extracted; card uses transformers)",
+   "image": null,
+   "platforms": [
+    "linux-nvidia"
+   ],
+   "gpu_arch_min": "UNVERIFIED",
+   "min_vram_gb": 12,
+   "recommended_vram_gb": 16,
+   "min_ram_gb": 16,
+   "disk_gb": 9.1,
+   "files": [
+    {
+     "path": "README.md",
+     "size": 5636,
+     "sha256": "ed64a432a8d978187c7f64fc510948817caade79fcf5648c6fd1badce17c6514",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "chat_template.jinja",
+     "size": 7909,
+     "sha256": "a92e1dd97cb1cb175c9b70c0828e146bea4371c2643319b661b777e89811972e",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "config.json",
+     "size": 3030,
+     "sha256": "e77abfd677b64191f7eafe5df7ced65980def3b3a169a8a03ebce7603b505cbd",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "generation_config.json",
+     "size": 122,
+     "sha256": "2bb288381005ac379cbbb8e60ce18f88054312e59432a4d8f61cbedd2e8cbabe",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "head.pt",
+     "size": 12045,
+     "sha256": "f1c21ff4eee514b109ab6299c8c76e5e8cf7925ba14141fe18d3d930a92a2629",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "model-00001-of-00003.safetensors",
+     "size": 3991298872,
+     "sha256": "24ba02d1fb2ce94b82dbb5392bff0ad0a6da68af29de91b20069094523686daf",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "model-00002-of-00003.safetensors",
+     "size": 3979833152,
+     "sha256": "d1a174029ad8264cbd2aa8cb701321cd432ddf020a2da910d526365c49b8f071",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "model-00003-of-00003.safetensors",
+     "size": 1107487880,
+     "sha256": "611359f82c25f0c13abfdcf115812ca23ffd6765d7bbd330ff2d6631756b4f71",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "model.safetensors.index.json",
+     "size": 66967,
+     "sha256": "3f493bc3c3bc4411d435ecdaea4c744daaab8b5d9f22530fa17695478dde7617",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "processor_config.json",
+     "size": 1281,
+     "sha256": "729f505a1a4ad800ee9e41880374e37a765d3cfacddd9d7c722ef492755f849b",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 19989325,
+     "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 1198,
+     "sha256": "9cdfca5d7fbc1ed3f2989abdfccce2cd3eca26a2cfcfb52d1900e8b1b47b87d3",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "vjev.json",
+     "size": 169,
+     "sha256": "bc9e2f2a433e8fba640b6f8f2acef532df7f9fa838278398fc3ce9d174b43855",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    },
+    {
+     "path": "vjev_infer.py",
+     "size": 9164,
+     "sha256": "e7e8a3c659291b4f970c244c41a8faa6499e476d8378dcccc30604220ded3edf",
+     "repo": "yah01/vjev-vision",
+     "revision": "2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2",
+     "role": "merged checkpoint yah01/vjev-vision"
+    }
+   ],
+   "serve": {
+    "recipe_source": "intake vendor /home/flori/jobs/imagejev-next-release-20261005/workers/harness/scratch/runner/intake/vendor/vjev_vision (VENDOR-SOURCE.json, vjev_infer.py sha e7e8a3c6...)",
+    "port": null,
+    "steps": [
+     "from vjev_infer import Vjev  # file from the pinned repo, loaded by path",
+     "m = Vjev('/models/vjev-vision')  # cuda; probabilities per option in one forward pass",
+     "No HTTP server in the BH run. A Jev-shaped endpoint needs our wrapper."
+    ]
+   },
+   "measured": {
+    "gpu": "UNVERIFIED",
+    "p50_ms": 68.1,
+    "source": "imagejev-v03.json ranking vjev_vision; run03/final-gpu/vjev_vision.json (run common-v03-3)"
+   },
+   "expected_speed": "About 0.07 s raw p 50 per decision on the BH measurement box (0.29 s adjusted). Single forward pass.",
+   "notes": "Weights 9.39 GB (3 shards). Min 12 / recommended 16 GB = weights + activations at 512 px images; the vendor note estimates about 10 GB. adapter/ (312 MB) is not needed by vjev_infer.py and is excluded. head.pt is a pickle: the BH intake pickle-scanned it (PASS, lfs oid match) and converted it to head.safetensors before use; installers should do the same and must not torch.load it unscanned. Host RAM estimate: 9.079 GB weights ×1.25, rounded up to4 GB with OS allowance = 16 GB; not measured."
+  }
+ ],
+ "sources_checked_utc": "2026-10-09T16:41Z"
+}

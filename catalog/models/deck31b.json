@@ -1,0 +1,167 @@
+{
+ "schema": "decisionmodels-local-catalog/1",
+ "slug": "deck31b",
+ "name": "deck-31B",
+ "author": "krishna765 (Krishna Gogineni)",
+ "lists": [
+  "jevbench-top10"
+ ],
+ "benchmarks": {
+  "jevbench": {
+   "version": "v1.6.1",
+   "key": "deck31b",
+   "capability_rank": 4,
+   "capability": 77.59,
+   "p50_s_raw": 0.1275,
+   "page": "https://benchmarkheaven.com/jev-models/deck31b"
+  }
+ },
+ "modalities": [
+  "text"
+ ],
+ "question_types": {
+  "choice": "native",
+  "noul": "native",
+  "score": "native"
+ },
+ "weights": {
+  "repo": "google/gemma-4-31B-it",
+  "revision": "842da3794eaa0b77d5f08bae87a17459d91ff475",
+  "url": "https://huggingface.co/google/gemma-4-31B-it/tree/842da3794eaa0b77d5f08bae87a17459d91ff475",
+  "gated": false,
+  "note": "frozen BASE weights; the deck31b repo does not redistribute them"
+ },
+ "code": {
+  "repo": "https://github.com/krishna-gogineni-765/deck31b",
+  "revision": "d499cf6f56ca7b2fd6c74b5f2125bfe960fe0c53"
+ },
+ "base_model": {
+  "repo": "google/gemma-4-31B-it",
+  "licence": "apache-2.0",
+  "revision": "842da3794eaa0b77d5f08bae87a17459d91ff475"
+ },
+ "params": {
+  "total_b": 31.0,
+  "active_b": 31.0
+ },
+ "licence": {
+  "spdx": "apache-2.0",
+  "commercial_use": "yes",
+  "redistribution": "yes",
+  "notes": "Server code is Apache-2.0 (LICENSE file, README). Base weights remain under Google's Gemma terms (README: \"The base weights remain under the Gemma Terms of Use\"); the Gemma 4 31B HF card lists Apache-2.0 and links the Gemma 4 licence page.",
+  "evidence": [
+   "https://raw.githubusercontent.com/krishna-gogineni-765/deck31b/d499cf6f56ca7b2fd6c74b5f2125bfe960fe0c53/LICENSE",
+   "https://raw.githubusercontent.com/krishna-gogineni-765/deck31b/d499cf6f56ca7b2fd6c74b5f2125bfe960fe0c53/README.md"
+  ]
+ },
+ "jev_distillation": {
+  "status": "none_found",
+  "evidence": "\"deck31b is a frozen decision model. ... We did not train them and this repository does not redistribute them.\" (README)",
+  "url": "https://raw.githubusercontent.com/krishna-gogineni-765/deck31b/d499cf6f56ca7b2fd6c74b5f2125bfe960fe0c53/README.md"
+ },
+ "installer_policy": {
+  "status": "supported",
+  "reason": "Frozen unmodified Google base, no training, no Jev outputs. Gemma terms apply to the base weights, which the installer downloads from HF.",
+  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
+  "worker_proposal": "supported"
+ },
+ "readout": {
+  "type": "letter_logprobs",
+  "endpoint": "jev",
+  "backend_agnostic": false,
+  "notes": "Own server (deck31b-serve, 127.0.0.1:8090): TorchAO FP8 dynamic quant at startup, next-token probability mass over option letters with T=3.4 (Cygnet recipe). No tokens generated. Not a logprobs API call, so not portable to llama.cpp/MLX as is.",
+  "portable_notes": "No portable variant: frozen Gemma-4-31B-it, CUDA hard-coded and TorchAO FP8 dynamic runtime required. https://raw.githubusercontent.com/krishna-gogineni-765/deck31b/d499cf6f56ca7b2fd6c74b5f2125bfe960fe0c53/src/deck31b/serve.py L93: BASE_MODEL, revision=BASE_REVISION, dtype=torch.bfloat16, device_map=\"cuda\"; L216: if not torch.cuda.is_available():. BF16 base weights are 62.546 GB (~58.25 GiB); +25% =78.18 GB (~72.8 GiB), before OS allocation. A 64 GB Mac cannot fit this BF16 model. A higher-memory Mac would still require changes to the author server; 31B CPU execution is not a practical interactive installer."
+ },
+ "variants": [
+  {
+   "id": "bf16-torchao-fp8-dynamic",
+   "precision": "fp8-dynamic-on-load (base bf16)",
+   "benchmarked": true,
+   "runtime": "transformers + torchao (own server)",
+   "runtime_version": "torch 2.11.0+cu128, transformers 5.17.0, torchao 0.18.0",
+   "image": null,
+   "platforms": [
+    "linux-nvidia",
+    "wsl2-nvidia"
+   ],
+   "gpu_arch_min": "sm_89",
+   "min_vram_gb": 80,
+   "recommended_vram_gb": 80,
+   "min_ram_gb": 80,
+   "disk_gb": 62.58,
+   "files": [
+    {
+     "path": "model-00001-of-00002.safetensors",
+     "size": 49784788364,
+     "sha256": "eeef8791537bc04f110967c513149e037d2a9ae97d49add7291ebfa62806bbfa",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00002-of-00002.safetensors",
+     "size": 12761549884,
+     "sha256": "018912220f559f7025d60333e0996183cd538aa77ad6f4988a89ce47be681f10",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model.safetensors.index.json",
+     "size": 120246,
+     "sha256": "d4aff3b976d69c123a29d1c085d7ba4de1ac3f4ca1726a7f81e1b11462a64ea2",
+     "git_blob_sha1": "17fcef4a0ceb639c8ad4e2f7719f70aaff7de63b"
+    },
+    {
+     "path": "config.json",
+     "size": 4621,
+     "sha256": "e967dd38bc5cfd38bd09a995a7bf4a754075df2b46aba68f7fbb5a791e6d8dd1",
+     "git_blob_sha1": "5f291aa9973fbb38982f9bade924989edc7b895d"
+    },
+    {
+     "path": "generation_config.json",
+     "size": 208,
+     "sha256": "d4226bbe3117d2d253ba4609720ba82c6c4ce4627a9a6ae05387c78983ac03de",
+     "git_blob_sha1": "e605bb4523b1462ea9d9a3810b9e3ecf7ab7b1f6"
+    },
+    {
+     "path": "processor_config.json",
+     "size": 1689,
+     "sha256": "32bdf45d2ad4cc29a0822ddd157a182de76644f0419a6228d151495256e9813c",
+     "git_blob_sha1": "5465974d23e1eca2c46c2809b26c997946ce0d90"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 32169626,
+     "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 3082,
+     "sha256": "9f4fec4b1dc6ecddf8f4a92e9caea5971c0e67d81309f3f9066a2bee8c362633",
+     "git_blob_sha1": "6068e357379d36f823c377e30efb101fa2c67fe4"
+    },
+    {
+     "path": "chat_template.jinja",
+     "size": 18683,
+     "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+     "git_blob_sha1": "4741bf6e4132ba23a5537f9d6e74e9a6d613d7cd"
+    }
+   ],
+   "serve": {
+    "recipe_source": "/home/flori/jobs/fastlane-deck4b-rescue-20261005 (pod/deck31b); /home/flori/jobs/jevbench-v16-run-20261001/harness/images/deck-31b (Dockerfile, serve.sh, requirements.txt)",
+    "port": 8090,
+    "steps": [
+     "git clone github.com/krishna-gogineni-765/deck31b @ d499cf6f (tree 44bd5211); pip install requirements.txt (torch 2.11.0+cu128, transformers 5.17.0, torchao 0.18.0).",
+     "Download google/gemma-4-31B-it @ 842da379 (first start downloads the base).",
+     "deck31b-serve --host 127.0.0.1 --port 8090 (served id deck31b); adapter jevbench typesafe, endpoint http://127.0.0.1:8090, timeout 120 s."
+    ]
+   },
+   "measured": {
+    "gpu": "NVIDIA H100 80GB (BH meta.json gpu H100; deck31b README: one NVIDIA H100 80 GB)",
+    "p50_ms": 127.5,
+    "source": "data/jevbench-latest.json (p50_s_raw)"
+   },
+   "expected_speed": "About 0.13 s p 50 per decision on the BH H 100 (raw, serial). Provisioning class: H 100 80 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
+   "notes": "min_vram_gb 80 is from the README (\"at least 80 GB of memory\") and BH meta. Blackwell (RTX PRO 6000) is unverified for TorchAO FP8 dynamic per BH meta (deck-31b-pro is a separate recipe, not used here). Base bf16 weights 62.58 GB on disk. Host RAM provisioning estimate: pinned weight files sum to 62.546 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 80 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+  }
+ ],
+ "sources_checked_utc": "2026-10-09T16:40Z"
+}
