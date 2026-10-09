@@ -205,6 +205,15 @@ class RecipeRuntimeTests(unittest.TestCase):
                 self.assertEqual(stopped, ["dm-local-fixture-model-api", "dm-local-fixture-model-engine"])
                 self.assertFalse(read_process(root, "dm-local-fixture-model-api")["running"])
                 self.assertFalse(read_process(root, "dm-local-fixture-model-engine")["running"])
+            except Exception:
+                # Preserve actual native fixture diagnostics before TemporaryDirectory
+                # cleanup, so an exited engine can be distinguished from PID drift.
+                for log in sorted((root / "logs").glob("*")):
+                    if log.is_file():
+                        print(f"Fixture log {log.name}:\n{log.read_text(errors='replace')[-4000:]}", file=sys.stderr)
+                for name in ("dm-local-fixture-model-engine", "dm-local-fixture-model-api"):
+                    print(f"Fixture process {name}: {read_process(root, name)}", file=sys.stderr)
+                raise
             finally:
                 runtime.stop()
 
