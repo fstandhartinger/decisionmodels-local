@@ -212,7 +212,8 @@ def normalize_jev(result, request, qname, question):
         if choice != expected_choice:
             raise ValueError("backend choice does not match its highest probability; ties use the first option")
         confidence = answer.get("confidence", probs[choice])
-        if not _finite_probability(confidence) or abs(confidence - probs[choice]) > 1e-3:
+        # Author paths may report their own calibrated confidence (CONTRACTS: "a finite value in [0,1] derived by the author path").
+        if not _finite_probability(confidence):
             raise ValueError("backend confidence is invalid")
         out.update(choice=choice, confidence=confidence, probabilities=probs)
     elif qtype == "noul":

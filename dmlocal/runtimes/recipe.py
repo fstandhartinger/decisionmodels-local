@@ -83,6 +83,8 @@ def allocate_ports(root, slug, recipe, persist=True):
         if isinstance(value, int) and 1 <= value <= 65535 and value not in used:
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                    if os.name != "nt":
+                        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     sock.bind(("127.0.0.1", value))
                 used.add(value)
                 continue
