@@ -183,7 +183,89 @@
     "source": "data/jevbench-latest.json (p50_s_raw); BH v1.1 row is UNPUBLISHED internal (recipe NOTES)"
    },
    "expected_speed": "Fast: about 30 ms p 50 per decision on the BH card (raw, serial). The live file also carries an assumed-adjusted 0.21 s; that adjustment is an assumption, not a measurement. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "min_vram_gb 24 is from BH meta.json; recommended 96 is the BH card, not a derived figure. Weights 8.41 GB bf16 on disk. Base Qwen3.5-4B. Requires the author shim and vLLM 0.30.0. Host RAM provisioning estimate: pinned weight files sum to 8.412 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "notes": "min_vram_gb 24 is from BH meta.json; recommended 96 is the BH card, not a derived figure. Weights 8.41 GB bf16 on disk. Base Qwen3.5-4B. Requires the author shim and vLLM 0.30.0. Host RAM provisioning estimate: pinned weight files sum to 8.412 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "vllm==0.30.0+cu129",
+     "torchcodec==0.16.0+cu129"
+    ],
+    "extra_index_urls": [
+     "https://wheels.vllm.ai/0.30.0/cu129",
+     "https://download.pytorch.org/whl/cu129"
+    ],
+    "index_strategy": "unsafe-best-match",
+    "processes": [
+     {
+      "name": "engine",
+      "command": [
+       "{python}",
+       "-m",
+       "vllm.entrypoints.cli.main",
+       "serve",
+       "{weights}",
+       "--served-model-name",
+       "h2oai/h2o-lightning-4b",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:engine}",
+       "--max-model-len",
+       "40960",
+       "--gpu-memory-utilization",
+       "0.90"
+      ],
+      "env": {
+       "VLLM_NO_USAGE_STATS": "1"
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:engine}/health",
+       "timeout_s": 1200
+      }
+     },
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{weights}/h2o_lightning_shim.py",
+       "--config",
+       "{weights}/serve_config.json",
+       "--vllm",
+       "http://127.0.0.1:{port:engine}",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:api}"
+      ],
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 120
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "h2oai/h2o-lightning-4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia",
+      "wsl2-nvidia"
+     ],
+     "cuda_min": "12.9",
+     "gpu_arch_min": "sm_80"
+    },
+    "verified": {
+     "status": "unverified"
+    }
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:40Z"

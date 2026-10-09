@@ -364,7 +364,75 @@
    },
    "measured": null,
    "expected_speed": "Estimate only: roughly 100–300 prefill tokens/s on a recent 16-core CPU for a 4B model, so 300–1500 tokens take about 1–15 s per forward pass. No CPU benchmark or probability parity check.",
-   "notes": "Unmodified native author server accepts --device cpu/mps in cli.py L12: p.add_argument('--device', default='cuda'); L19: engine = DecisionEngine(a.model_dir, a.device) (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/cli.py); _inference.py L22 loads BF16 and L34 calls backbone.to(device=device, dtype=torch.bfloat16), with FP32 pointer head (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/_inference.py). CPU/MPS variants are candidates, not benchmarked; source is independently pinned to c494069accfc2d08839675961c1fdfcc54ba0b92; weight manifests use the resolvable fallback 434cb21, not the missing BH pin. MPS operator support/parity remains unmeasured. Official GGUF at b1bc36970f69cef2bfea75aec8f820fd3d20b040 includes a valid native head readout, but runtime/build.py L36 forces -DGGML_CUDA=ON and builds Linux .so bridges, so add only NVIDIA Q8/Q4 candidates, no CPU/Metal claim. https://huggingface.co/TokenRhythm/NeoHorse-Jev-4B-GGUF/raw/b1bc36970f69cef2bfea75aec8f820fd3d20b040/runtime/build.py . Neither native pointer-head runtime nor token-embedding GPU adapters are standard logprobs => backend_agnostic=false. Memory estimate: 9.084 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified."
+   "notes": "Unmodified native author server accepts --device cpu/mps in cli.py L12: p.add_argument('--device', default='cuda'); L19: engine = DecisionEngine(a.model_dir, a.device) (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/cli.py); _inference.py L22 loads BF16 and L34 calls backbone.to(device=device, dtype=torch.bfloat16), with FP32 pointer head (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/_inference.py). CPU/MPS variants are candidates, not benchmarked; source is independently pinned to c494069accfc2d08839675961c1fdfcc54ba0b92; weight manifests use the resolvable fallback 434cb21, not the missing BH pin. MPS operator support/parity remains unmeasured. Official GGUF at b1bc36970f69cef2bfea75aec8f820fd3d20b040 includes a valid native head readout, but runtime/build.py L36 forces -DGGML_CUDA=ON and builds Linux .so bridges, so add only NVIDIA Q8/Q4 candidates, no CPU/Metal claim. https://huggingface.co/TokenRhythm/NeoHorse-Jev-4B-GGUF/raw/b1bc36970f69cef2bfea75aec8f820fd3d20b040/runtime/build.py . Neither native pointer-head runtime nor token-embedding GPU adapters are standard logprobs => backend_agnostic=false. Memory estimate: 9.084 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.8.0",
+     "transformers==5.17.0",
+     "safetensors==0.8.0",
+     "pydantic==2.13.5",
+     "fastapi==0.141.1",
+     "uvicorn==0.53.0",
+     "starlette==1.6.0",
+     "pillow==12.3.0"
+    ],
+    "code": [
+     {
+      "source": "github",
+      "repo": "TokenRhythm/NeoHorse",
+      "revision": "c494069accfc2d08839675961c1fdfcc54ba0b92",
+      "sha256": "995d5723430b9c34fa0b60a0c398a18b909cdc9814c87578285926eea6461875",
+      "dest": "code/neohorse",
+      "pip_install": false
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "-c",
+       "from neohorse_decision.cli import main; main()",
+       "serve",
+       "--model-dir",
+       "{weights}",
+       "--device",
+       "cpu",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:api}"
+      ],
+      "env": {
+       "PYTHONPATH": "{code:code/neohorse}/jev/package/src",
+       "CUDA_VISIBLE_DEVICES": ""
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1200
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": null,
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-cpu"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    }
+   }
   },
   {
    "id": "bf16-torch-mps",
@@ -506,7 +574,75 @@
    },
    "measured": null,
    "expected_speed": "Estimate only: a recent M-series Mac GPU may prefill roughly 300–1000 tokens/s for a 4B model, so 300–1500 tokens take about 0.3–5 s per forward pass. No MPS benchmark or probability parity check.",
-   "notes": "Unmodified native author server accepts --device cpu/mps in cli.py L12: p.add_argument('--device', default='cuda'); L19: engine = DecisionEngine(a.model_dir, a.device) (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/cli.py); _inference.py L22 loads BF16 and L34 calls backbone.to(device=device, dtype=torch.bfloat16), with FP32 pointer head (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/_inference.py). CPU/MPS variants are candidates, not benchmarked; source is independently pinned to c494069accfc2d08839675961c1fdfcc54ba0b92; weight manifests use the resolvable fallback 434cb21, not the missing BH pin. MPS operator support/parity remains unmeasured. Official GGUF at b1bc36970f69cef2bfea75aec8f820fd3d20b040 includes a valid native head readout, but runtime/build.py L36 forces -DGGML_CUDA=ON and builds Linux .so bridges, so add only NVIDIA Q8/Q4 candidates, no CPU/Metal claim. https://huggingface.co/TokenRhythm/NeoHorse-Jev-4B-GGUF/raw/b1bc36970f69cef2bfea75aec8f820fd3d20b040/runtime/build.py . Neither native pointer-head runtime nor token-embedding GPU adapters are standard logprobs => backend_agnostic=false. Memory estimate: 9.084 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac."
+   "notes": "Unmodified native author server accepts --device cpu/mps in cli.py L12: p.add_argument('--device', default='cuda'); L19: engine = DecisionEngine(a.model_dir, a.device) (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/cli.py); _inference.py L22 loads BF16 and L34 calls backbone.to(device=device, dtype=torch.bfloat16), with FP32 pointer head (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/_inference.py). CPU/MPS variants are candidates, not benchmarked; source is independently pinned to c494069accfc2d08839675961c1fdfcc54ba0b92; weight manifests use the resolvable fallback 434cb21, not the missing BH pin. MPS operator support/parity remains unmeasured. Official GGUF at b1bc36970f69cef2bfea75aec8f820fd3d20b040 includes a valid native head readout, but runtime/build.py L36 forces -DGGML_CUDA=ON and builds Linux .so bridges, so add only NVIDIA Q8/Q4 candidates, no CPU/Metal claim. https://huggingface.co/TokenRhythm/NeoHorse-Jev-4B-GGUF/raw/b1bc36970f69cef2bfea75aec8f820fd3d20b040/runtime/build.py . Neither native pointer-head runtime nor token-embedding GPU adapters are standard logprobs => backend_agnostic=false. Memory estimate: 9.084 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.8.0",
+     "transformers==5.17.0",
+     "safetensors==0.8.0",
+     "pydantic==2.13.5",
+     "fastapi==0.141.1",
+     "uvicorn==0.53.0",
+     "starlette==1.6.0",
+     "pillow==12.3.0"
+    ],
+    "code": [
+     {
+      "source": "github",
+      "repo": "TokenRhythm/NeoHorse",
+      "revision": "c494069accfc2d08839675961c1fdfcc54ba0b92",
+      "sha256": "995d5723430b9c34fa0b60a0c398a18b909cdc9814c87578285926eea6461875",
+      "dest": "code/neohorse",
+      "pip_install": false
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "-c",
+       "from neohorse_decision.cli import main; main()",
+       "serve",
+       "--model-dir",
+       "{weights}",
+       "--device",
+       "mps",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:api}"
+      ],
+      "env": {
+       "PYTHONPATH": "{code:code/neohorse}/jev/package/src",
+       "CUDA_VISIBLE_DEVICES": ""
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1200
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": null,
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "macos-arm64"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    }
+   }
   },
   {
    "id": "q8_0-llamacpp-author-runtime",
