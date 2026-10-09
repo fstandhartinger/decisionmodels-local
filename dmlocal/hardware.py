@@ -126,6 +126,7 @@ def detect(state_path=None):
     docker_info = _run([docker, "info", "--format", "{{json .Runtimes}}"], timeout=6) if docker else ""
     try: docker_runtimes = json.loads(docker_info) if docker_info else {}
     except ValueError: docker_runtimes = {}
+    if not isinstance(docker_runtimes, dict): docker_runtimes = {}
     python_version = platform.python_version()
     try: major, minor = map(int, python_version.split(".")[:2])
     except ValueError: major = minor = 0

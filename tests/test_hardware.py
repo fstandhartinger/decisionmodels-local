@@ -35,6 +35,14 @@ if __name__ == "__main__": unittest.main()
 
 
 class MissingToolTests(unittest.TestCase):
+    def test_docker_unavailable_daemon_null_runtimes(self):
+        from unittest.mock import patch
+        from dmlocal.hardware import detect
+        def output(args, **kwargs):
+            return "null" if "--format" in args else ""
+        with patch("dmlocal.hardware.shutil.which", return_value="docker"), patch("dmlocal.hardware._run", side_effect=output):
+            self.assertFalse(detect()["docker"]["nvidia_runtime"])
+
     def test_run_with_missing_executable_returns_empty(self):
         from dmlocal.hardware import _run
         self.assertEqual(_run([None, "--version"]), "")
