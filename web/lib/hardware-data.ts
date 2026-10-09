@@ -5,7 +5,6 @@ import { deviceQuotes, deviceStreetPrices, suggestDevice, type Device } from "@/
 import type { Model } from "@/lib/catalog";
 
 export type HardwarePrices = { retrieved_utc?: string; devices?: Device[]; cloud?: Array<Record<string, unknown>> };
-const root = process.cwd();
 
 export function loadHardwarePrices(): HardwarePrices {
   try { return JSON.parse(fs.readFileSync(path.join(catalogRoot(), "hardware-prices.json"), "utf8")) as HardwarePrices; }

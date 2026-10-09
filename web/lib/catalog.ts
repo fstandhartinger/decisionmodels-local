@@ -59,7 +59,7 @@ export function loadCatalog(directory = modelDirectory): Model[] {
   for (const filename of filenames) {
     try {
       const parsed: unknown = JSON.parse(fs.readFileSync(path.join(directory, filename), "utf8"));
-      if (!isModel(parsed)) continue;
+      if (!isModel(parsed) || (parsed as { hidden?: boolean }).hidden === true) continue;
       found.set(parsed.slug, {
         ...parsed,
         author: parsed.author ?? "Author not listed",

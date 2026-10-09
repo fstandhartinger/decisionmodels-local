@@ -15,7 +15,7 @@ function readJson(file) {
 
 const prices = readJson(pricesPath);
 const models = fs.existsSync(modelsDirectory)
-  ? fs.readdirSync(modelsDirectory).filter((name) => name.endsWith(".json")).sort().map((name) => readJson(path.join(modelsDirectory, name)))
+  ? fs.readdirSync(modelsDirectory).filter((name) => name.endsWith(".json")).sort().map((name) => readJson(path.join(modelsDirectory, name))).filter((model) => model?.hidden !== true)
   : [];
 const suggestions = Object.fromEntries(models.map((model) => [model.slug, suggestDevice(model, prices.devices ?? [])]));
 fs.writeFileSync(outputPath, `${JSON.stringify({ generated_utc: new Date().toISOString(), suggestions }, null, 2)}\n`);

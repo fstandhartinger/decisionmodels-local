@@ -8,7 +8,7 @@ const output = path.resolve(process.argv[2] || path.join(root, "out"));
 const catalogDir = process.env.CATALOG_DIR || (fs.existsSync(path.join(root, "catalog")) ? path.join(root, "catalog") : path.join(root, "..", "catalog"));
 const modelDirectory = path.join(catalogDir, "models");
 const prices = JSON.parse(fs.readFileSync(path.join(catalogDir, "hardware-prices.json"), "utf8"));
-const models = fs.existsSync(modelDirectory) ? fs.readdirSync(modelDirectory).filter((name) => name.endsWith(".json")).map((name) => JSON.parse(fs.readFileSync(path.join(modelDirectory, name), "utf8"))) : [];
+const models = fs.existsSync(modelDirectory) ? fs.readdirSync(modelDirectory).filter((name) => name.endsWith(".json")).map((name) => JSON.parse(fs.readFileSync(path.join(modelDirectory, name), "utf8"))).filter((model) => model.hidden !== true) : [];
 const devices = prices.devices ?? [];
 const shortLabel = (device) => {
   const name = device.name.replace("NVIDIA ", "").replace("Developer Kit", "").trim();
