@@ -8,6 +8,7 @@ Linux and macOS:
 
 ```sh
 curl -fsSL https://github.com/fstandhartinger/decisionmodels-local/releases/latest/download/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
 dm-local doctor
 dm-local list
 dm-local plan <model-slug>

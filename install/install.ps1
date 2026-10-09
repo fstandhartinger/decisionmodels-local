@@ -86,6 +86,13 @@ try {
     $PyCommand = if ($Python.Exe -eq 'py') { 'py -3' } else { $Python.Exe }
     @('@echo off', "$PyCommand `"%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz`" %*") | Set-Content -Encoding ASCII $Cmd
   }
+  # Make the one-command install usable now and in future user terminals.
+  $UserPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+  if (($UserPath -split ';') -notcontains $Bin) {
+    $UpdatedPath = if ($UserPath) { "$UserPath;$Bin" } else { $Bin }
+    [Environment]::SetEnvironmentVariable('Path', $UpdatedPath, 'User')
+  }
+  if (($env:Path -split ';') -notcontains $Bin) { $env:Path = "$Bin;$env:Path" }
   Write-Host "Installed dm-local at $Cmd"
   Write-Host 'Next: dm-local doctor; dm-local list'
   Write-Host 'vLLM/SGLang variants need WSL2 and a current NVIDIA Windows driver. In an elevated PowerShell, run: wsl --install -d Ubuntu; then restart Windows, run wsl --update, and install the NVIDIA CUDA driver for WSL.'
