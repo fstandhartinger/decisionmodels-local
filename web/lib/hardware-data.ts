@@ -1,7 +1,7 @@
 import { catalogRoot } from "./catalog-root";
 import fs from "node:fs";
 import path from "node:path";
-import { deviceQuotes, deviceStreetPrices, suggestDevice, type Device, type DeviceClass } from "@/lib/hardware-core.mjs";
+import { deviceQuotes, deviceStreetPrices, hasExecutableInstallRecipe, suggestDevice, type Device, type DeviceClass } from "@/lib/hardware-core.mjs";
 import type { Model } from "@/lib/catalog";
 
 export type HardwarePrices = { retrieved_utc?: string; devices?: Device[]; cloud?: CloudPrice[] };
@@ -47,6 +47,7 @@ export function classRunsToday(models: Model[], devices: Device[], definition: D
     if (!model.lists?.some((list) => list === "jevbench-top10" || list === "imagejevbench-top10")) return false;
     if (!["supported", "supported_noncommercial_only"].includes(model.installer_policy?.status ?? "")) return false;
     return (model.variants ?? []).some((variant) => {
+      if (!hasExecutableInstallRecipe(variant) || variant.install?.verified?.status !== "verified") return false;
       if (!(variant.platforms ?? []).some((platform) => definition.platforms.includes(platform))) return false;
       const needed = definition.id === "apple-silicon" ? variant.min_ram_gb : variant.recommended_vram_gb;
       if (typeof needed !== "number" || !Number.isFinite(needed) || needed <= 0) return false;
@@ -59,11 +60,18 @@ export function classRunsToday(models: Model[], devices: Device[], definition: D
   }).map((model) => model.name);
   if (names.length) {
     const shown = names.slice(0, 5).join(", ");
-    return `Runs today: ${shown}${names.length > 5 ? `, plus ${names.length - 5} more` : ""}.`;
+    return `Install tested: ${shown}${names.length > 5 ? `, plus ${names.length - 5} more` : ""}.`;
   }
-  if (definition.id === "gb10") return `Runs today: no top-10 package has a linux-arm64 variant. ${definition.availability_note ?? "Compatibility check per model on request."}`;
-  if (["jetson", "android"].includes(definition.id)) return `Runs today: none. ${definition.availability_note ?? "Suited to small quantised models; ask us about compatible options."}`;
-  return "Runs today: no current top-10 package has a supported variant for this platform and memory tier.";
+  const recipes = models.filter((model) => (model.variants ?? []).some((variant) =>
+    hasExecutableInstallRecipe(variant) && variant.install?.verified?.status !== "verified"
+      && (variant.platforms ?? []).some((platform) => definition.platforms.includes(platform))
+      && members.some((device) => {
+        const needed = definition.id === "apple-silicon" ? variant.min_ram_gb : variant.recommended_vram_gb;
+        return typeof needed === "number" && typeof device.memory_gb === "number" && Number.isFinite(device.memory_gb) && device.memory_gb >= needed;
+      })
+  )).map((model) => model.name);
+  const estimate = recipes.length ? ` Recipe available but unverified for ${recipes.slice(0, 4).join(", ")}${recipes.length > 4 ? `, plus ${recipes.length - 4} more` : ""}.` : "";
+  return `Install tested: none for this platform and memory tier.${estimate}`;
 }
 
 export function cloudRequirement(model: Model): number | null {
@@ -125,4 +133,9 @@ export function sourceUrl(value?: string): string | undefined {
 export function dateText(value: unknown) {
   if (typeof value !== "string" || value === "unknown" || !value) return "date not supplied";
   return value.slice(0, 10);
+}
+
+export function sourcePublisher(value?: string) {
+  try { return new URL(sourceUrl(value) ?? "").hostname.replace(/^www\./, "") || "Source not listed"; }
+  catch { return "Source not listed"; }
 }

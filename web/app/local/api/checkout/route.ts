@@ -25,6 +25,9 @@ export async function POST(request: Request) {
     const params: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
       line_items: [{ price: setupPrice, quantity: 1 }, { price: monthlyPrice, quantity: 1 }],
+      automatic_tax: { enabled: true },
+      tax_id_collection: { enabled: true },
+      billing_address_collection: "required",
       // Subscription-mode Checkout creates the customer automatically when none is supplied.
       customer_email: email,
       success_url: "https://decisionmodels.io/local/licence/success?session_id={CHECKOUT_SESSION_ID}",

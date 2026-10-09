@@ -10,7 +10,8 @@ export async function POST(request: Request) {
   const rate = checkRateLimit(`licence-verify:${requestIp(request)}`, 20, 60 * 1000);
   if (!rate.allowed) return json({ error: "Too many verification requests." }, 429, { "Retry-After": String(rate.retryAfterSeconds) });
   const body = await readJson(request, 2_000);
-  const key = typeof body?.key === "string" ? body.key.trim().toUpperCase() : "";
+  const submitted = typeof body?.key === "string" ? body.key.trim() : "";
+  const key = /^dmlk_/i.test(submitted) ? `dmlk_${submitted.slice(5).toUpperCase()}` : submitted;
   if (!validLicenceKeyFormat(key)) return json({ valid: false, plan: "commercial", status: "invalid", expires_at: null });
   try {
     const candidateHash = hashLicenceKey(key);

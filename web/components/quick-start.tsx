@@ -6,7 +6,7 @@ import { CopyCommand } from "@/components/copy-command";
 type Tab = { id: string; title: string; steps: string[]; note?: string };
 type CloudLine = { label: string; source: string; date: string };
 
-export function QuickStart({ slug, excluded, cloudLines, cloudMemoryGb }: { slug: string; excluded: boolean; cloudLines: CloudLine[]; cloudMemoryGb?: number }) {
+export function QuickStart({ slug, excluded, hasRecipe, recipeTested, cloudLines, cloudMemoryGb }: { slug: string; excluded: boolean; hasRecipe: boolean; recipeTested: boolean; cloudLines: CloudLine[]; cloudMemoryGb?: number }) {
   const tabs: Tab[] = [
     { id: "linux", title: "Linux & WSL2", steps: ["curl -fsSL https://decisionmodels.io/local/install.sh | sh", `dm-local install ${slug}`] },
     { id: "mac", title: "macOS", steps: ["curl -fsSL https://decisionmodels.io/local/install.sh | sh", `dm-local install ${slug}`], note: "Apple Silicon support depends on a compatible catalog variant." },
@@ -16,13 +16,15 @@ export function QuickStart({ slug, excluded, cloudLines, cloudMemoryGb }: { slug
   ];
   const [active, setActive] = useState(tabs[0].id);
   const selected = tabs.find((tab) => tab.id === active) ?? tabs[0];
-  if (excluded) return <div className="callout muted"><strong>Installation is not available for this entry.</strong><p>{"This entry is excluded from the local installer. See the model details for the reason."}</p></div>;
+  if (excluded) return <div className="callout muted"><strong>Model not offered</strong><p>This model is not offered in the installer while its licensing review is pending.</p></div>;
+  if (!hasRecipe) return <div className="callout muted"><strong>Setup in preparation</strong><p>An executable install recipe is not available for this model yet.</p></div>;
   return (
     <div className="tabs-card">
       <div className="tab-list" role="tablist" aria-label="Choose an installation platform">
         {tabs.map((tab) => <button key={tab.id} role="tab" aria-selected={active === tab.id} className={active === tab.id ? "tab active" : "tab"} onClick={() => setActive(tab.id)}>{tab.title}</button>)}
       </div>
       <div role="tabpanel" className="tab-panel">
+        <p className="variant-note">{recipeTested ? "An install recipe has been tested. Platform and hardware coverage is shown per variant." : "An install recipe is available, but it has not been verified by an install test."}</p>
         <ol className="step-list">
           {selected.steps.map((step, index) => <li key={`${selected.id}-${index}`}><span className="step-number">{index + 1}</span><code>{step}</code><CopyCommand value={step} /></li>)}
         </ol>

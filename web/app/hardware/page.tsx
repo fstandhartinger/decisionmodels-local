@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactForm } from "@/components/contact-form";
 import { loadCatalog } from "@/lib/catalog";
-import { classRunsToday, cloudRequirement, dateText, hourlyMoney, loadDeviceClasses, loadHardwarePrices, money, publicCloudGpuName, publicCloudInstanceName, publicCloudProviderName, quoteSummary, sourceUrl, suggestedDeviceFor, cheapestCloudOptionFor } from "@/lib/hardware-data";
+import { classRunsToday, cloudRequirement, dateText, hourlyMoney, loadDeviceClasses, loadHardwarePrices, money, publicCloudGpuName, publicCloudInstanceName, publicCloudProviderName, quoteSummary, sourcePublisher, sourceUrl, suggestedDeviceFor, cheapestCloudOptionFor } from "@/lib/hardware-data";
 import { deviceDisplayName, type Device, type DeviceClass } from "@/lib/hardware-core.mjs";
 
 export const metadata: Metadata = { alternates: { canonical: "/hardware" } };
@@ -27,7 +27,7 @@ function HardwareQuoteCard({ device, definition, selected }: { device: Device; d
     {quotes.map((item) => <div className="quote-card" key={item.currency}>
       <p className="price">{money(item.quote, item.currency)}<span> indicative</span></p>
       <p>Median sourced street price: {money(item.street, item.currency)} before the quote margin.</p>
-      <p className="source-note">Price sources: {item.sources.map((source, index) => <span key={`${source.source}-${index}`}>{index ? " · " : ""}{sourceUrl(source.source) ? <a href={sourceUrl(source.source)}>{source.seller ?? "Price source"} — {money(source.value, source.currency)} · {dateText(source.date)}</a> : <span>Source link not supplied — {money(source.value, source.currency)} · {dateText(source.date)}</span>}</span>)}</p>
+      <details className="price-source-disclosure"><summary>Price sources ({item.sources.length})</summary><ul className="price-source-list">{item.sources.map((source, index) => <li key={`${source.source}-${index}`}>{sourceUrl(source.source) ? <a href={sourceUrl(source.source)}>{sourcePublisher(source.source)} · {dateText(source.date)}</a> : <span>Source not supplied · {dateText(source.date)}</span>}</li>)}</ul></details>
     </div>)}
     {!quotes.length && <p className="callout muted">No sourced price is available for this configuration. Ask us to confirm availability and pricing.</p>}
     {selected && <span className="badge signal">Suggested for your model</span>}
@@ -70,10 +70,10 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
       <details className="disclosure"><summary>How we price this</summary><p>For each currency, we take the median of the sourced street prices, add 30% or at least 150 units, then round upward to an amount ending in 9. For GPU workstations, the street price includes the GPU card plus a USD 1,500 / EUR 1,400 base system: CPU, 64–128 GB RAM, 2 TB NVMe, PSU, and case. The final quote is confirmed by email.</p></details>
     </section>
 
-    <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Model fit</p><h2>Which hardware for which model</h2></div><p>Suggestions choose the least expensive listed configuration that fits the smallest supported GPU or Apple Silicon variant. Device classes marked “on request” need a compatibility check.</p></div>
-      {!suggestions.length ? <div className="callout muted"><strong>No model currently has a complete hardware recommendation.</strong><p>Suggestions appear when a supported variant has a matching platform, memory target, and sourced device price.</p></div> : <div className="table-wrap"><table><thead><tr><th>Model</th><th>Smallest fitting option</th><th>Indicative price</th><th>Details</th></tr></thead><tbody>{suggestions.map(({ model, suggestion }) => {
+    <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Model fit</p><h2>Which hardware for which model</h2></div><p>Suggestions use an executable model recipe and recorded memory requirements. Each row identifies whether the install recipe has been tested or remains unverified.</p></div>
+      {!suggestions.length ? <div className="callout muted"><strong>No model currently has a complete hardware recommendation.</strong><p>Suggestions appear when an executable recipe has a matching platform, memory target, and sourced device price.</p></div> : <div className="table-wrap"><table><thead><tr><th>Model</th><th>Smallest fitting option</th><th>Indicative price</th><th>Install check</th><th>Details</th></tr></thead><tbody>{suggestions.map(({ model, suggestion }) => {
         const price = suggestion.price_usd ? money(suggestion.price_usd, "USD") : suggestion.price_eur ? money(suggestion.price_eur, "EUR") : "Price on request";
-        return <tr key={model.slug}><td>{model.name}</td><td>{suggestion.name}<div className="source-note">{suggestion.memory_gb} GB {suggestion.memory_kind ?? "memory"}</div></td><td>{price}</td><td><Link href={`/models/${model.slug}/local`}>Model requirements →</Link></td></tr>;
+        return <tr key={model.slug}><td>{model.name}</td><td>{suggestion.name}<div className="source-note">{suggestion.memory_gb} GB {suggestion.memory_kind ?? "memory"}</div></td><td>{price}</td><td>{suggestion.install_status === "tested" ? "Install tested" : "Recipe ready · unverified"}</td><td><Link href={`/models/${model.slug}/local`}>Model requirements →</Link></td></tr>;
       })}</tbody></table></div>}
     </section>
 
@@ -86,7 +86,7 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
     </section>
 
     <section className="section-wrap section" id="request"><div className="section-heading"><div><p className="section-kicker">Request a setup</p><h2>Tell us what you need</h2></div><p>We will check the requested configuration and reply with an indicative quote. Final pricing depends on availability, shipping, and VAT.</p></div>
-      <div className="panel"><ContactForm models={models.map((item) => ({ slug: item.slug, name: item.name }))} selectedModel={selectedSlug} /></div>
+      <div className="panel"><ContactForm models={models.filter((item) => item.installer_policy?.status !== "excluded").map((item) => ({ slug: item.slug, name: item.name }))} selectedModel={selectedSlug} /></div>
     </section>
   </>;
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CopyCommand } from "@/components/copy-command";
-import { benchmarkRank, loadCatalog, sortedByBenchmark, type Model } from "@/lib/catalog";
+import { benchmarkRank, hasAnyExecutableInstallRecipe, installRecipeStatus, loadCatalog, sortedByBenchmark, type Model } from "@/lib/catalog";
 import { loadHardwarePrices, suggestedDeviceFor } from "@/lib/hardware-data";
 
 export const metadata: Metadata = { alternates: { canonical: "/local" } };
@@ -9,17 +9,29 @@ export const metadata: Metadata = { alternates: { canonical: "/local" } };
 type BenchmarkField = "jevbench" | "imagejevbench";
 
 function smallestHardware(model: Model) {
-  const variants = model.variants ?? [];
-  const gpu = variants.filter((variant) => (variant.platforms ?? []).includes("linux-nvidia")).map((variant) => variant.min_vram_gb).filter((value): value is number => typeof value === "number" && Number.isFinite(value) && value > 0);
-  const mac = variants.filter((variant) => (variant.platforms ?? []).includes("macos-arm64")).map((variant) => variant.min_ram_gb).filter((value): value is number => typeof value === "number" && Number.isFinite(value) && value > 0);
-  const cpu = variants.filter((variant) => (variant.platforms ?? []).some((platform) => platform === "linux-cpu" || platform === "windows-cpu")).map((variant) => variant.min_ram_gb).filter((value): value is number => typeof value === "number" && Number.isFinite(value) && value > 0);
+  const variants = (model.variants ?? []).filter((variant) => installRecipeStatus(variant) !== "documentation_only");
+  if (!variants.length) return ["Setup in preparation"];
   const chips: string[] = [];
-  if (gpu.length) {
-    const memory = Math.min(...gpu);
-    chips.push(memory <= 24 ? "RTX 4090 24 GB+" : memory <= 32 ? "RTX 5090 32 GB+" : `GPU, ${memory} GB+`);
-  }
-  if (mac.length) chips.push(`Mac with ${Math.min(...mac)} GB+`);
-  if (cpu.length) chips.push(`CPU, ${Math.min(...cpu)} GB RAM`);
+  const label = (platform: "linux-nvidia" | "macos-arm64" | "linux-cpu" | "windows-cpu") => {
+    const option = variants.filter((variant) => variant.platforms?.includes(platform)).sort((a, b) => {
+      const memory = (variant: typeof a) => platform === "linux-nvidia" ? variant.min_vram_gb ?? Infinity : variant.min_ram_gb ?? Infinity;
+      return memory(a) - memory(b);
+    })[0];
+    if (!option) return null;
+    const state = installRecipeStatus(option) === "tested" ? "install tested" : "estimate · unverified";
+    if (platform === "linux-nvidia") {
+      const memory = option.min_vram_gb;
+      if (!memory) return `GPU · ${state}`;
+      return `${memory <= 24 ? "RTX 4090" : memory <= 32 ? "RTX 5090" : "GPU"}, ${memory} GB+ · ${state}`;
+    }
+    return `${platform === "macos-arm64" ? "Mac" : "CPU"}${option.min_ram_gb ? `, ${option.min_ram_gb} GB RAM` : ""} · ${state}`;
+  };
+  const gpuLabel = label("linux-nvidia");
+  const macLabel = label("macos-arm64");
+  const cpuLabel = label("linux-cpu") ?? label("windows-cpu");
+  if (gpuLabel) chips.push(gpuLabel);
+  if (macLabel) chips.push(macLabel);
+  if (cpuLabel) chips.push(cpuLabel);
   return chips.length ? chips : ["Hardware requirements on model page"];
 }
 
@@ -44,12 +56,13 @@ function ModelCard({ model, field, excluded = false }: { model: Model; field: Be
   const badge = commercialBadge(model);
   const size = model.params?.total_b ? `${model.params.total_b}B` : "Size not listed";
   const benchmarkPage = benchmark?.page ?? (field === "jevbench" ? "https://benchmarkheaven.com/jev-models" : "https://benchmarkheaven.com/image-jev-bench");
+  if (excluded) return <article className="model-card excluded-model-card"><strong>Model not offered</strong><p>This model is not offered in the installer while its licensing review is pending.</p></article>;
   return <article className={`model-card ranked-model-card ${excluded ? "excluded-model-card" : ""}`}>
-    <div className="model-meta"><a className={`badge ${rank !== null ? "signal" : ""}`} href={benchmarkPage}>{rank !== null ? `#${rank}` : "Rank not listed"}</a><span className="badge">{size}</span><span className={`badge ${badge.tone}`}>{badge.label}</span>{excluded && <span className="badge warn">Not installable</span>}</div>
+    <div className="model-meta"><a className={`badge ${rank !== null ? "signal" : ""}`} href={benchmarkPage}>{rank !== null ? `#${rank}` : "Rank not listed"}</a><span className="badge">{size}</span><span className={`badge ${badge.tone}`}>{badge.label}</span></div>
     <h3><Link href={`/models/${model.slug}/local`}>{model.name}</Link></h3>
     <p className="capability-score">{Number.isFinite(score) ? `Capability score ${Number(score).toFixed(2)}` : "Capability score not listed"}</p>
     <div className="model-meta hardware-chips">{smallestHardware(model).map((chip) => <span className="badge" key={chip}>{chip}</span>)}</div>
-    {excluded ? <p className="excluded-reason">{model.installer_policy?.reason ?? "This model is not available in the local installer."}</p> : <Link className="fine-print" href={`/models/${model.slug}/local`}>View hardware and model terms →</Link>}
+    <Link className="fine-print" href={`/models/${model.slug}/local`}>View hardware and model terms →</Link>
   </article>;
 }
 
@@ -71,7 +84,7 @@ export default function LocalOverviewPage() {
     <section className="section-wrap hero">
       <div className="hero-grid">
         <div><p className="eyebrow">Decision Models · Run locally</p><h1>Decision models, close to your data.</h1><p className="lede">Choose an open-weight model, check the hardware it needs, and serve it through a Jev-compatible endpoint on a machine you control.</p><div className="hero-actions"><Link className="button button-primary" href="#models">Explore local models</Link><Link className="button button-secondary" href="/hardware">Plan a hardware setup</Link></div></div>
-        <aside className="hero-note"><strong>One local command to start</strong><span>Check the machine first. The installer recommends a catalogued variant and reports what it will download.</span><div className="command-line"><code>dm-local plan &lt;model&gt;</code><CopyCommand value="dm-local plan <model>" /></div></aside>
+        <aside className="hero-note"><strong>Install dm-local</strong><span>Linux and macOS:</span><div className="command-line"><code>curl -fsSL https://decisionmodels.io/local/install.sh | sh</code><CopyCommand value="curl -fsSL https://decisionmodels.io/local/install.sh | sh" /></div><span>Windows PowerShell: <code>irm https://decisionmodels.io/local/install.ps1 | iex</code></span><p className="fine-print">Then check a model with <code>dm-local plan &lt;model&gt;</code>.</p></aside>
       </div>
     </section>
 
@@ -82,11 +95,13 @@ export default function LocalOverviewPage() {
     <RankingSection title="JevBench top 10 (text)" models={textTop} field="jevbench" />
     <RankingSection title="ImageJevBench top 10 (image)" models={imageTop} field="imagejevbench" excludedModel={excludedVision} />
 
-    <section className="section-wrap section" id="models"><div className="section-heading"><div><p className="section-kicker">Local model catalogue</p><h2>Choose a local model</h2></div><p>{installable.length} entries currently have a supported local install policy. Model pages show the recorded runtime, memory requirements, and licence.</p></div>
+    <section className="section-wrap section" id="models"><div className="section-heading"><div><p className="section-kicker">Local model catalogue</p><h2>Choose a local model</h2></div><p>{installable.filter(hasAnyExecutableInstallRecipe).length} models have an executable install recipe. Others are marked setup in preparation. Model pages show runtime, memory, and licence details.</p></div>
       {!installable.length ? <div className="callout muted"><strong>Local install recipes are being reviewed.</strong><p>Each entry will be shown as installable when its serving path and hardware requirements are recorded.</p></div> : <div className="model-grid">{installable.map((model) => {
         const suggestion = suggestedDeviceFor(model, prices);
         const licence = commercialBadge(model);
-        return <article className="model-card" key={model.slug}><div className="model-meta"><span className="badge signal">{model.installer_policy?.status === "supported_noncommercial_only" ? "Non-commercial only" : "Supported"}</span><span className={`badge ${licence.tone}`}>{licence.label}</span>{model.modalities?.map((modality) => <span className="badge" key={modality}>{modality}</span>)}</div><h3><Link href={`/models/${model.slug}/local`}>{model.name}</Link></h3><p>{modelSummary(model)}</p><span className="fine-print">{suggestion ? `Suggested hardware: ${suggestion.name}` : "Hardware recommendation on request"}</span></article>;
+        const recipeReady = hasAnyExecutableInstallRecipe(model);
+        const tested = (model.variants ?? []).some((variant) => installRecipeStatus(variant) === "tested");
+        return <article className="model-card" key={model.slug}><div className="model-meta">{model.installer_policy?.status === "supported_noncommercial_only" && <span className="badge warn">Non-commercial only</span>}<span className={`badge ${recipeReady && tested ? "signal" : ""}`}>{!recipeReady ? "Setup in preparation" : tested ? "Install tested" : "Recipe ready · unverified"}</span><span className={`badge ${licence.tone}`}>{licence.label}</span>{model.modalities?.map((modality) => <span className="badge" key={modality}>{modality}</span>)}</div><h3><Link href={`/models/${model.slug}/local`}>{model.name}</Link></h3><p>{modelSummary(model)}</p><span className="fine-print">{suggestion ? `Hardware estimate: ${suggestion.name}${suggestion.install_status === "tested" ? " · install tested" : " · unverified"}` : "Hardware recommendation on request"}</span></article>;
       })}</div>}
     </section>
 

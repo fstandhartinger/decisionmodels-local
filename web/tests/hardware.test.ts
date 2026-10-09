@@ -4,6 +4,9 @@ import { loadCatalog, type Model } from "../lib/catalog";
 import { classRunsToday, cloudOptionsFor, loadDeviceClasses, loadHardwarePrices, loadSuggestions } from "../lib/hardware-data";
 import { catalogRoot } from "../lib/catalog-root";
 
+const testedInstall = { processes: [{ command: ["serve"] }], verified: { status: "verified" } };
+const unverifiedInstall = { processes: [{ command: ["serve"] }], verified: { status: "unverified" } };
+
 describe("hardware prices", () => {
   it("loads the real shared catalogue with device classes, model suggestions, and cloud prices", () => {
     const prices = loadHardwarePrices();
@@ -15,7 +18,7 @@ describe("hardware prices", () => {
     expect(prices.devices?.length).toBeGreaterThan(0);
     expect(classes.length).toBeGreaterThan(0);
     expect(classes.every((item) => item.device_ids.every((id) => prices.devices?.some((device) => device.id === id)))).toBe(true);
-    expect(classes.every((item) => classRunsToday(loadCatalog(), prices.devices ?? [], item).startsWith("Runs today:"))).toBe(true);
+    expect(classes.every((item) => classRunsToday(loadCatalog(), prices.devices ?? [], item).startsWith("Install tested:"))).toBe(true);
     expect(Object.values(suggestions).some(Boolean)).toBe(true);
     expect(prices.cloud?.length).toBeGreaterThan(0);
   });
@@ -41,7 +44,7 @@ describe("hardware prices", () => {
   });
 
   it("picks a device that fits the recommended memory and image needs", () => {
-    const model = { params: { total_b: 3 }, modalities: ["text", "image"], installer_policy: { status: "supported" }, variants: [{ precision: "q4_k_m", min_vram_gb: 8, recommended_vram_gb: 12, platforms: ["linux-nvidia"] }] };
+    const model = { params: { total_b: 3 }, modalities: ["text", "image"], installer_policy: { status: "supported" }, variants: [{ precision: "q4_k_m", min_vram_gb: 8, recommended_vram_gb: 12, platforms: ["linux-nvidia"], install: testedInstall }] };
     const devices = [
       { id: "jetson", name: "Jetson", class: "jetson", memory_gb: 16, memory_kind: "unified", prices: [{ value: 500, currency: "USD", source: "a", date: "2026-10-09" }] },
       { id: "gpu", name: "GPU", class: "gpu-workstation", memory_gb: 16, memory_kind: "vram", supports_image: true, prices: [{ value: 900, currency: "USD", source: "b", date: "2026-10-09" }] },
@@ -49,13 +52,14 @@ describe("hardware prices", () => {
     ];
     expect(suggestDevice(model, devices)?.id).toBe("gpu");
     expect(suggestDevice({ ...model, installer_policy: { status: "excluded" } }, devices)).toBeNull();
-    expect(suggestDevice({ ...model, variants: [{ precision: "bf16", min_vram_gb: 8, recommended_vram_gb: 12, platforms: ["linux-nvidia"] }] }, devices)?.id).toBe("gpu");
+    expect(suggestDevice({ ...model, variants: [{ precision: "bf16", min_vram_gb: 8, recommended_vram_gb: 12, platforms: ["linux-nvidia"], install: unverifiedInstall }] }, devices)).toMatchObject({ id: "gpu", install_status: "ready_unverified" });
+    expect(suggestDevice({ ...model, variants: [{ precision: "bf16", min_vram_gb: 8, recommended_vram_gb: 12, platforms: ["linux-nvidia"] }] }, devices)).toBeNull();
   });
 
   it("matches device class to the supported platform and uses host RAM when a unified-memory variant has no VRAM figure", () => {
     const model = { params: { total_b: 12 }, modalities: ["text"], installer_policy: { status: "supported" }, variants: [
-      { id: "gpu-bf16", precision: "bf16", recommended_vram_gb: 96, min_ram_gb: 32, platforms: ["linux-nvidia"] },
-      { id: "mps-fp16", precision: "fp16", recommended_vram_gb: 0, min_ram_gb: 48, platforms: ["macos-arm64"] }
+      { id: "gpu-bf16", precision: "bf16", recommended_vram_gb: 96, min_ram_gb: 32, platforms: ["linux-nvidia"], install: testedInstall },
+      { id: "mps-fp16", precision: "fp16", recommended_vram_gb: 0, min_ram_gb: 48, platforms: ["macos-arm64"], install: unverifiedInstall }
     ] };
     const devices = [
       { id: "small-mac", name: "Small Mac", class: "apple-silicon", memory_gb: 16, memory_kind: "unified", prices: [{ value: 1000, currency: "USD", source: "a", date: "2026-10-09" }] },
@@ -66,16 +70,16 @@ describe("hardware prices", () => {
   });
 
   it("does not auto-suggest edge devices even for small quantised variants", () => {
-    const model = { params: { total_b: 4 }, modalities: ["text"], installer_policy: { status: "supported" }, variants: [{ precision: "q4_k_m", recommended_vram_gb: 8, platforms: ["linux-nvidia"] }] };
+    const model = { params: { total_b: 4 }, modalities: ["text"], installer_policy: { status: "supported" }, variants: [{ precision: "q4_k_m", recommended_vram_gb: 8, platforms: ["linux-nvidia"], install: testedInstall }] };
     const device = { id: "jetson", name: "Jetson", class: "jetson", memory_gb: 8, memory_kind: "unified", prices: [{ value: 500, currency: "USD", source: "a", date: "2026-10-09" }] };
     expect(suggestDevice(model, [device])).toBeNull();
     expect(suggestDevice({ ...model, params: { total_b: 5 } }, [device])).toBeNull();
-    expect(suggestDevice({ ...model, variants: [{ precision: "bf16", recommended_vram_gb: 8, platforms: ["linux-nvidia"] }] }, [device])).toBeNull();
+    expect(suggestDevice({ ...model, variants: [{ precision: "bf16", recommended_vram_gb: 8, platforms: ["linux-nvidia"], install: testedInstall }] }, [device])).toBeNull();
     expect(deviceFits(model, device, model.variants[0])).toBe(false);
   });
 
   it("uses the class platform and auto-suggest policy for both suggestions and fits_on", () => {
-    const model = { installer_policy: { status: "supported" }, variants: [{ id: "cuda", recommended_vram_gb: 32, platforms: ["linux-nvidia"] }] };
+    const model = { installer_policy: { status: "supported" }, variants: [{ id: "cuda", recommended_vram_gb: 32, platforms: ["linux-nvidia"], install: testedInstall }] };
     const devices = [
       { id: "gpu", name: "GPU card", class: "gpu-workstation", memory_gb: 32, prices: [{ value: 1000, currency: "USD", source: "a", date: "2026-10-09" }] },
       { id: "spark", name: "Spark", class: "gb10", memory_gb: 128, prices: [{ value: 500, currency: "USD", source: "b", date: "2026-10-09" }] }

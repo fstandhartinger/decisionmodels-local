@@ -60,7 +60,16 @@ function requiredMemory(variant, definition) {
   return Number.isFinite(recommended) && recommended > 0 ? recommended : null;
 }
 
+export function hasExecutableInstallRecipe(variant) {
+  const processes = variant.install?.processes;
+  return Array.isArray(processes) && processes.length > 0 && processes.every((process) =>
+    Array.isArray(process.command) && process.command.length > 0
+      && process.command.every((argument) => typeof argument === "string" && argument.trim().length > 0)
+  );
+}
+
 function compatibleVariant(model, device, variant, definition) {
+  if (!hasExecutableInstallRecipe(variant)) return false;
   if (!definition?.auto_suggest || (definition.device_ids && !definition.device_ids.includes(device.id))) return false;
   if (!(definition.platforms ?? []).some((platform) => (variant.platforms ?? []).includes(platform))) return false;
   const needed = requiredMemory(variant, definition);
@@ -112,6 +121,7 @@ export function suggestDevice(model, devices, classes = defaultClasses) {
     memory_gb: device.memory_gb,
     memory_kind: device.memory_kind,
     variant_id: variant.id ?? null,
+    install_status: variant.install?.verified?.status === "verified" ? "tested" : "ready_unverified",
     platforms: variant.platforms ?? [],
     price_usd: quotes.USD ?? null,
     price_eur: quotes.EUR ?? null,

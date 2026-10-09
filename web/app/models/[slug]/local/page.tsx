@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CopyCommand } from "@/components/copy-command";
 import { QuickStart } from "@/components/quick-start";
-import { benchmarkRank, getModel, loadCatalog, type Model, type ModelVariant } from "@/lib/catalog";
-import { cloudOptionsFor, cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, money, publicCloudInstanceName, publicCloudProviderName, sourceUrl, suggestedDeviceFor } from "@/lib/hardware-data";
+import { benchmarkRank, getModel, hasAnyExecutableInstallRecipe, installRecipeStatus, loadCatalog, sanitizePublicText, type Model, type ModelVariant } from "@/lib/catalog";
+import { cloudOptionsFor, cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, money, publicCloudInstanceName, publicCloudProviderName, sourcePublisher, sourceUrl, suggestedDeviceFor } from "@/lib/hardware-data";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -15,9 +15,12 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const model = getModel(slug);
+  const excluded = model?.installer_policy?.status === "excluded";
+  const hasRecipe = model ? hasAnyExecutableInstallRecipe(model) : false;
   return model ? {
-    title: `${model.name} local setup`,
-    description: `Hardware requirements, licence details, and local setup for ${model.name}.`,
+    title: excluded ? "Model not offered" : hasRecipe ? `${model.name} local setup` : `${model.name} setup in preparation`,
+    description: excluded ? "This model is not offered in the installer while its licensing review is pending." : hasRecipe ? `Hardware requirements, licence details, and local setup for ${model.name}.` : `An executable local install recipe for ${model.name} is in preparation.`,
+    ...(excluded ? { robots: { index: false, follow: false } } : {}),
     openGraph: { images: ["/local/static/brand/og.png"] },
     alternates: { canonical: `/models/${model.slug}/local` }
   } : { title: "Model not found" };
@@ -66,9 +69,15 @@ function speedLabel(model: Model, variant: ModelVariant) {
     const time = seconds < 0.1 ? `${Math.round(seconds * 1000)} ms` : `${seconds.toFixed(1)} s`;
     return `~${time} per decision on a GPU (measured by Benchmark Heaven on ${gpu}).`;
   }
-  if ((variant.platforms ?? []).some((platform) => platform === "linux-cpu" || platform === "windows-cpu")) return "Estimate: a few seconds per decision on CPU.";
-  if ((variant.platforms ?? []).includes("macos-arm64")) return "Estimate: a few seconds per decision on Apple Silicon.";
+  if (variant.expected_speed) return sanitizePublicText(variant.expected_speed);
   return "Timing is not reported for this variant.";
+}
+
+function installStatusLabel(variant: ModelVariant) {
+  const status = installRecipeStatus(variant);
+  if (status === "tested") return "Tested install recipe";
+  if (status === "ready_unverified") return "Recipe ready · unverified";
+  return "Documentation only";
 }
 
 function commercialLabel(value?: string) {
@@ -114,7 +123,10 @@ export default async function ModelLocalPage({ params }: PageProps) {
   if (!model) notFound();
   const status = model.installer_policy?.status ?? "excluded";
   const excluded = status === "excluded";
+  if (excluded) return <section className="section-wrap narrow page-top"><p className="eyebrow"><Link href="/local">Run locally</Link></p><h1>Model not offered</h1><p className="lede space-top">This model is not offered in the installer while its licensing review is pending.</p></section>;
   const commercialOnly = status === "supported_noncommercial_only";
+  const hasRecipe = hasAnyExecutableInstallRecipe(model);
+  const recipeTested = (model.variants ?? []).some((variant) => installRecipeStatus(variant) === "tested");
   const benchmarkBadges = [
     model.benchmarks?.jevbench ? { label: "JevBench", data: model.benchmarks.jevbench } : null,
     model.benchmarks?.imagejevbench ? { label: "ImageJevBench", data: model.benchmarks.imagejevbench } : null
@@ -155,7 +167,8 @@ export default async function ModelLocalPage({ params }: PageProps) {
       <div className="hero-grid">
         <div><h1>{model.name}</h1><p className="lede">{modelSummary(model)}</p>
           <div className="model-meta space-top">
-            <span className={`badge ${excluded ? "warn" : "signal"}`}>{excluded ? "Not installable" : commercialOnly ? "Non-commercial only" : "Local installer supported"}</span>
+            <span className={`badge ${hasRecipe && recipeTested ? "signal" : ""}`}>{!hasRecipe ? "Setup in preparation" : recipeTested ? "Install tested" : "Recipe ready · unverified"}</span>
+            {commercialOnly && <span className="badge warn">Non-commercial only</span>}
             {model.modalities?.map((modality) => <span className="badge" key={modality}>{modality}</span>)}
             {benchmarkBadges.map(({ label, data }) => {
               const rank = benchmarkRank(data);
@@ -171,27 +184,26 @@ export default async function ModelLocalPage({ params }: PageProps) {
       </div>
     </section>
 
-    {excluded && <section className="section-wrap"><div className="callout muted"><strong>This model is excluded from the local installer.</strong><p>{model.installer_policy?.reason ?? "No local installer policy is recorded."}</p></div></section>}
     {commercialOnly && <section className="section-wrap"><div className="callout"><strong>Personal and non-commercial use only.</strong><p>This installer entry is not cleared for commercial use. Read the model card before downloading or serving it.</p></div></section>}
 
     <section className="section-wrap section">
       <div className="section-heading"><div><p className="section-kicker">Hardware</p><h2>Will it run on my machine?</h2></div><p>Requirements are recorded per variant. A dash means the catalogue does not provide that value.</p></div>
       {(model.variants?.length ?? 0) ? <>
-        <div className="variant-table table-wrap"><table><thead><tr><th>Variant</th><th>Precision</th><th>Runtime</th><th>Benchmarked</th><th>Minimum / recommended VRAM</th><th>RAM</th><th>Disk</th><th>Platforms</th><th>Expected speed</th></tr></thead><tbody>{model.variants?.map((variant) => <tr key={variant.id ?? `${variant.runtime}-${variant.precision}`}><td>{variant.id ?? "Variant"}</td><td>{value(variant.precision)}</td><td>{runtimeLabel(variant)}</td><td>{variant.benchmarked ? "Yes" : "No"}</td><td>{value(variant.min_vram_gb, " GB")} / {value(variant.recommended_vram_gb, " GB")}</td><td>{value(variant.min_ram_gb, " GB")}</td><td>{value(variant.disk_gb, " GB")}</td><td>{variant.platforms?.join(", ") || "—"}</td><td>{speedLabel(model, variant)}</td></tr>)}</tbody></table></div>
+        <div className="variant-table table-wrap"><table><thead><tr><th>Variant</th><th>Precision</th><th>Runtime</th><th>Benchmarked</th><th>Install recipe</th><th>Minimum / recommended VRAM</th><th>RAM</th><th>Disk</th><th>Platforms</th><th>Expected speed</th></tr></thead><tbody>{model.variants?.map((variant) => <tr key={variant.id ?? `${variant.runtime}-${variant.precision}`}><td>{variant.id ?? "Variant"}</td><td>{value(variant.precision)}</td><td>{runtimeLabel(variant)}</td><td>{variant.benchmarked ? "Yes" : "No"}</td><td>{installStatusLabel(variant)}</td><td>{value(variant.min_vram_gb, " GB")} / {value(variant.recommended_vram_gb, " GB")}</td><td>{value(variant.min_ram_gb, " GB")}</td><td>{value(variant.disk_gb, " GB")}</td><td>{variant.platforms?.join(", ") || "—"}</td><td>{speedLabel(model, variant)}</td></tr>)}</tbody></table></div>
         <div className="variant-cards">{model.variants?.map((variant) => <article className="panel variant-card" key={variant.id ?? `${variant.runtime}-${variant.precision}`}>
           <div className="model-meta"><span className="badge signal">{variant.id ?? "Variant"}</span><span className="badge">{value(variant.precision)}</span></div>
-          <dl><div><dt>Runtime</dt><dd>{runtimeLabel(variant)}</dd></div><div><dt>VRAM</dt><dd>{value(variant.min_vram_gb, " GB")} minimum / {value(variant.recommended_vram_gb, " GB")} recommended</dd></div><div><dt>RAM</dt><dd>{value(variant.min_ram_gb, " GB")}</dd></div><div><dt>Disk</dt><dd>{value(variant.disk_gb, " GB")}</dd></div><div><dt>Platforms</dt><dd>{variant.platforms?.join(", ") || "—"}</dd></div><div><dt>Expected speed</dt><dd>{speedLabel(model, variant)}</dd></div></dl>
+          <dl><div><dt>Runtime</dt><dd>{runtimeLabel(variant)}</dd></div><div><dt>Install recipe</dt><dd>{installStatusLabel(variant)}</dd></div><div><dt>VRAM</dt><dd>{value(variant.min_vram_gb, " GB")} minimum / {value(variant.recommended_vram_gb, " GB")} recommended</dd></div><div><dt>RAM</dt><dd>{value(variant.min_ram_gb, " GB")}</dd></div><div><dt>Disk</dt><dd>{value(variant.disk_gb, " GB")}</dd></div><div><dt>Platforms</dt><dd>{variant.platforms?.join(", ") || "—"}</dd></div><div><dt>Expected speed</dt><dd>{speedLabel(model, variant)}</dd></div></dl>
         </article>)}</div>
       </> : <div className="callout muted"><strong>No installable variant is recorded.</strong><p>There are no memory, runtime, or speed figures to compare for this entry.</p></div>}
-      {!excluded && <div className="command-line"><code>dm-local plan {model.slug}</code><CopyCommand value={`dm-local plan ${model.slug}`} /><span className="fine-print">Checks memory, disk, platform, and runtime against the catalogue.</span></div>}
+      {hasRecipe && <div className="command-line"><code>dm-local plan {model.slug}</code><CopyCommand value={`dm-local plan ${model.slug}`} /><span className="fine-print">Checks memory, disk, platform, and runtime against the catalogue.</span></div>}
     </section>
 
     <section className="section-wrap section">
       <div className="section-heading"><div><p className="section-kicker">Quick start</p><h2>Choose where to run it</h2></div><p>Installer commands use the pinned model revision. Confirm the model terms before proceeding.</p></div>
-      <QuickStart slug={model.slug} excluded={excluded} cloudLines={cloudLines} cloudMemoryGb={requiredVram ?? undefined} />
+      <QuickStart slug={model.slug} excluded={excluded} hasRecipe={hasRecipe} recipeTested={recipeTested} cloudLines={cloudLines} cloudMemoryGb={requiredVram ?? undefined} />
     </section>
 
-    {!excluded && <section className="section-wrap section panel-grid">
+    {!excluded && hasRecipe && <section className="section-wrap section panel-grid">
       <article className="panel api-examples"><p className="section-kicker">Call your endpoint</p><h3>Use a local typed endpoint</h3><p>The API accepts typed questions and returns typed answers with probabilities.</p>
         <h4>Request</h4><pre className="code-block">{apiRequest()}</pre>
         <h4>Example output</h4><pre className="code-block">{apiOutput(model.slug)}</pre>
@@ -202,7 +214,7 @@ export default async function ModelLocalPage({ params }: PageProps) {
       <article className="panel"><p className="section-kicker">Uninstall</p><h3>Remove the local files</h3><p>Use the installer to stop the service and remove this model&apos;s downloaded files.</p><div className="command-line"><code>dm-local uninstall {model.slug}</code><CopyCommand value={`dm-local uninstall ${model.slug}`} /></div></article>
     </section>}
 
-    <section className="section-wrap section detail-grid">
+    {hasRecipe && <section className="section-wrap section detail-grid">
       <div><div className="section-heading"><div><p className="section-kicker">Model terms</p><h2>Licence details</h2></div></div>
         <div className="panel"><div className="model-meta"><span className="badge">{model.licence?.spdx ?? "Licence not listed"}</span><span className="badge">Commercial use: {commercialLabel(model.licence?.commercial_use)}</span></div>
           <p className="space-top-sm">{commercialCopy(model.licence?.commercial_use)}</p>
@@ -212,10 +224,10 @@ export default async function ModelLocalPage({ params }: PageProps) {
         </div>
       </div>
       <aside className="stack"><div className="panel"><p className="section-kicker">Pre-installed hardware</p><h3>{suggestion?.name ?? "Need a ready-to-run system?"}</h3><p>{suggestion ? `Memory: ${suggestion.memory_gb} GB. Indicative quote, excluding shipping and VAT.` : "No listed configuration currently meets a supported variant."}</p>
-        {suggestion ? <><p className="price">{suggestion.price_usd ? money(suggestion.price_usd, "USD") : suggestion.price_eur ? money(suggestion.price_eur, "EUR") : "Quote on request"}<span> indicative</span></p><p className="source-note">Price sources: {suggestion.source.map((item, index) => <span key={`${item.source}-${index}`}>{index ? " · " : ""}{sourceUrl(item.source) ? <a href={sourceUrl(item.source)}>{item.currency} {item.value} · {dateText(item.date)}</a> : <span>{item.currency} {item.value} · {dateText(item.date)} · source link not supplied</span>}</span>)}</p></> : null}
+        {suggestion ? <><p className="variant-note">{suggestion.install_status === "tested" ? "Install tested" : "Recipe ready · unverified"}</p><p className="price">{suggestion.price_usd ? money(suggestion.price_usd, "USD") : suggestion.price_eur ? money(suggestion.price_eur, "EUR") : "Quote on request"}<span> indicative</span></p><details className="price-source-disclosure"><summary>Price sources ({suggestion.source.length})</summary><ul className="price-source-list">{suggestion.source.map((item, index) => <li key={`${item.source}-${index}`}>{sourceUrl(item.source) ? <a href={sourceUrl(item.source)}>{sourcePublisher(item.source)} · {dateText(item.date)}</a> : <span>Source not supplied · {dateText(item.date)}</span>}</li>)}</ul></details></> : null}
         <Link href={`/hardware?model=${encodeURIComponent(model.slug)}`} className="button button-secondary">See hardware options</Link></div>
       </aside>
-    </section>
+    </section>}
 
     <section className="section-wrap section">
       <div className="section-heading"><div><p className="section-kicker">Troubleshooting</p><h2>Common setup issues</h2></div></div>
@@ -224,6 +236,6 @@ export default async function ModelLocalPage({ params }: PageProps) {
       </div>
     </section>
 
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(structuredData) }} />
+    {hasRecipe && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(structuredData) }} />}
   </>;
 }

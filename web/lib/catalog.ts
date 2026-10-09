@@ -8,15 +8,36 @@ export type ModelVariant = {
   benchmarked?: boolean;
   runtime?: string;
   runtime_version?: string;
+  gpu_arch_min?: string | null;
+  image?: unknown;
+  serve?: Record<string, unknown>;
   platforms?: string[];
   min_vram_gb?: number;
   recommended_vram_gb?: number;
   min_ram_gb?: number;
   disk_gb?: number;
   expected_speed?: string;
+  install?: { available?: boolean; status?: "tested" | "ready_unverified" | "documentation_only"; processes?: { command?: string[] }[]; verified?: { status?: string; [key: string]: unknown }; [key: string]: unknown };
   measured?: { gpu?: string; p50_ms?: number; source?: string };
   notes?: string;
 };
+
+export function hasExecutableInstallRecipe(variant: ModelVariant): boolean {
+  return Array.isArray(variant.install?.processes)
+    && variant.install.processes.length > 0
+    && variant.install.processes.every((process) => Array.isArray(process.command)
+      && process.command.length > 0
+      && process.command.every((argument) => typeof argument === "string" && argument.trim().length > 0));
+}
+
+export function installRecipeStatus(variant: ModelVariant): "tested" | "ready_unverified" | "documentation_only" {
+  if (!hasExecutableInstallRecipe(variant)) return "documentation_only";
+  return variant.install?.verified?.status === "verified" ? "tested" : "ready_unverified";
+}
+
+export function hasAnyExecutableInstallRecipe(model: Model): boolean {
+  return (model.variants ?? []).some(hasExecutableInstallRecipe);
+}
 
 export type Model = {
   schema?: string;
@@ -80,18 +101,47 @@ export function getModel(slug: string): Model | undefined {
   return loadCatalog().find((model) => model.slug === slug);
 }
 
+export function sanitizePublicText(value: string): string {
+  return value
+    .replace(/(?:\/(?:home|tmp|opt|mnt|workspace|root|var|srv|Users|private|Volumes)\/[^\s,;)}]+|[A-Za-z]:\\[^\s,;)}]+|\\\\[^\s,;)}]+)/g, "")
+    .replace(/\s+on\s+(?:the\s+)?(?:BH|Benchmark Heaven) (?:measurement(?: box)?|card|H\s*100|RTX(?:\s+PRO)?\s*(?:6000|4090|5090)|L40S|H100|H200|A100|L4)\b/gi, " on the measured GPU")
+    .replace(/\b(?:BH|Benchmark Heaven) (?:recipe|serving path|runner|serve script|Dockerfile|meta(?:\.json)?|copy)\b[^.;)]*/gi, "")
+    .replace(/\(\s*\)/g, "")
+    .replace(/\s{2,}/g, " ").trim();
+}
+
 export function publicCatalog(models = loadCatalog()): Model[] {
-  const internalKeys = new Set(["recipe_source", "notes", "note", "evidence", "expected_speed", "portable_notes", "worker_proposal", "decided_by"]);
+  const internalKeys = new Set(["recipe_source", "notes", "note", "evidence", "expected_speed", "portable_notes", "worker_proposal", "decided_by", "gpu_arch_min", "runtime_version", "image", "serve", "source"]);
   const stripInternalCopy = (value: unknown, parentKey = ""): unknown => {
     if (Array.isArray(value)) return value.map((child) => stripInternalCopy(child, parentKey)).filter((child) => child !== undefined);
-    if (typeof value === "string" && /^(?:\/home\/|\/tmp\/|\/opt\/)/.test(value)) return undefined;
+    if (typeof value === "string") return sanitizePublicText(value) || undefined;
     if (!value || typeof value !== "object") return value;
-    return Object.fromEntries(Object.entries(value)
-      .filter(([key]) => !internalKeys.has(key) && !(parentKey === "measured" && ["source", "gpu"].includes(key)))
+    const clean = Object.fromEntries(Object.entries(value)
+      .filter(([key]) => !internalKeys.has(key) && !(parentKey === "measured" && key === "gpu"))
+      .filter(([key]) => key !== "install")
       .map(([key, child]) => [key, stripInternalCopy(child, key)])
       .filter(([, child]) => child !== undefined));
+    if (parentKey !== "variants") return clean;
+    const variant = value as ModelVariant;
+    const recipeStatus = installRecipeStatus(variant);
+    const verified = variant.install?.verified?.status;
+    return {
+      ...clean,
+      install: {
+        available: hasExecutableInstallRecipe(variant),
+        status: recipeStatus,
+        ...(verified ? { verified: { status: verified } } : {})
+      }
+    };
   };
-  return models.map((model) => stripInternalCopy(model) as Model);
+  return models.map((model) => {
+    if (model.installer_policy?.status === "excluded") return {
+      slug: model.slug,
+      name: model.name,
+      installer_policy: { status: "excluded", reason: "This model is not offered in the installer while its licensing review is pending." }
+    };
+    return stripInternalCopy(model) as Model;
+  });
 }
 
 export function sortedByBenchmark(models: Model[], benchmark: "jevbench" | "imagejevbench"): Model[] {

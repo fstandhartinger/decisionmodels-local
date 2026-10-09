@@ -1,7 +1,7 @@
 import { loadCatalog } from "@/lib/catalog";
 import { validateHardwareInquiry } from "@/lib/contact-validation";
 import { json, readJson } from "@/lib/server/http";
-import { requestIp, checkRateLimit } from "@/lib/server/rate-limit";
+import { requestIp, checkContactRateLimit } from "@/lib/server/rate-limit";
 import { getPool, retryHardwareInquiryMail } from "@/lib/server-runtime.mjs";
 
 export const runtime = "nodejs";
@@ -9,14 +9,14 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const ip = requestIp(request);
-  const limit = checkRateLimit(`contact:${ip}`, 5, 60 * 60 * 1000);
-  if (!limit.allowed) return json({ error: "Please wait before sending another request." }, 429, { "Retry-After": String(limit.retryAfterSeconds) });
   const body = await readJson(request, 12_000);
   if (!body) return json({ error: "The request must be valid JSON under 12 KB." }, 400);
   const models = new Set(loadCatalog().map((model) => model.slug));
   const result = validateHardwareInquiry(body, models);
   if (!result.ok) return json({ error: result.error }, 400);
   if (result.honeypot) return json({ ok: true, mail: "queued" });
+  const limit = checkContactRateLimit(ip, result.value.email);
+  if (!limit.allowed) return json({ error: "Please wait before sending another request." }, 429, { "Retry-After": String(limit.retryAfterSeconds) });
   try {
     const inquiry = result.value;
     const inserted = await getPool().query(

@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
 
@@ -14,5 +16,23 @@ export function checkRateLimit(key: string, limit: number, windowMs: number, now
 }
 
 export function requestIp(request: Request) {
-  return request.headers.get("x-real-ip")?.trim() || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const hops = forwarded.split(",").map((hop) => hop.trim()).filter(Boolean);
+    if (hops.length) return hops[hops.length - 1];
+  }
+  return "unknown";
+}
+
+export function checkContactRateLimit(ip: string, email: string, now = Date.now()) {
+  const emailKey = createHash("sha256").update(email.trim().toLowerCase()).digest("hex");
+  const limits = [
+    checkRateLimit(`contact-ip:${ip}`, 5, 60 * 60 * 1000, now),
+    checkRateLimit(`contact-email:${emailKey}`, 3, 24 * 60 * 60 * 1000, now)
+  ];
+  const blocked = limits.find((limit) => !limit.allowed);
+  if (blocked) return blocked;
+  const global = checkRateLimit("contact-global-daily", 150, 24 * 60 * 60 * 1000, now);
+  if (!global.allowed) return global;
+  return { allowed: true, remaining: Math.min(global.remaining ?? 0, ...limits.map((limit) => limit.remaining ?? 0)) };
 }

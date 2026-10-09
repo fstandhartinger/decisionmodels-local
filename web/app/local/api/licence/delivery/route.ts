@@ -20,7 +20,8 @@ export async function GET(request: Request) {
         await client.query("ROLLBACK");
         const existing = await database.query("SELECT claimed_at, expires_at FROM licence_deliveries WHERE checkout_session_id = $1", [sessionId]);
         if (existing.rows[0]?.claimed_at) return json({ error: "already_claimed" }, 410);
-        return json({ error: "expired_or_unavailable" }, 410);
+        if (existing.rows.length) return json({ error: "expired_or_unavailable" }, 410);
+        return json({ pending: true }, 202, { "Retry-After": "2", "Cache-Control": "no-store" });
       }
       const key = decryptMessage(String(claimed.rows[0].encrypted_key));
       await client.query("UPDATE licence_deliveries SET claimed_at = now(), encrypted_key = 'consumed' WHERE checkout_session_id = $1", [sessionId]);

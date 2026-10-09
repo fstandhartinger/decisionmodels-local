@@ -26,6 +26,15 @@ const licenceSummary = (licence) => {
 fs.mkdirSync(path.join(output, "local-pages"), { recursive: true });
 for (const model of models) {
   if (typeof model.slug !== "string" || !/^[a-z0-9](?:[a-z0-9.-]{0,118}[a-z0-9])?$/.test(model.slug)) continue;
+  if (model.installer_policy?.status === "excluded") {
+    const card = {
+      slug: model.slug,
+      page_url: `https://decisionmodels.io/models/${model.slug}/local`,
+      installer_policy: { status: "excluded", reason: "This model is not offered in the installer while its licensing review is pending." }
+    };
+    fs.writeFileSync(path.join(output, "local-pages", `${model.slug}.json`), `${JSON.stringify(card, null, 2)}\n`);
+    continue;
+  }
   const fitsOn = devices.filter((device) => (model.variants ?? []).some((variant) => deviceFits(model, device, variant, classes))).map(shortLabel);
   const suggestion = suggestDevice(model, devices, classes);
   const card = {
