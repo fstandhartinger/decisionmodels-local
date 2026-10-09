@@ -105,7 +105,7 @@ class RecipeExtensionTests(unittest.TestCase):
             runtime, checkout, project = self.locked_runtime(tmp)
             expected_python = project / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
             def sync(command, **kwargs):
-                self.assertEqual(command, ["/pinned/uv", "sync", "--frozen", "--project", str(project), "--python", "3.12"])
+                self.assertEqual(command, [str(Path("/pinned/uv")), "sync", "--frozen", "--project", str(project), "--python", "3.12"])
                 env = kwargs["env"]
                 for key in ("HF_TOKEN", "OPENAI_API_KEY", "VIRTUAL_ENV", "CONDA_PREFIX", "PYTHONHOME", "PYTHONPATH"):
                     self.assertNotIn(key, env)
@@ -250,7 +250,7 @@ class RecipeExtensionTests(unittest.TestCase):
             runtime.recipe["processes"][0]["command"] = ["{python}", "{support_dir}/server.py"]
             command = runtime.runtime_commands()[-1]
             self.assertIn(str(runtime.support_dir) + ":" + str(runtime.support_dir) + ":ro", command)
-            self.assertEqual(command[-2:], ["python3", str(runtime.support_dir / "server.py")])
+            self.assertEqual(command[-2:], ["python3", str(runtime.support_dir) + "/server.py"])
             self.assertFalse(runtime.support_dir.exists())
 
     def test_prepare_downloads_code_before_sync(self):

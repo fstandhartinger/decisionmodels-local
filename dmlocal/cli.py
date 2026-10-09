@@ -433,6 +433,12 @@ def _uninstall(slug, keep_weights=False):
     except Exception:
         pass
     if runtime_path and runtime_path.exists(): shutil.rmtree(runtime_path)
+    support_path = root / "support" / slug
+    if support_path.is_symlink():
+        raise RuntimeError("refusing to remove a linked support directory")
+    if support_path.exists():
+        support_path.resolve().relative_to((root / "support").resolve())
+        shutil.rmtree(support_path)
     if not keep_weights:
         weight_path = root / "models" / slug
         if weight_path.exists(): shutil.rmtree(weight_path)
