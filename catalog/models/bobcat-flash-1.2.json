@@ -187,7 +187,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "/home/flori/jobs/jevbench-add-requests-20260919/r57/serve/serve-bobcat.sh (= jevbench-languages-full-20261007/tools/remaining-native-followon-packages/bobcat-flash-1.2/ORIGINAL-NATIVE.sh); author model card Quickstart",
     "port": 8000,
     "steps": [
      "Install the author package (github.com/foxl-ai/bobcat @ 43387a09) with vllm==0.30.0 on the author install line.",

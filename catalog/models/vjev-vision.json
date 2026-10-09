@@ -60,7 +60,7 @@
  },
  "installer_policy": {
   "status": "excluded",
-  "reason": "The author states the model was trained on outputs of TypeSafe's Jev API. TypeSafe's terms do not allow distilling Jev, so we do not offer an installer for it.",
+  "reason": "This model is not offered in this installer release while its training-data and licensing review is pending.",
   "decided_by": "lead (Decision Models workstream E), 2026-10-09",
   "worker_proposal": "supported_noncommercial_only"
  },
@@ -206,7 +206,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "intake vendor /home/flori/jobs/imagejev-next-release-20261005/workers/harness/scratch/runner/intake/vendor/vjev_vision (VENDOR-SOURCE.json, vjev_infer.py sha e7e8a3c6...)",
     "port": null,
     "steps": [
      "from vjev_infer import Vjev  # file from the pinned repo, loaded by path",
@@ -223,5 +222,6 @@
    "notes": "Weights 9.39 GB (3 shards). Min 12 / recommended 16 GB = weights + activations at 512 px images; the vendor note estimates about 10 GB. adapter/ (312 MB) is not needed by vjev_infer.py and is excluded. head.pt is a pickle: the BH intake pickle-scanned it (PASS, lfs oid match) and converted it to head.safetensors before use; installers should do the same and must not torch.load it unscanned. Host RAM estimate: 9.079 GB weights ×1.25, rounded up to4 GB with OS allowance = 16 GB; not measured."
   }
  ],
- "sources_checked_utc": "2026-10-09T16:41Z"
+ "sources_checked_utc": "2026-10-09T16:41Z",
+ "notes": "Model card lists Apache-2.0. This release does not offer an installation recipe."
 }

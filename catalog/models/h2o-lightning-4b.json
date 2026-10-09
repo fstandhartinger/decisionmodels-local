@@ -168,7 +168,6 @@
         }
       ],
       "serve": {
-        "recipe_source": "/home/flori/jobs/jevbench-v16-run-20261001/harness/images/h2o-lightning-4b (Dockerfile, serve.sh, spec.json); author serve.sh at the pinned revision",
         "port": 8741,
         "steps": [
           "Install vllm==0.30.0+cu129 and torchcodec==0.16.0+cu129 from wheels.vllm.ai/0.30.0/cu129 and download.pytorch.org/whl/cu129 (BH image: python 3.12.14-slim, uv venv).",

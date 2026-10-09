@@ -53,6 +53,21 @@ class GatewayTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "sum to one"):
             normalize_jev(raw, CHOICE, "color", CHOICE["questions"]["color"])
 
+    def test_author_rounded_distribution_ties_and_score_are_preserved(self):
+        probabilities = {"red": 0.4999, "blue": 0.4999}
+        raw = {"answers": {"color": {"choice": "blue", "confidence": 0.72, "probabilities": probabilities}},
+               "usage": {"input_tokens": 4, "output_tokens": 0}}
+        answer = normalize_jev(raw, CHOICE, "color", CHOICE["questions"]["color"])["answers"]["color"]
+        self.assertEqual(answer["probabilities"], probabilities)
+        self.assertEqual(answer["choice"], "blue")
+        self.assertEqual(answer["confidence"], 0.72)
+        question = {"type": "score", "criteria": ["low", "medium", "high"]}
+        probabilities = {"0": 0.3333, "1": 0.3333, "2": 0.3333}
+        raw["answers"]["color"] = {"score": 1.0, "confidence": 0.6, "probabilities": probabilities}
+        answer = normalize_jev(raw, CHOICE, "color", question)["answers"]["color"]
+        self.assertEqual(answer["score"], 1.0)
+        self.assertEqual(answer["probabilities"], probabilities)
+
     def test_letter_logprobs_choice_and_noul_score(self):
         bodies = [
             {"choices": [{"logprobs": {"top_logprobs": [{" A": -0.1, " B": -2.0}]}}],

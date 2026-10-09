@@ -146,7 +146,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "/home/flori/jobs/fastlane-deck4b-rescue-20261005 (pod/deck31b); /home/flori/jobs/jevbench-v16-run-20261001/harness/images/deck-31b (Dockerfile, serve.sh, requirements.txt)",
     "port": 8090,
     "steps": [
      "git clone github.com/krishna-gogineni-765/deck31b @ d499cf6f (tree 44bd5211); pip install requirements.txt (torch 2.11.0+cu128, transformers 5.17.0, torchao 0.18.0).",

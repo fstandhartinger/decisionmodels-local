@@ -336,7 +336,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "/home/flori/jobs/jevbench-add-requests-20260919/r60/pod (run.sh, spec.json, verify.py); CURRENT-NATIVE-PROFILE in jevbench-languages-full-20261007/tools/remaining-native-followon-packages/rene-1-31b-fp8",
     "port": 8801,
     "steps": [
      "Create venv with the pinned stack above (setup.sh in r60).",

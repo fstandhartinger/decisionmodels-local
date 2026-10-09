@@ -139,7 +139,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "/home/flori/jobs/jevbench-v16-run-20261001/harness/images/decider-12b (Dockerfile, serve.sh, spec.json, NOTES.md); add-requests run 46 spec",
     "port": 8060,
     "steps": [
      "Clone github.com/Mapika/decider @ 45024082; install decider-ai 1.8.1 --no-deps -e into .venv312 (author serve.sh uses that venv path).",
@@ -299,7 +298,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "https://github.com/Mapika/decider",
     "port": 8060,
     "steps": [
      "Install author package at 45024082b7d4bb667bf9140b7a7c073d3b483f6b with platform PyTorch and author dependencies.",
@@ -454,7 +452,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "https://github.com/Mapika/decider",
     "port": 8060,
     "steps": [
      "Install author package at 45024082b7d4bb667bf9140b7a7c073d3b483f6b with platform PyTorch and author dependencies.",
@@ -519,7 +516,8 @@
     "requires": {
      "platforms": [
       "macos-arm64"
-     ]
+     ],
+     "macos_min": "14.0"
     },
     "verified": {
      "status": "unverified",

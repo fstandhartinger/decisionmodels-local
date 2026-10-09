@@ -6,8 +6,14 @@
   "hidden": true,
   "lists": [],
   "benchmarks": {},
-  "modalities": ["text"],
-  "question_types": {"choice": "native", "noul": "native", "score": "native"},
+  "modalities": [
+    "text"
+  ],
+  "question_types": {
+    "choice": "native",
+    "noul": "native",
+    "score": "native"
+  },
   "weights": {
     "repo": "Qwen/Qwen3-0.6B-GGUF",
     "revision": "23749fefcc72300e3a2ad315e1317431b06b590a",
@@ -15,16 +21,28 @@
     "gated": false
   },
   "code": null,
-  "base_model": {"repo": "Qwen/Qwen3-0.6B", "licence": "apache-2.0"},
+  "base_model": {
+    "repo": "Qwen/Qwen3-0.6B",
+    "licence": "apache-2.0"
+  },
   "licence": {
     "spdx": "apache-2.0",
     "commercial_use": "yes",
     "redistribution": "yes",
     "notes": "Apache-2.0; this hidden model is included only as an installer integration-test fixture.",
-    "evidence": ["https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/blob/23749fefcc72300e3a2ad315e1317431b06b590a/LICENSE"]
+    "evidence": [
+      "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/blob/23749fefcc72300e3a2ad315e1317431b06b590a/LICENSE"
+    ]
   },
-  "jev_distillation": {"status": "unclear", "evidence": "Not assessed; test fixture only.", "url": "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF"},
-  "installer_policy": {"status": "supported", "reason": "Hidden local installer smoke-test fixture; not a Decision Models benchmark entry."},
+  "jev_distillation": {
+    "status": "unclear",
+    "evidence": "Not assessed; test fixture only.",
+    "url": "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF"
+  },
+  "installer_policy": {
+    "status": "supported",
+    "reason": "Hidden local installer smoke-test fixture; not a Decision Models benchmark entry."
+  },
   "readout": {
     "type": "letter_logprobs",
     "endpoint": "openai",
@@ -38,29 +56,69 @@
       "benchmarked": false,
       "runtime": "llamacpp",
       "accelerator": "cpu",
-      "platforms": ["linux-cpu", "macos-arm64", "windows-x64"],
+      "platforms": [
+        "linux-cpu",
+        "macos-arm64",
+        "windows-x64"
+      ],
       "min_vram_gb": 0,
       "recommended_vram_gb": 0,
       "disk_gb": 0.64,
       "supports_images": false,
       "files": [
-        {"path": "Qwen3-0.6B-Q8_0.gguf", "size": 639446688, "sha256": "9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031"}
+        {
+          "path": "Qwen3-0.6B-Q8_0.gguf",
+          "size": 639446688,
+          "sha256": "9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031"
+        }
       ],
       "serve": {
         "port": 8741,
-        "command": ["llama-server", "-m", "{weights}/Qwen3-0.6B-Q8_0.gguf", "--host", "127.0.0.1", "--port", "{port}"]
+        "command": [
+          "llama-server",
+          "-m",
+          "{weights}/Qwen3-0.6B-Q8_0.gguf",
+          "--host",
+          "127.0.0.1",
+          "--port",
+          "{port}"
+        ]
       },
       "install": {
         "runtime": "llamacpp",
         "processes": [
           {
             "name": "llama-server",
-            "command": ["llama-server", "-m", "{weights}/Qwen3-0.6B-Q8_0.gguf", "--host", "127.0.0.1", "--port", "{port:api}"],
-            "ready": {"url": "http://127.0.0.1:{port:api}/health", "timeout_s": 300}
+            "command": [
+              "llama-server",
+              "-m",
+              "{weights}/Qwen3-0.6B-Q8_0.gguf",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "{port:api}"
+            ],
+            "ready": {
+              "url": "http://127.0.0.1:{port:api}/health",
+              "timeout_s": 300
+            }
           }
         ],
-        "api": {"mode": "letter_logprobs", "port": "api", "text_path": "/v1/completions", "image_path": null, "model": null, "auth_header": null},
-        "requires": {"platforms": ["linux-cpu", "macos-arm64", "windows-x64"]}
+        "api": {
+          "mode": "letter_logprobs",
+          "port": "api",
+          "text_path": "/v1/completions",
+          "image_path": null,
+          "model": null,
+          "auth_header": null
+        },
+        "requires": {
+          "platforms": [
+            "linux-cpu",
+            "macos-arm64",
+            "windows-x64"
+          ]
+        }
       },
       "measured": null,
       "expected_speed": "Small general-purpose test model; integration fixture only.",

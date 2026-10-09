@@ -183,7 +183,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "/home/flori/jobs/jevbench-hf-decision-index-intake-20261006/recipes/xor-26b-a4b (dl.sh, serve.sh, venv.sh, spec.json, DRIVE.txt, VERDICT.txt)",
     "port": 30002,
     "steps": [
      "hf download juspay/Xor-26B-A4B @ 8afd4396 (~51.6 GB) and docker pull the pinned image (~14.8 GB compressed).",

@@ -191,7 +191,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "BH /home/flori/jobs/jevbench-v16-run-20261001/harness/images/imajev-4b-rtx5090-a2 (serve.sh, spec.json, Dockerfile, requirements.txt); author server scripts/playground/server.py from github.com/mohit67890/imajev (vendored at 4469df3c in intake vendor/imajev)",
     "port": 8765,
     "steps": [
      "HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python3 scripts/playground/server.py --backend torch --model-bundle /models/bundle.json --adapter /models/adapter --rotations 1 --max-input-tokens 4096 --calibration /models/adapter/calibration.json --model-name Imajev-4B --host 127.0.0.1 --port 8765  (BH serve.sh, verbatim flags)",
@@ -224,8 +223,8 @@
     "support_files": [
      {
       "path": "server.py",
-      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
-      "sha256": "3e4dac9470418455bee6f93c17d6fc72b0640112e0e251ea1203a14eee9308ad"
+      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    p.add_argument(\"--host\", default=\"127.0.0.1\", choices=[\"127.0.0.1\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "162ce72089025e09f1fdb414131a9acd8c45dd19a8a79d0750daa5ed27094981"
      }
     ],
     "processes": [
@@ -243,7 +242,9 @@
        "--adapter",
        "{weights}/adapter",
        "--state",
-       "{state}"
+       "{state}",
+       "--host",
+       "127.0.0.1"
       ],
       "cwd": "{weights}",
       "env": {
@@ -438,7 +439,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "https://github.com/mohit67890/imajev",
     "port": 8765,
     "steps": [
      "Install pinned author code with pip install -e \".[serve,mlx]\"; python scripts/download_model.py --model 4b (base pin851bf6e).",
@@ -465,8 +465,8 @@
     "support_files": [
      {
       "path": "server.py",
-      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
-      "sha256": "3e4dac9470418455bee6f93c17d6fc72b0640112e0e251ea1203a14eee9308ad"
+      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    p.add_argument(\"--host\", default=\"127.0.0.1\", choices=[\"127.0.0.1\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "162ce72089025e09f1fdb414131a9acd8c45dd19a8a79d0750daa5ed27094981"
      }
     ],
     "processes": [
@@ -486,7 +486,9 @@
        "--state",
        "{state}",
        "--backend",
-       "mlx"
+       "mlx",
+       "--host",
+       "127.0.0.1"
       ],
       "cwd": "{weights}",
       "env": {
@@ -683,7 +685,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "https://github.com/mohit67890/imajev",
     "port": 8765,
     "steps": [
      "Install pinned author source and pip install -e \".[serve,torch]\" with platform PyTorch.",
@@ -716,8 +717,8 @@
     "support_files": [
      {
       "path": "server.py",
-      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
-      "sha256": "3e4dac9470418455bee6f93c17d6fc72b0640112e0e251ea1203a14eee9308ad"
+      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    p.add_argument(\"--host\", default=\"127.0.0.1\", choices=[\"127.0.0.1\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "162ce72089025e09f1fdb414131a9acd8c45dd19a8a79d0750daa5ed27094981"
      }
     ],
     "processes": [
@@ -735,7 +736,9 @@
        "--adapter",
        "{weights}/adapter",
        "--state",
-       "{state}"
+       "{state}",
+       "--host",
+       "127.0.0.1"
       ],
       "cwd": "{weights}",
       "env": {
@@ -932,7 +935,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "https://github.com/mohit67890/imajev",
     "port": 8765,
     "steps": [
      "Install pinned author source and pip install -e \".[serve,torch]\" with platform PyTorch.",
@@ -965,8 +967,8 @@
     "support_files": [
      {
       "path": "server.py",
-      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
-      "sha256": "3e4dac9470418455bee6f93c17d6fc72b0640112e0e251ea1203a14eee9308ad"
+      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    p.add_argument(\"--host\", default=\"127.0.0.1\", choices=[\"127.0.0.1\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "162ce72089025e09f1fdb414131a9acd8c45dd19a8a79d0750daa5ed27094981"
      }
     ],
     "processes": [
@@ -984,7 +986,9 @@
        "--adapter",
        "{weights}/adapter",
        "--state",
-       "{state}"
+       "{state}",
+       "--host",
+       "127.0.0.1"
       ],
       "cwd": "{weights}",
       "env": {

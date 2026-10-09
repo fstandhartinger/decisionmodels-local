@@ -202,7 +202,7 @@ def recipe_errors(variant):
                 errors.append(f"{label}.ready.url must be an HTTP loopback URL")
             elif type(ready.get("timeout_s")) not in (int, float) or not 1 <= ready["timeout_s"] <= 7200:
                 errors.append(f"{label}.ready.timeout_s must be between 1 and 7200 seconds")
-            if isinstance(command, list) and "127.0.0.1" not in repr(command) and "127.0.0.1" not in repr(env):
+            if runtime != "docker-compose" and isinstance(command, list) and "127.0.0.1" not in repr(command) and "127.0.0.1" not in repr(env):
                 errors.append(f"{label} must explicitly bind its backend to 127.0.0.1")
             if isinstance(command, list):
                 for host_key in ("--host", "--bind"):

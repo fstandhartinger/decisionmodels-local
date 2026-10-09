@@ -159,7 +159,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "/home/flori/jobs/jevbench-v16-run-20261001/harness/images/quyet-1-0-large and quyet-common (Dockerfile, serve.sh, spec.json, NOTES.md)",
     "port": null,
     "steps": [
      "Pull the pinned image vllm/vllm-openai:v0.30.0@sha256:8a69ffad... (only for its python 3.12.3 / torch 2.13.0+cu130 / transformers 5.17.0 runtime).",
@@ -335,7 +334,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "https://github.com/ncchinh/quyet",
     "port": null,
     "steps": [
      "Install pinned author quyet package and MPS PyTorch; stage pinned Quyet snapshot.",
@@ -389,7 +387,8 @@
     "requires": {
      "platforms": [
       "macos-arm64"
-     ]
+     ],
+     "macos_min": "14.0"
     },
     "verified": {
      "status": "unverified",

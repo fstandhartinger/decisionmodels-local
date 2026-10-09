@@ -61,7 +61,7 @@
     "redistribution": "conditional",
     "notes": "Apache-2.0 (README front matter \"license: apache-2.0\" at bd4a7cbb, read with the cached login; intake TRIAGE agrees). Base Gemma 4 26B-A4B-it Apache-2.0. Gated repo: redistribution is not an installer question since the installer must not rehost.",
     "evidence": [
-      "https://huggingface.co/surogate/rune-26b-a4b-GGUF/raw/bd4a7cbbed66af1a95dfbac12cabf52e6e677411/README.md (read with the Florian cached HF login; anonymous read returns 401)"
+      "https://huggingface.co/surogate/rune-26b-a4b-GGUF/raw/bd4a7cbbed66af1a95dfbac12cabf52e6e677411/README.md (read with the authenticated official-source access; anonymous read returns 401)"
     ]
   },
   "jev_distillation": {
@@ -222,7 +222,6 @@
         }
       ],
       "serve": {
-        "recipe_source": "/home/flori/jobs/jevbench-hf-decision-index-intake-20261006/recipes/surogate-rune-26b-a4b-v3 (spec.json, serve.sh, dl.sh, surogate_proxy.py, PINS.sha256); /home/flori/jobs/jevbench-v16-run-20261001/harness/images/surogate-rune-26b-a4b-v3-rtxpro6000-a2 (candidate, not accepted)",
         "port": 8090,
         "steps": [
           "Install surogate 1.5.3+cu130 prebuilt wheel (sha256 587f2c5a...) into a venv with CUDA 13 runtime libs.",

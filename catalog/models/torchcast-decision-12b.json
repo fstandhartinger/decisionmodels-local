@@ -146,7 +146,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "/home/flori/jobs/jevbench-v16-run-20261001/harness/images/torchcast-decision-12b (Dockerfile, serve.sh, spec.json, NOTES.md, torchcast_shim.py, readout_config.json)",
     "port": 8011,
     "steps": [
      "Use the pinned vLLM image (see image) and verify model.safetensors sha256 f8553c9e... and torchcast_shim.py sha256 1dff956e... / readout_config.json sha256 8a4de5ef....",

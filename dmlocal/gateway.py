@@ -192,7 +192,9 @@ def _check_distribution(probabilities, keys):
     total = sum(probabilities.values())
     if abs(total - 1.0) > 1e-3:
         raise ValueError("backend probabilities do not sum to one")
-    return {k: v / total for k, v in probabilities.items()}
+    # Published author paths may round their distributions. Validation must not
+    # rescale those values or silently alter their calibrated readout.
+    return dict(probabilities)
 
 
 def normalize_jev(result, request, qname, question):
@@ -209,9 +211,8 @@ def normalize_jev(result, request, qname, question):
         choice = answer.get("choice")
         if choice not in options:
             raise ValueError("backend selected an unknown choice option")
-        expected_choice = max(options, key=lambda key: probs[key])
-        if choice != expected_choice:
-            raise ValueError("backend choice does not match its highest probability; ties use the first option")
+        if probs[choice] != max(probs.values()):
+            raise ValueError("backend choice does not match its highest probability")
         confidence = answer.get("confidence", probs[choice])
         # Author paths may report their own calibrated confidence (CONTRACTS: "a finite value in [0,1] derived by the author path").
         if not _finite_probability(confidence):
@@ -221,12 +222,23 @@ def normalize_jev(result, request, qname, question):
         value = answer.get("noul", answer.get("probability_true"))
         if not _finite_probability(value):
             raise ValueError("backend noul probability is invalid")
-        out.update(noul=value, probabilities={"true": value, "false": 1.0 - value})
+        probs = answer.get("probabilities")
+        if probs is not None:
+            probs = _check_distribution(probs, ["true", "false"])
+            if abs(probs["true"] - value) > 1e-3:
+                raise ValueError("backend noul probability disagrees with its distribution")
+        else:
+            probs = {"true": value, "false": 1.0 - value}
+        out.update(noul=value, probabilities=probs)
     else:
         levels = question["criteria"]
         keys = [str(i) for i in range(len(levels))]
         probs = _check_distribution(answer.get("probabilities"), keys)
-        score = sum(i * probs[str(i)] for i in range(len(levels)))
+        expected_score = sum(i * probs[str(i)] for i in range(len(levels)))
+        score = answer.get("score", expected_score)
+        if (not isinstance(score, (int, float)) or isinstance(score, bool) or not math.isfinite(score)
+                or not 0 <= score <= len(levels) - 1 or abs(score - expected_score) > 1e-3 * len(levels)):
+            raise ValueError("backend score is invalid or disagrees with its distribution")
         legend = {str(i): value for i, value in enumerate(levels)}
         out.update(score=score, legend=legend, probabilities=probs,
                    confidence=answer.get("confidence", max(probs.values())))

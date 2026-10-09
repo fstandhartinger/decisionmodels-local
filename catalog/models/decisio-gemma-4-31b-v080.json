@@ -146,7 +146,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "/home/flori/jobs/jevbench-languages-full-20261007/tools/remaining-native-followon-packages/decisio-gemma-4-31b-v080 (ORIGINAL-NATIVE.sh); decisio commit 5b42101a per release files",
     "port": 8000,
     "steps": [
      "git clone github.com/aminry/decisio @ 5b42101a; uv sync --extra serve --frozen (lockfile in repo).",

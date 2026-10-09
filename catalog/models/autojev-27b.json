@@ -301,7 +301,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "BH /home/flori/jobs/jevbench-v16-run-20261001/harness/images/autojev-27b (serve.sh, Dockerfile, meta.json)",
     "port": 8000,
     "steps": [
      "AUTOJEV_CHECKPOINT=<snapshot dir> python -c 'from autojev.server import main; main()'  (BH serve.sh; author: uv run autojev-serve with the code at denis-pplx/autojev ee63c15)",
@@ -581,7 +580,6 @@
     }
    ],
    "serve": {
-    "recipe_source": "https://github.com/denis-pplx/autojev",
     "port": 8000,
     "steps": [
      "Install pinned author code using CPU PyTorch and the author server dependencies.",
