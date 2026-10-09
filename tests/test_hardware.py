@@ -32,3 +32,10 @@ class HardwareParsingTests(unittest.TestCase):
 
 
 if __name__ == "__main__": unittest.main()
+
+
+class MissingToolTests(unittest.TestCase):
+    def test_run_with_missing_executable_returns_empty(self):
+        from dmlocal.hardware import _run
+        self.assertEqual(_run([None, "--version"]), "")
+        self.assertEqual(_run([]), "")

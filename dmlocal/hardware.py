@@ -10,6 +10,8 @@ from pathlib import Path
 
 
 def _run(args, timeout=4):
+    if not args or args[0] is None:
+        return ""
     try:
         proc = subprocess.run(args, capture_output=True, text=True, timeout=timeout, check=False)
         return proc.stdout.strip() if proc.returncode == 0 else ""
@@ -133,7 +135,7 @@ def detect(state_path=None):
         "cpu": platform.processor() or platform.machine(), "cpu_count": os.cpu_count(), "ram_gb": _ram_gb(),
         "disk_free_gb": disk_free, "gpus": gpu, "cuda_driver": next((g.get("driver_version") for g in gpu if g["vendor"] == "nvidia"), None),
         "cuda_version": _cuda_version() if any(g.get("vendor") == "nvidia" for g in gpu) else None,
-        "docker": {"available": bool(docker and _run([docker, "--version"])), "nvidia_runtime": "nvidia" in docker_runtimes or "nvidia" in _run([docker, "info"], timeout=6).lower()},
+        "docker": {"available": bool(docker and _run([docker, "--version"])), "nvidia_runtime": bool(docker) and ("nvidia" in docker_runtimes or "nvidia" in _run([docker, "info"], timeout=6).lower())},
         "python": {"version": python_version, "supported": (major, minor) >= (3, 9)},
         "uv": {"available": bool(shutil.which("uv")), "version": (_run(["uv", "--version"]) if shutil.which("uv") else None)},
         "cloud_vendor_dmi": dmi or None, "apple_silicon": apple,
