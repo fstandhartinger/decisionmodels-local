@@ -1,0 +1,12 @@
+.git
+**/node_modules
+web/.next
+**/__pycache__
+dist
+.github
+tests
+dmlocal
+install
+scripts
+**/.env*
+**/*.local

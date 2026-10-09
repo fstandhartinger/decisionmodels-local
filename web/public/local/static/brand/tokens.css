@@ -1,0 +1,24 @@
+/* Decision Models brand tokens (9 Oct 2026). Source: ~/jobs/decisionmodels-program-20261009/brand/BRAND.md */
+:root {
+  --dm-ink: #0B0C0E;          /* text, dark surfaces, mark container */
+  --dm-paper: #FAFAF7;        /* light page background */
+  --dm-surface: #F1F2ED;      /* cards on paper */
+  --dm-line: #DFE1DA;         /* hairlines on paper */
+  --dm-muted: #60656A;        /* secondary text on paper (5.6:1) */
+  --dm-bone: #F5F6F3;         /* text on ink; upper half of the mark on dark */
+  --dm-emerald: #12B886;      /* brand accent: graphics, mark, accents on ink (7.7:1 on ink). NOT for text on paper */
+  --dm-emerald-deep: #0E9F71; /* mark lower half on light backgrounds (graphic only) */
+  --dm-emerald-text: #0A7352; /* emerald text/links/buttons on paper (5.6:1; white on it 5.9:1) */
+  --dm-emerald-wash: #E3F5EE; /* tinted backgrounds */
+  --dm-eu: #244A92;           /* EU tier accent (on paper) */
+  --dm-eu-wash: #EDF2FB;
+  --dm-global: #75510B;       /* Global / peer-to-peer tier accent (amber, on paper) */
+  --dm-global-wash: #FAF3DF;
+  /* dark theme counterparts */
+  --dm-ink-surface: #16191C; --dm-ink-line: #30363A; --dm-ink-muted: #A8ADB1;
+  --dm-eu-on-ink: #A7C1FA; --dm-global-on-ink: #F1CE78;
+  --dm-font-display: "Inter Tight", Inter, system-ui, sans-serif;  /* headlines 600–650, tracking -0.02 to -0.03em */
+  --dm-font-text: Inter, system-ui, sans-serif;                    /* body 400/500 */
+  --dm-font-mono: "IBM Plex Mono", ui-monospace, monospace;        /* eyebrows, code, numbers; eyebrows uppercase +0.08em */
+  --dm-radius: 10px; --dm-radius-pill: 999px;
+}
