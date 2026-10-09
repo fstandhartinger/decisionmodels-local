@@ -1,0 +1,2 @@
+export const POSIX_INSTALL_COMMAND = "curl -fsSL https://decisionmodels.io/local/install.sh | sh && export PATH=\"$HOME/.local/bin:$PATH\"";
+export const VERIFY_RELEASE_COMMAND = "cosign verify-blob --bundle SHA256SUMS.sigstore.json --certificate-identity-regexp '^https://github.com/fstandhartinger/decisionmodels-local/\\.github/workflows/release\\.yml@refs/tags/v[0-9][^/]*$' --certificate-oidc-issuer https://token.actions.githubusercontent.com SHA256SUMS";

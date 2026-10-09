@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { POSIX_INSTALL_COMMAND } from "@/lib/install-commands";
 import { CopyCommand } from "@/components/copy-command";
 
 type Tab = { id: string; title: string; steps: string[]; note?: string };
@@ -8,11 +9,11 @@ type CloudLine = { label: string; source: string; date: string };
 
 export function QuickStart({ slug, excluded, hasRecipe, recipeTested, cloudLines, cloudMemoryGb }: { slug: string; excluded: boolean; hasRecipe: boolean; recipeTested: boolean; cloudLines: CloudLine[]; cloudMemoryGb?: number }) {
   const tabs: Tab[] = [
-    { id: "linux", title: "Linux & WSL2", steps: ["curl -fsSL https://decisionmodels.io/local/install.sh | sh", `dm-local install ${slug}`] },
-    { id: "mac", title: "macOS", steps: ["curl -fsSL https://decisionmodels.io/local/install.sh | sh", `dm-local install ${slug}`], note: "Apple Silicon support depends on a compatible catalog variant." },
+    { id: "linux", title: "Linux & WSL2", steps: [POSIX_INSTALL_COMMAND, `dm-local install ${slug}`] },
+    { id: "mac", title: "macOS", steps: [POSIX_INSTALL_COMMAND, `dm-local install ${slug}`], note: "Apple Silicon support depends on a compatible catalog variant." },
     { id: "windows", title: "Windows", steps: ["irm https://decisionmodels.io/local/install.ps1 | iex", `dm-local install ${slug}`] },
-    { id: "remote", title: "Remote GPU", steps: ["curl -fsSL https://decisionmodels.io/local/install.sh | sh", `dm-local remote user@host install ${slug}`], note: cloudLines.length ? "Connect to a machine you control over SSH. These are the lowest sourced GPU options for this model." : "Connect to a machine you control over SSH. Check its GPU memory and current price before renting." },
-    { id: "cloud", title: "Cloud VM", steps: ["curl -fsSL https://decisionmodels.io/local/install.sh | sh", `dm-local plan ${slug}`, `dm-local install ${slug}`], note: cloudLines.length ? `Lowest sourced option per provider with at least ${cloudMemoryGb ?? "the model’s recommended"} GB of GPU memory:` : "No sourced RunPod, AWS, GCP, Azure, or CoreWeave price currently meets this model’s recommended GPU memory. Check provider listings before renting." }
+    { id: "remote", title: "Remote GPU", steps: [POSIX_INSTALL_COMMAND, `dm-local remote user@host install ${slug}`], note: cloudLines.length ? "Connect to a machine you control over SSH. These are the lowest sourced GPU options for this model." : "Connect to a machine you control over SSH. Check its GPU memory and current price before renting." },
+    { id: "cloud", title: "Cloud VM", steps: [POSIX_INSTALL_COMMAND, `dm-local plan ${slug}`, `dm-local install ${slug}`], note: cloudLines.length ? `Lowest sourced option per provider with at least ${cloudMemoryGb ?? "the model’s recommended"} GB of GPU memory:` : "No sourced RunPod, AWS, GCP, Azure, or CoreWeave price currently meets this model’s recommended GPU memory. Check provider listings before renting." }
   ];
   const [active, setActive] = useState(tabs[0].id);
   const selected = tabs.find((tab) => tab.id === active) ?? tabs[0];
