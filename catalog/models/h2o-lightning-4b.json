@@ -217,7 +217,8 @@
        "0.90"
       ],
       "env": {
-       "VLLM_NO_USAGE_STATS": "1"
+       "VLLM_NO_USAGE_STATS": "1",
+       "VLLM_USE_FLASHINFER_SAMPLER": "0"
       },
       "cwd": "{weights}",
       "ready": {

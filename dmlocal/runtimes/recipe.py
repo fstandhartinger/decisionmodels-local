@@ -401,6 +401,11 @@ class RecipeRuntime:
         if self.cpp and command and command[0] in ("llama-server", "llama-server.exe"):
             command[0] = str(self.cpp.binary)
         env = model_process_env(os.environ, {key: expand_placeholders(value, mapping) for key, value in proc.get("env", {}).items()})
+        if self.runtime_name in ("venv", "mlx") and self.python:
+            # Same as activating the venv: JIT toolchains (ninja, triton) installed into it must be on PATH.
+            venv_bin = str(self.runtime_dir / ("Scripts" if os.name == "nt" else "bin"))
+            env["PATH"] = venv_bin + os.pathsep + env.get("PATH", "")
+            env["VIRTUAL_ENV"] = str(self.runtime_dir)
         cwd_value = expand_placeholders(proc.get("cwd", str(self.weights)), mapping)
         cwd = Path(cwd_value).resolve()
         allowed = [self.weights.resolve(), self.runtime_dir.resolve(), *(Path(path).resolve() for path in self.code_dirs.values())]
