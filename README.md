@@ -61,12 +61,12 @@ This works with AWS, Azure, GCP, RunPod, Lium, CoreWeave, and self-managed SSH n
 
 Model files are fetched from `https://huggingface.co/<repo>/resolve/<revision>/<path>` (or an HTTPS `HF_ENDPOINT` mirror), resumed with HTTP Range, and verified before atomic rename. Set `HF_TOKEN` only for gated repositories. The token is sent as an authorization header and is never printed.
 
-Release downloads include `SHA256SUMS`, a keyless Sigstore bundle, and a GitHub build-provenance attestation. `install.sh` and `install.ps1` always verify the zipapp hash. When `cosign` is installed, they also verify the bundle against the GitHub Actions OIDC issuer and this repository's certificate identity. To verify manually:
+Release downloads include a signed `SHA256SUMS` manifest, a keyless Sigstore bundle for the zipapp, and a GitHub build-provenance attestation. Both installers verify the manifest signature against this repository's release workflow before trusting bootstrap metadata or the zipapp. If cosign is absent, they download an official verifier at a pinned SHA-256. To verify manually:
 
 ```sh
 sha256sum -c SHA256SUMS
 cosign verify-blob --bundle dm-local.pyz.sigstore.json \
-  --certificate-identity-regexp '^https://github.com/fstandhartinger/decisionmodels-local/' \
+  --certificate-identity-regexp '^https://github.com/fstandhartinger/decisionmodels-local/\.github/workflows/release\.yml@refs/tags/v[0-9][^/]*$' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com dm-local.pyz
 ```
 

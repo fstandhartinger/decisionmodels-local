@@ -1,273 +1,276 @@
 {
- "schema": "decisionmodels-local-catalog/1",
- "slug": "h2o-lightning-4b",
- "name": "H2O-Lightning-4B v1.1",
- "author": "H2O.ai",
- "lists": [
-  "jevbench-top10"
- ],
- "benchmarks": {
-  "jevbench": {
-   "version": "v1.6.1",
-   "key": "h2o-lightning-4b",
-   "capability_rank": 5,
-   "capability": 75.0,
-   "p50_s_raw": 0.02928461297415197,
-   "page": "https://benchmarkheaven.com/jev-models/h2o-lightning-4b"
-  }
- },
- "modalities": [
-  "text"
- ],
- "question_types": {
-  "choice": "native",
-  "noul": "native",
-  "score": "native"
- },
- "weights": {
-  "repo": "h2oai/h2o-lightning-4b",
-  "revision": "193ad740925b176a3b70a5a13a7cff2f2fadd01e",
-  "url": "https://huggingface.co/h2oai/h2o-lightning-4b/tree/193ad740925b176a3b70a5a13a7cff2f2fadd01e",
-  "gated": false
- },
- "code": null,
- "base_model": {
-  "repo": "Qwen/Qwen3.5-4B",
-  "licence": "apache-2.0",
-  "revision": null,
-  "revision_note": "base revision not pinned in the H2O card; main sha 851bf6e8 read from the HF API on 9 Oct 2026 only as a reference"
- },
- "params": {
-  "total_b": 4.0,
-  "active_b": 4.0
- },
- "licence": {
-  "spdx": "apache-2.0",
-  "commercial_use": "yes",
-  "redistribution": "yes",
-  "notes": "Apache-2.0 for the weights and the author shim (LICENSE and README front matter at the pinned revision). Base Qwen3.5-4B is Apache-2.0 per its HF card.",
-  "evidence": [
-   "https://huggingface.co/h2oai/h2o-lightning-4b/raw/193ad740925b176a3b70a5a13a7cff2f2fadd01e/LICENSE",
-   "https://huggingface.co/h2oai/h2o-lightning-4b/raw/193ad740925b176a3b70a5a13a7cff2f2fadd01e/README.md"
-  ]
- },
- "jev_distillation": {
-  "status": "unclear",
-  "evidence": "README: \"No JevBench data, public or otherwise, was used for training.\" No statement on the source of training labels or whether Jev/TypeSafe outputs were used.",
-  "url": "https://huggingface.co/h2oai/h2o-lightning-4b/raw/193ad740925b176a3b70a5a13a7cff2f2fadd01e/README.md",
-  "display_note": "The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs."
- },
- "installer_policy": {
-  "status": "supported",
-  "reason": "Open licence (apache-2.0). The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs.",
-  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
-  "worker_proposal": "excluded"
- },
- "readout": {
-  "type": "author_shim",
-  "endpoint": "jev",
-  "backend_agnostic": false,
-  "notes": "Author shim (h2o_lightning_shim.py, sha256 355791c3...) sends one vLLM /v1/completions request per question with max_tokens=1 and the vLLM-only logprob_token_ids field; the shim is pinned by the BH recipe. Not portable to llama.cpp or MLX without rewriting that call.",
-  "portable_notes": "No unmodified CPU/MPS author server or portable GGUF/MLX readout found at the pinned revision. serve.sh L9 invokes vllm serve; h2o_lightning_shim.py L314 requests logprob_token_ids and return_tokens_as_token_ids (vLLM extensions), so backend_agnostic=false. https://huggingface.co/h2oai/h2o-lightning-4b/raw/193ad740925b176a3b70a5a13a7cff2f2fadd01e/serve.sh"
- },
- "variants": [
-  {
-   "id": "bf16-vllm",
-   "precision": "bf16",
-   "benchmarked": true,
-   "runtime": "vllm",
-   "runtime_version": "0.30.0+cu129",
-   "image": null,
-   "platforms": [
-    "linux-nvidia",
-    "wsl2-nvidia"
-   ],
-   "gpu_arch_min": "sm_80",
-   "min_vram_gb": 24,
-   "recommended_vram_gb": 24,
-   "min_ram_gb": 16,
-   "disk_gb": 8.43,
-   "files": [
-    {
-     "path": "model.safetensors",
-     "size": 8411558400,
-     "sha256": "c65443b1d28891ffc4b6f7d90028c542d6ccb24c2f9cd6a46a8294a44ab0ffae",
-     "git_blob_sha1": null,
-     "sha256_source": "HF tree API lfs.oid at pinned revision"
-    },
-    {
-     "path": "config.json",
-     "size": 2005,
-     "sha256": "6240a991871a574ff04525c90d8f75a2a11bad2f7012ab0774cbc69aca745859",
-     "git_blob_sha1": "b029bdee6645db51b079c51800900841b8b971f7",
-     "sha256_source": "SHA256 of raw bytes at pinned revision"
-    },
-    {
-     "path": "generation_config.json",
-     "size": 116,
-     "sha256": "731e41edbcd0336b21c36d03fdf6fc54977dfc28cd9396491999ca8ddb052c42",
-     "git_blob_sha1": "5c82823157c9f9990e90eac595799b69ce524ac8",
-     "sha256_source": "SHA256 of raw bytes at pinned revision"
-    },
-    {
-     "path": "serve.sh",
-     "size": 1180,
-     "sha256": "1777363ab5f1accf32137bfe71531e2b9b4fa65a234ac4d54d2dd70be9862a5a",
-     "git_blob_sha1": "635f93695fbe7a1485c8e2889619d3cf446a8bbb",
-     "sha256_source": "SHA256 of raw bytes at pinned revision"
-    },
-    {
-     "path": "serve_config.json",
-     "size": 2101,
-     "sha256": "dfe5fd08b5b89cfd1be2797baf7a570c32f2883c6520d2b047cd5528591cee7a",
-     "git_blob_sha1": "33ed6e4c079055dc0c4c04352f66240e92f6505f",
-     "sha256_source": "SHA256 of raw bytes at pinned revision"
-    },
-    {
-     "path": "h2o_lightning_shim.py",
-     "size": 27656,
-     "sha256": "355791c3f7b50a5dc9fa759dfa1b861874678d6e04c70dbf8b86fddccd3c0932",
-     "git_blob_sha1": "48d61be578d1eab4b564d2a4312067245f4de4a5",
-     "sha256_source": "SHA256 of raw bytes at pinned revision"
-    },
-    {
-     "path": "tokenizer.json",
-     "size": 12807982,
-     "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
-     "git_blob_sha1": null,
-     "sha256_source": "HF tree API lfs.oid at pinned revision"
-    },
-    {
-     "path": "tokenizer_config.json",
-     "size": 16710,
-     "sha256": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8",
-     "git_blob_sha1": "eda48d3e75a8e59a8479ee4ec8b37f76e711d9c1",
-     "sha256_source": "SHA256 of raw bytes at pinned revision"
-    },
-    {
-     "path": "vocab.json",
-     "size": 6722759,
-     "sha256": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
-     "git_blob_sha1": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
-     "sha256_note": "not computed: file is over the 5 MB download cap; git blob sha1 recorded",
-     "sha256_source": "SHA256 of raw bytes at pinned revision"
-    },
-    {
-     "path": "merges.txt",
-     "size": 3353259,
-     "sha256": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d",
-     "git_blob_sha1": "a494e019ca1502219fd0128658b979e5f05ae8e8",
-     "sha256_source": "SHA256 of raw bytes at pinned revision"
-    },
-    {
-     "path": "chat_template.jinja",
-     "size": 7756,
-     "sha256": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
-     "git_blob_sha1": "a585dec894e63da457d9440ec6aa7caa16d20860",
-     "sha256_source": "SHA256 of raw bytes at pinned revision"
+  "schema": "decisionmodels-local-catalog/1",
+  "slug": "h2o-lightning-4b",
+  "name": "H2O-Lightning-4B v1.1",
+  "author": "H2O.ai",
+  "lists": [
+    "jevbench-top10"
+  ],
+  "benchmarks": {
+    "jevbench": {
+      "version": "v1.6.1",
+      "key": "h2o-lightning-4b",
+      "capability_rank": 5,
+      "capability": 75.0,
+      "p50_s_raw": 0.02928461297415197,
+      "page": "https://benchmarkheaven.com/jev-models/h2o-lightning-4b"
     }
-   ],
-   "serve": {
-    "recipe_source": "/home/flori/jobs/jevbench-v16-run-20261001/harness/images/h2o-lightning-4b (Dockerfile, serve.sh, spec.json); author serve.sh at the pinned revision",
-    "port": 8741,
-    "steps": [
-     "Install vllm==0.30.0+cu129 and torchcodec==0.16.0+cu129 from wheels.vllm.ai/0.30.0/cu129 and download.pytorch.org/whl/cu129 (BH image: python 3.12.14-slim, uv venv).",
-     "Verify model.safetensors sha256 c65443b1... and the shim sha256 355791c3... before serving.",
-     "Run the author serve.sh unchanged: vLLM on 127.0.0.1:8000, --max-model-len 40960, --gpu-memory-utilization 0.90; shim on 127.0.0.1:8741 with serve_config.json (temperature 0.8).",
-     "Adapter: jevbench typesafe, endpoint http://127.0.0.1:8741, model h2oai/h2o-lightning-4b, timeout 600 s."
+  },
+  "modalities": [
+    "text"
+  ],
+  "question_types": {
+    "choice": "native",
+    "noul": "native",
+    "score": "native"
+  },
+  "weights": {
+    "repo": "h2oai/h2o-lightning-4b",
+    "revision": "193ad740925b176a3b70a5a13a7cff2f2fadd01e",
+    "url": "https://huggingface.co/h2oai/h2o-lightning-4b/tree/193ad740925b176a3b70a5a13a7cff2f2fadd01e",
+    "gated": false
+  },
+  "code": null,
+  "base_model": {
+    "repo": "Qwen/Qwen3.5-4B",
+    "licence": "apache-2.0",
+    "revision": null,
+    "revision_note": "base revision not pinned in the H2O card; main sha 851bf6e8 read from the HF API on 9 Oct 2026 only as a reference"
+  },
+  "params": {
+    "total_b": 4.0,
+    "active_b": 4.0
+  },
+  "licence": {
+    "spdx": "apache-2.0",
+    "commercial_use": "yes",
+    "redistribution": "yes",
+    "notes": "Apache-2.0 for the weights and the author shim (LICENSE and README front matter at the pinned revision). Base Qwen3.5-4B is Apache-2.0 per its HF card.",
+    "evidence": [
+      "https://huggingface.co/h2oai/h2o-lightning-4b/raw/193ad740925b176a3b70a5a13a7cff2f2fadd01e/LICENSE",
+      "https://huggingface.co/h2oai/h2o-lightning-4b/raw/193ad740925b176a3b70a5a13a7cff2f2fadd01e/README.md"
     ]
-   },
-   "measured": {
-    "gpu": "RTX PRO 6000 96GB (BH meta.json gpu RTXPRO6000). The author README says H100 SXM 80GB for the author run.",
-    "p50_ms": 29.3,
-    "source": "data/jevbench-latest.json (p50_s_raw); BH v1.1 row is UNPUBLISHED internal (recipe NOTES)"
-   },
-   "expected_speed": "Fast: about 30 ms p 50 per decision on the BH card (raw, serial). The live file also carries an assumed-adjusted 0.21 s; that adjustment is an assumption, not a measurement. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "min_vram_gb 24 is from BH meta.json; recommended 96 is the BH card, not a derived figure. Weights 8.41 GB bf16 on disk. Base Qwen3.5-4B. Requires the author shim and vLLM 0.30.0. Host RAM provisioning estimate: pinned weight files sum to 8.412 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more.",
-   "install": {
-    "runtime": "venv",
-    "python": "3.12",
-    "packages": [
-     "vllm==0.30.0+cu129",
-     "torchcodec==0.16.0+cu129"
-    ],
-    "extra_index_urls": [
-     "https://wheels.vllm.ai/0.30.0/cu129",
-     "https://download.pytorch.org/whl/cu129"
-    ],
-    "index_strategy": "unsafe-best-match",
-    "processes": [
-     {
-      "name": "engine",
-      "command": [
-       "{python}",
-       "-m",
-       "vllm.entrypoints.cli.main",
-       "serve",
-       "{weights}",
-       "--served-model-name",
-       "h2oai/h2o-lightning-4b",
-       "--host",
-       "127.0.0.1",
-       "--port",
-       "{port:engine}",
-       "--max-model-len",
-       "40960",
-       "--gpu-memory-utilization",
-       "0.90"
+  },
+  "jev_distillation": {
+    "status": "unclear",
+    "evidence": "README: \"No JevBench data, public or otherwise, was used for training.\" No statement on the source of training labels or whether Jev/TypeSafe outputs were used.",
+    "url": "https://huggingface.co/h2oai/h2o-lightning-4b/raw/193ad740925b176a3b70a5a13a7cff2f2fadd01e/README.md",
+    "display_note": "The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs."
+  },
+  "installer_policy": {
+    "status": "supported",
+    "reason": "Open licence (apache-2.0). The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs.",
+    "decided_by": "lead (Decision Models workstream E), 2026-10-09",
+    "worker_proposal": "excluded"
+  },
+  "readout": {
+    "type": "author_shim",
+    "endpoint": "jev",
+    "backend_agnostic": false,
+    "notes": "Author shim (h2o_lightning_shim.py, sha256 355791c3...) sends one vLLM /v1/completions request per question with max_tokens=1 and the vLLM-only logprob_token_ids field; the shim is pinned by the BH recipe. Not portable to llama.cpp or MLX without rewriting that call.",
+    "portable_notes": "No unmodified CPU/MPS author server or portable GGUF/MLX readout found at the pinned revision. serve.sh L9 invokes vllm serve; h2o_lightning_shim.py L314 requests logprob_token_ids and return_tokens_as_token_ids (vLLM extensions), so backend_agnostic=false. https://huggingface.co/h2oai/h2o-lightning-4b/raw/193ad740925b176a3b70a5a13a7cff2f2fadd01e/serve.sh"
+  },
+  "variants": [
+    {
+      "id": "bf16-vllm",
+      "precision": "bf16",
+      "benchmarked": true,
+      "runtime": "vllm",
+      "runtime_version": "0.30.0+cu129",
+      "image": null,
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
       ],
-      "env": {
-       "VLLM_NO_USAGE_STATS": "1",
-       "VLLM_USE_FLASHINFER_SAMPLER": "0"
+      "gpu_arch_min": "sm_80",
+      "min_vram_gb": 24,
+      "recommended_vram_gb": 24,
+      "min_ram_gb": 16,
+      "disk_gb": 8.43,
+      "files": [
+        {
+          "path": "model.safetensors",
+          "size": 8411558400,
+          "sha256": "c65443b1d28891ffc4b6f7d90028c542d6ccb24c2f9cd6a46a8294a44ab0ffae",
+          "git_blob_sha1": null,
+          "sha256_source": "HF tree API lfs.oid at pinned revision"
+        },
+        {
+          "path": "config.json",
+          "size": 2005,
+          "sha256": "6240a991871a574ff04525c90d8f75a2a11bad2f7012ab0774cbc69aca745859",
+          "git_blob_sha1": "b029bdee6645db51b079c51800900841b8b971f7",
+          "sha256_source": "SHA256 of raw bytes at pinned revision"
+        },
+        {
+          "path": "generation_config.json",
+          "size": 116,
+          "sha256": "731e41edbcd0336b21c36d03fdf6fc54977dfc28cd9396491999ca8ddb052c42",
+          "git_blob_sha1": "5c82823157c9f9990e90eac595799b69ce524ac8",
+          "sha256_source": "SHA256 of raw bytes at pinned revision"
+        },
+        {
+          "path": "serve.sh",
+          "size": 1180,
+          "sha256": "1777363ab5f1accf32137bfe71531e2b9b4fa65a234ac4d54d2dd70be9862a5a",
+          "git_blob_sha1": "635f93695fbe7a1485c8e2889619d3cf446a8bbb",
+          "sha256_source": "SHA256 of raw bytes at pinned revision"
+        },
+        {
+          "path": "serve_config.json",
+          "size": 2101,
+          "sha256": "dfe5fd08b5b89cfd1be2797baf7a570c32f2883c6520d2b047cd5528591cee7a",
+          "git_blob_sha1": "33ed6e4c079055dc0c4c04352f66240e92f6505f",
+          "sha256_source": "SHA256 of raw bytes at pinned revision"
+        },
+        {
+          "path": "h2o_lightning_shim.py",
+          "size": 27656,
+          "sha256": "355791c3f7b50a5dc9fa759dfa1b861874678d6e04c70dbf8b86fddccd3c0932",
+          "git_blob_sha1": "48d61be578d1eab4b564d2a4312067245f4de4a5",
+          "sha256_source": "SHA256 of raw bytes at pinned revision"
+        },
+        {
+          "path": "tokenizer.json",
+          "size": 12807982,
+          "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+          "git_blob_sha1": null,
+          "sha256_source": "HF tree API lfs.oid at pinned revision"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "size": 16710,
+          "sha256": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8",
+          "git_blob_sha1": "eda48d3e75a8e59a8479ee4ec8b37f76e711d9c1",
+          "sha256_source": "SHA256 of raw bytes at pinned revision"
+        },
+        {
+          "path": "vocab.json",
+          "size": 6722759,
+          "sha256": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+          "git_blob_sha1": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
+          "sha256_note": "not computed: file is over the 5 MB download cap; git blob sha1 recorded",
+          "sha256_source": "SHA256 of raw bytes at pinned revision"
+        },
+        {
+          "path": "merges.txt",
+          "size": 3353259,
+          "sha256": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d",
+          "git_blob_sha1": "a494e019ca1502219fd0128658b979e5f05ae8e8",
+          "sha256_source": "SHA256 of raw bytes at pinned revision"
+        },
+        {
+          "path": "chat_template.jinja",
+          "size": 7756,
+          "sha256": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+          "git_blob_sha1": "a585dec894e63da457d9440ec6aa7caa16d20860",
+          "sha256_source": "SHA256 of raw bytes at pinned revision"
+        }
+      ],
+      "serve": {
+        "recipe_source": "/home/flori/jobs/jevbench-v16-run-20261001/harness/images/h2o-lightning-4b (Dockerfile, serve.sh, spec.json); author serve.sh at the pinned revision",
+        "port": 8741,
+        "steps": [
+          "Install vllm==0.30.0+cu129 and torchcodec==0.16.0+cu129 from wheels.vllm.ai/0.30.0/cu129 and download.pytorch.org/whl/cu129 (BH image: python 3.12.14-slim, uv venv).",
+          "Verify model.safetensors sha256 c65443b1... and the shim sha256 355791c3... before serving.",
+          "Run the author serve.sh unchanged: vLLM on 127.0.0.1:8000, --max-model-len 40960, --gpu-memory-utilization 0.90; shim on 127.0.0.1:8741 with serve_config.json (temperature 0.8).",
+          "Adapter: jevbench typesafe, endpoint http://127.0.0.1:8741, model h2oai/h2o-lightning-4b, timeout 600 s."
+        ]
       },
-      "cwd": "{weights}",
-      "ready": {
-       "url": "http://127.0.0.1:{port:engine}/health",
-       "timeout_s": 1200
+      "measured": {
+        "gpu": "RTX PRO 6000 96GB (BH meta.json gpu RTXPRO6000). The author README says H100 SXM 80GB for the author run.",
+        "p50_ms": 29.3,
+        "source": "data/jevbench-latest.json (p50_s_raw); BH v1.1 row is UNPUBLISHED internal (recipe NOTES)"
+      },
+      "expected_speed": "Fast: about 30 ms p 50 per decision on the BH card (raw, serial). The live file also carries an assumed-adjusted 0.21 s; that adjustment is an assumption, not a measurement. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
+      "notes": "min_vram_gb 24 is from BH meta.json; recommended 96 is the BH card, not a derived figure. Weights 8.41 GB bf16 on disk. Base Qwen3.5-4B. Requires the author shim and vLLM 0.30.0. Host RAM provisioning estimate: pinned weight files sum to 8.412 GB; \u00d71.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more.",
+      "install": {
+        "runtime": "venv",
+        "python": "3.12",
+        "packages": [
+          "vllm==0.30.0+cu129",
+          "torchcodec==0.16.0+cu129"
+        ],
+        "extra_index_urls": [
+          "https://wheels.vllm.ai/0.30.0/cu129",
+          "https://download.pytorch.org/whl/cu129"
+        ],
+        "index_strategy": "unsafe-best-match",
+        "processes": [
+          {
+            "name": "engine",
+            "command": [
+              "{python}",
+              "-m",
+              "vllm.entrypoints.cli.main",
+              "serve",
+              "{weights}",
+              "--served-model-name",
+              "h2oai/h2o-lightning-4b",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "{port:engine}",
+              "--max-model-len",
+              "40960",
+              "--gpu-memory-utilization",
+              "0.90"
+            ],
+            "env": {
+              "VLLM_NO_USAGE_STATS": "1",
+              "VLLM_USE_FLASHINFER_SAMPLER": "0"
+            },
+            "cwd": "{weights}",
+            "ready": {
+              "url": "http://127.0.0.1:{port:engine}/health",
+              "timeout_s": 1200
+            }
+          },
+          {
+            "name": "api",
+            "command": [
+              "{python}",
+              "{weights}/h2o_lightning_shim.py",
+              "--config",
+              "{weights}/serve_config.json",
+              "--vllm",
+              "http://127.0.0.1:{port:engine}",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "{port:api}"
+            ],
+            "cwd": "{weights}",
+            "ready": {
+              "url": "http://127.0.0.1:{port:api}/health",
+              "timeout_s": 120
+            }
+          }
+        ],
+        "api": {
+          "mode": "proxy_jev",
+          "port": "api",
+          "text_path": "/v1/systemone",
+          "image_path": null,
+          "model": "h2oai/h2o-lightning-4b",
+          "auth_header": null
+        },
+        "requires": {
+          "platforms": [
+            "linux-nvidia",
+            "wsl2-nvidia"
+          ],
+          "cuda_min": "12.9",
+          "gpu_arch_min": "sm_80"
+        },
+        "verified": {
+          "status": "verified",
+          "where": "RunPod NVIDIA RTX 4090 24 GB, Ubuntu Linux, 2026-10-09",
+          "selftest": "pass; install, Jev-compatible endpoint, SSH tunnel, test and uninstall",
+          "notes": "Installer sample-choice median41.8ms; this is a functional check, not a new benchmark measurement."
+        }
       }
-     },
-     {
-      "name": "api",
-      "command": [
-       "{python}",
-       "{weights}/h2o_lightning_shim.py",
-       "--config",
-       "{weights}/serve_config.json",
-       "--vllm",
-       "http://127.0.0.1:{port:engine}",
-       "--host",
-       "127.0.0.1",
-       "--port",
-       "{port:api}"
-      ],
-      "cwd": "{weights}",
-      "ready": {
-       "url": "http://127.0.0.1:{port:api}/health",
-       "timeout_s": 120
-      }
-     }
-    ],
-    "api": {
-     "mode": "proxy_jev",
-     "port": "api",
-     "text_path": "/v1/systemone",
-     "image_path": null,
-     "model": "h2oai/h2o-lightning-4b",
-     "auth_header": null
-    },
-    "requires": {
-     "platforms": [
-      "linux-nvidia",
-      "wsl2-nvidia"
-     ],
-     "cuda_min": "12.9",
-     "gpu_arch_min": "sm_80"
-    },
-    "verified": {
-     "status": "unverified"
     }
-   }
-  }
- ],
- "sources_checked_utc": "2026-10-09T16:40Z"
+  ],
+  "sources_checked_utc": "2026-10-09T16:40Z"
 }
