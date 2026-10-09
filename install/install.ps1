@@ -84,7 +84,7 @@ try {
   $PyCommand = if ($Python.Exe -eq 'py') { 'py -3' } else { '"' + $Python.Exe + '"' }
   # CMD parses a parenthesized block before running it. Uninstall can therefore
   # delete this file without CMD reopening it to read the exit command.
-  @('@echo off', 'setlocal EnableDelayedExpansion', '(', "$PyCommand `"%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz`" %*", 'exit /b !errorlevel!', ')') | Set-Content -Encoding ASCII $Cmd
+  @('@echo off', '(', "$PyCommand `"%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz`" %*", 'exit /b', ')') | Set-Content -Encoding ASCII $Cmd
   # Make the one-command install usable now and in future user terminals.
   $UserPath = [Environment]::GetEnvironmentVariable('Path', 'User')
   if (($UserPath -split ';') -notcontains $Bin) {
