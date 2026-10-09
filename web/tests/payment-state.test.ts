@@ -30,13 +30,19 @@ afterEach(() => {
 describe("paid-only licence delivery", () => {
   const session = {
     id: "cs_test_delayed_123",
-    metadata: { company: "Example Ltd" },
+    metadata: { company: "Example Ltd", purpose: "decisionmodels_local_commercial" },
     customer_details: { email: "buyer@example.com" },
     customer_email: null,
     customer: "cus_123",
     subscription: "sub_123",
     payment_status: "unpaid"
   };
+
+  it("ignores paid checkout events for another product in the shared Stripe account", async () => {
+    const client = fakeClient();
+    await processEvent(client, stripeEvent("checkout.session.completed", { ...session, payment_status: "paid", metadata: { company: "Other product buyer" } }));
+    expect(client.calls).toHaveLength(0);
+  });
 
   it("records an unpaid completed checkout as pending without creating or emailing a key", async () => {
     const client = fakeClient();

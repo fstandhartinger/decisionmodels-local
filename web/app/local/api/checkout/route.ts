@@ -32,8 +32,8 @@ export async function POST(request: Request) {
       customer_email: email,
       success_url: "https://decisionmodels.io/local/licence/success?session_id={CHECKOUT_SESSION_ID}",
       cancel_url: "https://decisionmodels.io/local/licence?checkout=cancelled",
-      metadata: { company, declaration: "true" },
-      subscription_data: { metadata: { company, declaration: "true" } }
+      metadata: { company, declaration: "true", purpose: "decisionmodels_local_commercial" },
+      subscription_data: { metadata: { company, declaration: "true", purpose: "decisionmodels_local_commercial" } }
     };
     const session = await stripe.checkout.sessions.create(params);
     if (!session.url) return json({ error: "Stripe did not return a checkout URL." }, 502);

@@ -14,6 +14,7 @@ function queueEmail(client: EventClient, recipient: string, subject: string, bod
 }
 
 async function processCheckoutSession(client: EventClient, session: Stripe.Checkout.Session, paid: boolean, failed = false) {
+  if (session.metadata?.purpose !== "decisionmodels_local_commercial") return;
   const company = session.metadata?.company?.trim();
   const email = session.customer_details?.email ?? session.customer_email;
   if (!company || !email) throw new Error("Checkout is missing company metadata or buyer email.");
