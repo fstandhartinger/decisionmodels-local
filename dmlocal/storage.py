@@ -2,6 +2,7 @@
 import concurrent.futures
 import hashlib
 import os
+import re
 import shutil
 import sys
 import threading
@@ -44,6 +45,9 @@ def verify_file(path, size, sha256):
 
 
 def _download_one(spec, target, repo, revision, opener=urllib.request.urlopen, retries=4):
+    path_value = str(spec.get("path", ""))
+    if not path_value or "\\" in path_value or Path(path_value).is_absolute() or ".." in Path(path_value).parts:
+        raise OSError("unsafe relative download path")
     target.parent.mkdir(parents=True, exist_ok=True)
     try: target.resolve().relative_to(target.parents[len(Path(spec["path"]).parts) - 1].resolve())
     except (ValueError, IndexError): raise OSError("weight target escapes the model directory")
@@ -87,7 +91,8 @@ def _download_one(spec, target, repo, revision, opener=urllib.request.urlopen, r
                     downloaded += len(chunk)
                     percent = min(100, int(downloaded * 100 / max(spec["size"], 1)))
                     with _print_lock:
-                        print(f"  {spec['path']}: {percent}% ({downloaded}/{spec['size']} bytes)", file=sys.stderr)
+                        print(f"\rDownloading {spec['path']}: {percent}% ({downloaded}/{spec['size']} bytes)",
+                              end="", file=sys.stderr, flush=True)
                 out.flush()
                 os.fsync(out.fileno())
             if partial.stat().st_size != spec["size"]:
@@ -96,6 +101,8 @@ def _download_one(spec, target, repo, revision, opener=urllib.request.urlopen, r
                 partial.unlink(missing_ok=True)
                 raise OSError(f"SHA-256 mismatch for {spec['path']}; partial file removed")
             os.replace(partial, target)
+            with _print_lock:
+                print(file=sys.stderr, flush=True)
             return target
         except (OSError, urllib.error.URLError, TimeoutError) as exc:
             # Exceptions from HTTP libraries can include request URLs but not headers;
@@ -117,8 +124,21 @@ def download_variant(model, variant, state_root, opener=urllib.request.urlopen):
     revision = model.get("weights", {}).get("revision")
     if not revision:
         raise ValueError("catalog entry has no pinned Hugging Face revision")
+    return download_files(files, model["weights"]["repo"], revision, destination, opener=opener)
+
+
+def download_files(files, repo, revision, destination, opener=urllib.request.urlopen):
+    """Download and verify a file list from a pinned HF repo into destination."""
+    destination = Path(destination)
+    required = sum(int(spec["size"]) for spec in files)
+    destination.mkdir(parents=True, exist_ok=True)
+    if shutil.disk_usage(destination).free < int(required * 1.1):
+        raise OSError(f"insufficient disk space: need {int(required * 1.1)} bytes including 10% margin")
     def run(spec):
-        target = destination.joinpath(*Path(spec["path"]).parts)
-        return _download_one(spec, target, model["weights"]["repo"], revision, opener=opener)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        value = str(spec.get("path", ""))
+        if not value or "\\" in value or Path(value).is_absolute() or ".." in Path(value).parts:
+            raise OSError("unsafe relative download path")
+        target = destination.joinpath(*Path(value).parts)
+        return _download_one(spec, target, repo, revision, opener=opener)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(4, max(1, len(files)))) as pool:
         return list(pool.map(run, files))

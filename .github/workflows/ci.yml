@@ -54,22 +54,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: python scripts/build_pyz.py --output dist/dm-local.pyz
-      - name: Check for verified llama.cpp release asset
-        id: pin
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" = "macOS" ]; then key=macos-arm64-metal; else key=linux-x86_64-cpu; fi
-          if python -c "from dmlocal.pins import LLAMA_CPP_ASSETS; import sys; sys.exit(0 if LLAMA_CPP_ASSETS.get('$key') else 1)"; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Skipped: official llama.cpp has no SHA-256-pinned $key release asset." >> "$GITHUB_STEP_SUMMARY"
-          fi
       - name: Install the hidden Qwen3 0.6B GGUF fixture and test the real endpoint
-        if: steps.pin.outputs.enabled == 'true'
         run: |
           python dist/dm-local.pyz install test-tiny --usage individual --accept --yes --port 18484
           python dist/dm-local.pyz test test-tiny
       - name: Remove smoke-test weights
-        if: always() && steps.pin.outputs.enabled == 'true'
+        if: always()
         run: python dist/dm-local.pyz uninstall test-tiny --yes

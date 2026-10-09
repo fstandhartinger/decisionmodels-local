@@ -1,8 +1,8 @@
 """Variant fit assessment and preference ordering."""
 import re
 
-from .pins import LLAMA_CPP_ASSETS, require_docker_image
-from .runtime_selection import installer_runtime, runtime_readiness_errors
+from .pins import LLAMA_CPP_ASSETS
+from .runtime_selection import installer_runtime, requires_errors, runtime_readiness_errors
 
 
 def _available_vram_gb(hw):
@@ -53,14 +53,11 @@ def assess_variant(variant, model, hw):
     min_vram = variant.get("min_vram_gb")
     recommended_vram = variant.get("recommended_vram_gb", min_vram)
     runtime = installer_runtime(variant)
-    reasons.extend(runtime_readiness_errors(variant))
-    if runtime == "docker":
-        docker = hw.get("docker", {})
-        image = variant.get("image", "")
-        try: require_docker_image(image)
-        except RuntimeError as exc: reasons.append(str(exc))
-        if not docker.get("available"): reasons.append("Docker is unavailable")
-        if (hw.get("os") == "linux" or hw.get("wsl2")) and not docker.get("nvidia_runtime"): reasons.append("Docker NVIDIA container runtime is unavailable")
+    recipe_errors = runtime_readiness_errors(variant)
+    if recipe_errors:
+        return {"id": variant["id"], "verdict": "not_installable",
+                "reasons": ["not installable: " + "; ".join(recipe_errors)], "variant": variant}
+    reasons.extend(requires_errors(variant, hw))
     if runtime == "llamacpp":
         key = _llama_platform_key(variant, hw)
         if not key or not LLAMA_CPP_ASSETS.get(key): reasons.append("no verified llama.cpp release asset is pinned for this platform yet")
@@ -69,7 +66,7 @@ def assess_variant(variant, model, hw):
     elif min_vram is not None and recommended_vram is not None and memory_gb < float(recommended_vram):
         reasons.append(f"minimum memory fits; recommended {recommended_vram:g} GB, detected {memory_gb:.1f} GB")
     arch_min = variant.get("gpu_arch_min")
-    if arch_min:
+    if arch_min and not (variant.get("install") or {}).get("requires", {}).get("gpu_arch_min"):
         match = re.fullmatch(r"sm_(\d{2,3})[a-z]?", str(arch_min).lower())
         if not match:
             reasons.append("catalog has an invalid minimum GPU architecture")

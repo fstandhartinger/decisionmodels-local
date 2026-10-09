@@ -68,7 +68,7 @@ def _remote_uv_bootstrap(ssh, host, port, identity):
     subprocess.run(_ssh_args(port, identity) + ["-t", host, "sh -c " + shlex.quote(script)], check=True)
 
 
-def remote(host, subcommand, port=None, identity=None, local_port=8484, remote_port=8484):
+def remote(host, subcommand, port=None, identity=None, local_port=8484, remote_port=8484, forward_port=None):
     _validate_host(host)
     if not shutil.which("ssh") or not shutil.which("scp"):
         raise RuntimeError("OpenSSH ssh and scp are required")
@@ -79,7 +79,12 @@ def remote(host, subcommand, port=None, identity=None, local_port=8484, remote_p
     if "--port" in subcommand:
         try: remote_port = int(subcommand[subcommand.index("--port") + 1])
         except (IndexError, ValueError): raise ValueError("remote subcommand --port needs an integer")
-        local_port = remote_port
+        if forward_port is None:
+            local_port = remote_port
+    if forward_port is not None:
+        if not 1 <= int(forward_port) <= 65535:
+            raise ValueError("--forward-port must be between 1 and 65535")
+        local_port = int(forward_port)
     pyz = _local_pyz()
     subprocess.run(_ssh_args(port, identity) + [host, "mkdir -p ~/.decisionmodels/bin"], check=True)
     remote_path = "~/.decisionmodels/bin/dm-local.pyz"
@@ -93,8 +98,13 @@ def remote(host, subcommand, port=None, identity=None, local_port=8484, remote_p
     remote_cmd = runner + " " + " ".join(shlex.quote(arg) for arg in subcommand)
     subprocess.run(_ssh_args(port, identity) + ["-t", host, remote_cmd], check=True)
     if subcommand[0] in ("install", "start") and "--no-start" not in subcommand:
-        start_tunnel(host, local_port, remote_port, port, identity)
+        tunnel = start_tunnel(host, local_port, remote_port, port, identity)
+        tunnel_command = _ssh_args(port, identity) + ["-N", "-L", f"127.0.0.1:{local_port}:127.0.0.1:{remote_port}", host]
         print(f"Local endpoint: http://127.0.0.1:{local_port}")
+        print("Tunnel command: " + shlex.join(tunnel_command))
+        print(f"Try: curl http://127.0.0.1:{local_port}/v1/systemone")
+        return {"tunnel": tunnel, "tunnel_command": shlex.join(tunnel_command),
+                "local_endpoint": f"http://127.0.0.1:{local_port}"}
 
 
 def _tunnel_name(host, local_port, remote_port):

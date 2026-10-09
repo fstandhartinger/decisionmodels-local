@@ -76,6 +76,16 @@ class GatewayTests(unittest.TestCase):
         self.assertGreater(scored["answers"]["q"]["score"], 0.5)
         self.assertEqual(scored["answers"]["q"]["legend"], {"0": "low", "1": "high"})
 
+    def test_letter_logprobs_accepts_modern_content_logprobs(self):
+        def opener(request, timeout=10):
+            return FakeResponse({"choices": [{"logprobs": {"content": [{"top_logprobs": [
+                {"token": " A", "logprob": -0.1}, {"token": " B", "logprob": -2.0}]}]}}],
+                "usage": {"prompt_tokens": 41, "completion_tokens": 1}})
+        gateway = Gateway("http://127.0.0.1:9", "letter_logprobs", model_card={"slug": "fixture"}, opener=opener)
+        answer = gateway.infer(CHOICE)["answers"]["color"]
+        self.assertEqual(answer["choice"], "red")
+        self.assertGreater(answer["probabilities"]["red"], answer["probabilities"]["blue"])
+
     def setUp(self):
         def opener(request, timeout=10):
             return FakeResponse({"answers": {"color": {"choice": "red", "confidence": 1,

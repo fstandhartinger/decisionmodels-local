@@ -58,7 +58,8 @@ class LicenceAndUninstallTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); (root / "run").mkdir(); (root / "models/fixture-model").mkdir(parents=True)
             runtime_path = root / "runtimes/fixture-model-bf16"; runtime_path.mkdir(parents=True)
-            install = {"model": model_with_variants([variant()]), "variant": variant(), "runtime": "docker",
+            legacy_variant = variant(); legacy_variant.pop("install")
+            install = {"model": model_with_variants([legacy_variant]), "variant": legacy_variant, "runtime": "docker",
                        "container_name": "dm-local-fixture-model", "runtime_path": str(runtime_path)}
             (root / "run/installed-fixture-model.json").write_text(json.dumps(install))
             with patch.object(cli, "ensure_state", return_value=root), patch.object(cli, "_stop", return_value=None), \
@@ -80,7 +81,8 @@ class LicenceAndUninstallTests(unittest.TestCase):
     def test_uninstall_refuses_noncanonical_container_name_without_docker_call(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); (root / "run").mkdir(); (root / "models/fixture-model").mkdir(parents=True)
-            install = {"model": model_with_variants([variant()]), "variant": variant(), "runtime": "docker",
+            legacy_variant = variant(); legacy_variant.pop("install")
+            install = {"model": model_with_variants([legacy_variant]), "variant": legacy_variant, "runtime": "docker",
                        "container_name": "other-container"}
             (root / "run/installed-fixture-model.json").write_text(json.dumps(install))
             with patch.object(cli, "ensure_state", return_value=root), patch.object(cli, "_stop") as stop, \
