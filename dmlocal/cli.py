@@ -293,7 +293,8 @@ def _install(args):
         _start(args.slug, root, runtime=runtime, prepared=True)
         print("✓ Start — model processes and gateway are ready")
         try:
-            report = selftest_run(f"http://127.0.0.1:{args.port}", api_key=api_key, model=args.slug)
+            report = selftest_run(f"http://127.0.0.1:{args.port}", api_key=api_key, model=args.slug,
+                                  image=bool(backend_paths.get("image")))
             print("Self-test passed; p50 latency over five choice runs: " + str(report["latency_p50_ms_5_runs"]) + " ms")
             print("✓ Self-test")
         except Exception:
@@ -571,7 +572,8 @@ def main(argv=None):
         elif args.command == "logs": _logs(args.slug, max(1, args.lines))
         elif args.command == "test":
             install = _load_install(ensure_state(), args.slug)
-            result = selftest_run(f"http://127.0.0.1:{install['gateway_port']}", _read_config(ensure_state()).get("api_key"), model=args.slug)
+            result = selftest_run(f"http://127.0.0.1:{install['gateway_port']}", _read_config(ensure_state()).get("api_key"), model=args.slug,
+                                  image=bool((install.get("backend_paths") or {}).get("image")))
             _json(result)
         elif args.command == "uninstall":
             if args.all:

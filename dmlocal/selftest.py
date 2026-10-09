@@ -1,9 +1,12 @@
 """Public, synthetic smoke decisions for the installed local endpoint."""
+import base64
 import json
 import statistics
+import struct
 import time
 import urllib.error
 import urllib.request
+import zlib
 
 SAMPLES = [
     {"model": "local", "state": "A bowl contains a ripe orange and a green apple.", "questions": {"fruit": {
@@ -15,7 +18,16 @@ SAMPLES = [
 ]
 
 
-def run(base_url, api_key=None, model="local", opener=urllib.request.urlopen):
+def _red_square():
+    def chunk(kind, data):
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+    pixels = (b"\x00" + b"\xff\x00\x00" * 64) * 64
+    png = (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 64, 64, 8, 2, 0, 0, 0))
+           + chunk(b"IDAT", zlib.compress(pixels)) + chunk(b"IEND", b""))
+    return "data:image/png;base64," + base64.b64encode(png).decode("ascii")
+
+
+def run(base_url, api_key=None, model="local", opener=urllib.request.urlopen, image=False):
     results = []
     latencies = []
     choice_latencies = []
@@ -60,4 +72,20 @@ def run(base_url, api_key=None, model="local", opener=urllib.request.urlopen):
             latencies.append(value)
             choice_latencies.append(value)
     p50 = statistics.median(choice_latencies[:5])
+    if image:
+        sample = {"model": model, "state": "A single solid coloured square.", "images": [_red_square()],
+                  "questions": {"colour": {"type": "choice", "instructions": "What colour is the square in the attached image?",
+                                           "criteria": {"red": "red", "blue": "blue"}}}}
+        req = urllib.request.Request(base_url.rstrip("/") + "/v1/multimodal", data=json.dumps(sample).encode(),
+                                     headers={"Content-Type": "application/json", **({"Authorization": "Bearer " + api_key} if api_key else {})}, method="POST")
+        with opener(req, timeout=120) as response:
+            result = json.loads(response.read().decode())
+            if response.status != 200:
+                raise RuntimeError(f"image self-test returned HTTP {response.status}")
+        answer = result.get("answers", {}).get("colour", {})
+        probs = answer.get("probabilities", {})
+        if (answer.get("type") != "choice" or answer.get("choice") != "red" or "red" not in probs
+                or abs(sum(probs.values()) - 1.0) > 1e-3):
+            raise RuntimeError("image self-test did not recognize the red square with valid choice probabilities")
+        results.append({"question": "colour", "answer": answer})
     return {"results": results, "latency_p50_ms_5_runs": round(p50, 3)}
