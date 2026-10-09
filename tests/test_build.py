@@ -7,6 +7,7 @@ import zipfile
 from pathlib import Path
 
 from scripts.build_pyz import build
+from dmlocal import __version__
 
 
 class ZipappBuildTests(unittest.TestCase):
@@ -21,7 +22,7 @@ class ZipappBuildTests(unittest.TestCase):
                 self.assertEqual([x.filename for x in info], sorted(x.filename for x in info))
                 self.assertTrue(all(x.date_time == (1980, 1, 1, 0, 0, 0) for x in info))
             result = subprocess.run([sys.executable, str(first), "version"], check=True, capture_output=True, text=True)
-            self.assertEqual(result.stdout.strip(), "0.1.0")
+            self.assertEqual(result.stdout.strip(), __version__)
 
 
 if __name__ == "__main__": unittest.main()
