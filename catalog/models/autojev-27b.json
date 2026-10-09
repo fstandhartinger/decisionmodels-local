@@ -93,13 +93,16 @@
  "image_input": {
   "transport": "JSON 'images' list inside the decision input: 'data:image/...;base64,...' strings or local file paths (BH copy: types.py ImageInput, model.py open_image)",
   "limits": "no size or token cap in the code; UNVERIFIED. Card: image support is not a natural-image accuracy claim.",
-  "source": "BH recipe autojev-27b/autojev/model.py; https://huggingface.co/denis-pplx/autojev-27b README"
+  "source": "BH recipe autojev-27b/autojev/model.py; https://huggingface.co/denis-pplx/autojev-27b README",
+  "installer_transport": "POST /v1/multimodal at gateway -> author /v1/systemone with top-level images data URLs.",
+  "installer_limits": "Author: up to four images, 8 MB / 16 Mpixels each; gateway may impose stricter limits.",
+  "installer_notes": "Source-derived unverified HTTP recipe; see catalog/IMAGE-RECIPES-V2.md."
  },
  "variants": [
   {
    "id": "bf16-torch-author-server",
    "precision": "bf16",
-   "benchmarked": true,
+   "benchmarked": false,
    "runtime": "pytorch 2.14 (author autojev-serve; BH image)",
    "runtime_version": "torch 2.14.0+cu126, torchvision 0.29.0, transformers 5.17.0, accelerate 1.15.0, pillow 12.3.0, fastapi 0.141.1, uvicorn 0.52.4 (BH Dockerfile)",
    "image": "pytorch/pytorch:2.14.0-cuda12.6-cudnn9-runtime@sha256:a77983eb7a3042ccf41a94da547a7f54a47fb70da15c36d67a8e8a329ebaa098",
@@ -306,13 +309,74 @@
      "decision: POST /v1/systemone (choice, noul, score; optional base64 images)"
     ]
    },
-   "measured": {
-    "gpu": "H100 80 GB (BH v1.4.3 gpu lane and recipe meta.gpu; v0.3 GPU not named in receipts)",
-    "p50_ms": 166.8,
-    "source": "imagejev-v03.json ranking autojev_27b; run03/final-gpu/autojev_27b.json (run common-v03-3)"
-   },
-   "expected_speed": "About 0.17 s raw p 50 per decision on an H 100 (0.48 s adjusted). Needs an 80 GB card for the 52 GB BF 16 weights. Provisioning class: H 100 80 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "Min and recommended VRAM 80 GB from BH meta.json (min_vram_gb 80); weights 52.2 GB in 11 shards plus readout; ROSTER estimate ~58 GB VRAM and >=60 GB host RAM (min_ram_gb 60). Blackwell not validated by BH. The author's documented install says about 49 GiB BF16 plus overhead."
+   "measured": null,
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Min and recommended VRAM 80 GB from BH meta.json (min_vram_gb 80); weights 52.2 GB in 11 shards plus readout; ROSTER estimate ~58 GB VRAM and >=60 GB host RAM (min_ram_gb 60). Blackwell not validated by BH. The author's documented install says about 49 GiB BF16 plus overhead. Installer recipe is source-derived and unverified; this executable runtime was not benchmarked. See catalog/IMAGE-RECIPES-V2.md for modifications and dependency provenance.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Run the pinned author's unmodified HTTP application.\"\"\"\nif __name__ == \"__main__\":\n    from autojev.server import main\n    main()\n",
+      "sha256": "f9a09b91c059f483f61930b4d0de556d6a1307d4d117e350e2cd02cecdffb574"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/autojev-27b}/src",
+       "AUTOJEV_CHECKPOINT": "{weights}",
+       "AUTOJEV_HOST": "127.0.0.1",
+       "PORT": "{port:api}"
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/systemone",
+     "model": "autojev-qwen3.8-27b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "denis-pplx/autojev",
+      "revision": "ee63c1515980491a742f0bd0685c8dc5ca1f00c3",
+      "sha256": "cd04d2bef747fc4902d2b6b93ba00b623f7ef97977e4d866ba498b6ca4ee8f4e",
+      "dest": "code/autojev-27b",
+      "pip_install": false
+     }
+    ],
+    "venv": {
+     "lockfile": {
+      "code_id": "code/autojev-27b",
+      "path": "uv.lock",
+      "manager": "uv"
+     }
+    }
+   }
   },
   {
    "id": "fp32-torch-cpu",
@@ -526,8 +590,74 @@
     ]
    },
    "measured": null,
-   "expected_speed": "Estimate only: 27B FP 32 on a high-memory CPU host is likely tens of seconds or longer per 300–1500-token prefill. Not an interactive laptop recommendation; no CPU benchmark/parity measured.",
-   "notes": "CPU-only automatic fallback exists in the unmodified HTTP server: https://raw.githubusercontent.com/denis-pplx/autojev/ee63c1515980491a742f0bd0685c8dc5ca1f00c3/src/autojev/model.py L123: self.device_name = device or (\"cuda\" if torch.cuda.is_available() else \"cpu\"); L154: dtype = torch.bfloat16 if self.device_name.startswith(\"cuda\") else torch.float32; L174: self.to(self.device_name). https://raw.githubusercontent.com/denis-pplx/autojev/ee63c1515980491a742f0bd0685c8dc5ca1f00c3/src/autojev/server.py L122: service.model = await run_in_threadpool(DecisionModel, checkpoint=service.checkpoint). The server does not expose device selection and chooses only cuda/cpu, so no MPS variant is added. CPU loads FP32: ~104.35 GB weights, ~130.43 GB with 25% allowance, so this is a technically supported high-memory route, not practical on ordinary laptops. In-process trained head => backend_agnostic=false. Memory estimate: 52.173 GB downloaded weights × 2 for fp32 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified."
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "CPU-only automatic fallback exists in the unmodified HTTP server: https://raw.githubusercontent.com/denis-pplx/autojev/ee63c1515980491a742f0bd0685c8dc5ca1f00c3/src/autojev/model.py L123: self.device_name = device or (\"cuda\" if torch.cuda.is_available() else \"cpu\"); L154: dtype = torch.bfloat16 if self.device_name.startswith(\"cuda\") else torch.float32; L174: self.to(self.device_name). https://raw.githubusercontent.com/denis-pplx/autojev/ee63c1515980491a742f0bd0685c8dc5ca1f00c3/src/autojev/server.py L122: service.model = await run_in_threadpool(DecisionModel, checkpoint=service.checkpoint). The server does not expose device selection and chooses only cuda/cpu, so no MPS variant is added. CPU loads FP32: ~104.35 GB weights, ~130.43 GB with 25% allowance, so this is a technically supported high-memory route, not practical on ordinary laptops. In-process trained head => backend_agnostic=false. Memory estimate: 52.173 GB downloaded weights × 2 for fp32 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Run the pinned author's unmodified HTTP application.\"\"\"\nif __name__ == \"__main__\":\n    from autojev.server import main\n    main()\n",
+      "sha256": "f9a09b91c059f483f61930b4d0de556d6a1307d4d117e350e2cd02cecdffb574"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/autojev-27b}/src",
+       "AUTOJEV_CHECKPOINT": "{weights}",
+       "AUTOJEV_HOST": "127.0.0.1",
+       "PORT": "{port:api}",
+       "CUDA_VISIBLE_DEVICES": ""
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/systemone",
+     "model": "autojev-qwen3.8-27b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-cpu"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "denis-pplx/autojev",
+      "revision": "ee63c1515980491a742f0bd0685c8dc5ca1f00c3",
+      "sha256": "cd04d2bef747fc4902d2b6b93ba00b623f7ef97977e4d866ba498b6ca4ee8f4e",
+      "dest": "code/autojev-27b",
+      "pip_install": false
+     }
+    ],
+    "venv": {
+     "lockfile": {
+      "code_id": "code/autojev-27b",
+      "path": "uv.lock",
+      "manager": "uv"
+     }
+    }
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:40Z"

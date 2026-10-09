@@ -79,13 +79,16 @@
  "image_input": {
   "transport": "state key 'image' or 'images' holding an http(s) URL, a data:image/... URI, a PIL image or an existing local file path (vendor jevify/prompting.py and images.py)",
   "limits": "UNVERIFIED",
-  "source": "intake vendor jevify_gemma4/jevify/images.py"
+  "source": "intake vendor jevify_gemma4/jevify/images.py",
+  "installer_transport": "POST /v1/multimodal with images data URLs -> native state {text:original_state,images:references}.",
+  "installer_limits": "Gateway image limits; author question option limits. CPU/MPS parity unverified.",
+  "installer_notes": "Source-derived unverified HTTP recipe; see catalog/IMAGE-RECIPES-V2.md."
  },
  "variants": [
   {
    "id": "bf16-transformers",
    "precision": "bf16",
-   "benchmarked": true,
+   "benchmarked": false,
    "runtime": "transformers (jevify serve) or vLLM (Jevify.from_runtime)",
    "runtime_version": "UNVERIFIED (BH runtime not recovered)",
    "image": null,
@@ -188,13 +191,78 @@
      "Or serve with vLLM and call Jevify.from_runtime('vllm', repo) (author README); port not stated"
     ]
    },
-   "measured": {
-    "gpu": "UNVERIFIED",
-    "p50_ms": 167.9,
-    "source": "imagejev-v03.json ranking jevify_gemma4_26b_a4b; run03/final-gpu/jevify_gemma4_26b_a4b.json (run common-v03-3)"
-   },
-   "expected_speed": "About 0.17 s raw p 50 per decision on the BH measurement box (0.49 s adjusted). One prefill per question. Provisioning class: H 100 80 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "51.6 GB BF16 weights in 2 shards; ROSTER and aggregates estimate 56 GB VRAM (min 56). Recommended 80 GB = weights + KV/activations headroom for long states (the card allows states up to 24k tokens in training). Base revision not pinned by the card (see the base_model block). Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "measured": null,
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "51.6 GB BF16 weights in 2 shards; ROSTER and aggregates estimate 56 GB VRAM (min 56). Recommended 80 GB = weights + KV/activations headroom for long states (the card allows states up to 24k tokens in training). Base revision not pinned by the card (see the base_model block). Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. Installer recipe is source-derived and unverified; this executable runtime was not benchmarked. See catalog/IMAGE-RECIPES-V2.md for modifications and dependency provenance.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    from jevify.engine import Jevify\n    from jevify.questions import question_from_dict\n    engine = Jevify.from_transformers(a.weights, device=a.device)\n    def predict(body):\n        images(body)\n        state = body[\"state\"]\n        if body.get(\"images\"):\n            # Author prompting.split_state recognizes an images key; preserve state under text.\n            state = {\"text\": state, \"images\": body[\"images\"]}\n        questions = {key: question_from_dict(value) for key, value in body[\"questions\"].items()}\n        return engine.system_one(state, questions)\n    serve(predict, \"jevify-gemma4-26b-a4b\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "4ea08490dc35403e9e35c1d137e7c6e9ed60eb4ad69b988d71385ff13fe039e5"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/jevify-gemma4-26b-a4b}/src"
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/multimodal",
+     "model": "jevify-gemma4-26b-a4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "kushalpatil07/jevify",
+      "revision": "66f49bff53b3276fecc6b4bd16a31de277bebfaf",
+      "sha256": "6a735fe60255b9ce15293eb22899afba37ba531bec1b42845fc30c37bba5efd7",
+      "dest": "code/jevify-gemma4-26b-a4b",
+      "pip_install": false
+     }
+    ],
+    "venv": {
+     "lockfile": {
+      "code_id": "code/jevify-gemma4-26b-a4b",
+      "path": "uv.lock",
+      "manager": "uv",
+      "extras": [
+       "transformers"
+      ]
+     }
+    }
+   }
   },
   {
    "id": "bf16-torch-cpu",
@@ -304,8 +372,80 @@
     ]
    },
    "measured": null,
-   "expected_speed": "Estimate only: 26B total/4B active MoE still loads 51.6 GB of weights. Expect seconds to tens of seconds per 300–1500-token forward, varying strongly with routing and CPU/Mac bandwidth. No portable timing/parity measured.",
-   "notes": "Unmodified transformers author server auto-selects CUDA, MPS or CPU: https://raw.githubusercontent.com/kushalpatil07/jevify/66f49bff53b3276fecc6b4bd16a31de277bebfaf/src/jevify/backends/transformers_backend.py L91: self.device = device or (\"cuda\" if torch.cuda.is_available() else \"mps\" if torch.backends.mps.is_available() else \"cpu\"); L94: from_pretrained_kwargs.setdefault(\"attn_implementation\", \"sdpa\")  # custom 4D bool masks need sdpa/eager; L95: self.lm = AutoModelForCausalLM.from_pretrained(model, dtype=dtype, **from_pretrained_kwargs).to(self.device).eval(). CPU/MPS BF16 are high-memory candidates (51.612 GB BF16 +25%=64.515 GB, plus OS). Portable speed/parity not measured. Unlike runtime compatibility, shim backend_agnostic is a source property: openai_compat.py L76–84 only calls standard /v1/chat/completions with logprobs/top_logprobs; optional extra_body must be empty. Set true for that author backend. This does not certify any particular llama.cpp/MLX server or create an unverified conversion. Memory estimate: 51.612 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified."
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Unmodified transformers author server auto-selects CUDA, MPS or CPU: https://raw.githubusercontent.com/kushalpatil07/jevify/66f49bff53b3276fecc6b4bd16a31de277bebfaf/src/jevify/backends/transformers_backend.py L91: self.device = device or (\"cuda\" if torch.cuda.is_available() else \"mps\" if torch.backends.mps.is_available() else \"cpu\"); L94: from_pretrained_kwargs.setdefault(\"attn_implementation\", \"sdpa\")  # custom 4D bool masks need sdpa/eager; L95: self.lm = AutoModelForCausalLM.from_pretrained(model, dtype=dtype, **from_pretrained_kwargs).to(self.device).eval(). CPU/MPS BF16 are high-memory candidates (51.612 GB BF16 +25%=64.515 GB, plus OS). Portable speed/parity not measured. Unlike runtime compatibility, shim backend_agnostic is a source property: openai_compat.py L76–84 only calls standard /v1/chat/completions with logprobs/top_logprobs; optional extra_body must be empty. Set true for that author backend. This does not certify any particular llama.cpp/MLX server or create an unverified conversion. Memory estimate: 51.612 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    from jevify.engine import Jevify\n    from jevify.questions import question_from_dict\n    engine = Jevify.from_transformers(a.weights, device=a.device)\n    def predict(body):\n        images(body)\n        state = body[\"state\"]\n        if body.get(\"images\"):\n            # Author prompting.split_state recognizes an images key; preserve state under text.\n            state = {\"text\": state, \"images\": body[\"images\"]}\n        questions = {key: question_from_dict(value) for key, value in body[\"questions\"].items()}\n        return engine.system_one(state, questions)\n    serve(predict, \"jevify-gemma4-26b-a4b\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "4ea08490dc35403e9e35c1d137e7c6e9ed60eb4ad69b988d71385ff13fe039e5"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}",
+       "--device",
+       "cpu"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/jevify-gemma4-26b-a4b}/src",
+       "CUDA_VISIBLE_DEVICES": ""
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/multimodal",
+     "model": "jevify-gemma4-26b-a4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-cpu"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "kushalpatil07/jevify",
+      "revision": "66f49bff53b3276fecc6b4bd16a31de277bebfaf",
+      "sha256": "6a735fe60255b9ce15293eb22899afba37ba531bec1b42845fc30c37bba5efd7",
+      "dest": "code/jevify-gemma4-26b-a4b",
+      "pip_install": false
+     }
+    ],
+    "venv": {
+     "lockfile": {
+      "code_id": "code/jevify-gemma4-26b-a4b",
+      "path": "uv.lock",
+      "manager": "uv",
+      "extras": [
+       "transformers"
+      ]
+     }
+    }
+   }
   },
   {
    "id": "bf16-torch-mps",
@@ -414,8 +554,80 @@
     ]
    },
    "measured": null,
-   "expected_speed": "Estimate only: 26B total/4B active MoE still loads 51.6 GB of weights. Expect seconds to tens of seconds per 300–1500-token forward, varying strongly with routing and CPU/Mac bandwidth. No portable timing/parity measured.",
-   "notes": "Unmodified transformers author server auto-selects CUDA, MPS or CPU: https://raw.githubusercontent.com/kushalpatil07/jevify/66f49bff53b3276fecc6b4bd16a31de277bebfaf/src/jevify/backends/transformers_backend.py L91: self.device = device or (\"cuda\" if torch.cuda.is_available() else \"mps\" if torch.backends.mps.is_available() else \"cpu\"); L94: from_pretrained_kwargs.setdefault(\"attn_implementation\", \"sdpa\")  # custom 4D bool masks need sdpa/eager; L95: self.lm = AutoModelForCausalLM.from_pretrained(model, dtype=dtype, **from_pretrained_kwargs).to(self.device).eval(). CPU/MPS BF16 are high-memory candidates (51.612 GB BF16 +25%=64.515 GB, plus OS). Portable speed/parity not measured. Unlike runtime compatibility, shim backend_agnostic is a source property: openai_compat.py L76–84 only calls standard /v1/chat/completions with logprobs/top_logprobs; optional extra_body must be empty. Set true for that author backend. This does not certify any particular llama.cpp/MLX server or create an unverified conversion. Memory estimate: 51.612 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac."
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Unmodified transformers author server auto-selects CUDA, MPS or CPU: https://raw.githubusercontent.com/kushalpatil07/jevify/66f49bff53b3276fecc6b4bd16a31de277bebfaf/src/jevify/backends/transformers_backend.py L91: self.device = device or (\"cuda\" if torch.cuda.is_available() else \"mps\" if torch.backends.mps.is_available() else \"cpu\"); L94: from_pretrained_kwargs.setdefault(\"attn_implementation\", \"sdpa\")  # custom 4D bool masks need sdpa/eager; L95: self.lm = AutoModelForCausalLM.from_pretrained(model, dtype=dtype, **from_pretrained_kwargs).to(self.device).eval(). CPU/MPS BF16 are high-memory candidates (51.612 GB BF16 +25%=64.515 GB, plus OS). Portable speed/parity not measured. Unlike runtime compatibility, shim backend_agnostic is a source property: openai_compat.py L76–84 only calls standard /v1/chat/completions with logprobs/top_logprobs; optional extra_body must be empty. Set true for that author backend. This does not certify any particular llama.cpp/MLX server or create an unverified conversion. Memory estimate: 51.612 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    from jevify.engine import Jevify\n    from jevify.questions import question_from_dict\n    engine = Jevify.from_transformers(a.weights, device=a.device)\n    def predict(body):\n        images(body)\n        state = body[\"state\"]\n        if body.get(\"images\"):\n            # Author prompting.split_state recognizes an images key; preserve state under text.\n            state = {\"text\": state, \"images\": body[\"images\"]}\n        questions = {key: question_from_dict(value) for key, value in body[\"questions\"].items()}\n        return engine.system_one(state, questions)\n    serve(predict, \"jevify-gemma4-26b-a4b\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "4ea08490dc35403e9e35c1d137e7c6e9ed60eb4ad69b988d71385ff13fe039e5"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}",
+       "--device",
+       "mps"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/jevify-gemma4-26b-a4b}/src",
+       "CUDA_VISIBLE_DEVICES": ""
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/multimodal",
+     "model": "jevify-gemma4-26b-a4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "macos-arm64"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "kushalpatil07/jevify",
+      "revision": "66f49bff53b3276fecc6b4bd16a31de277bebfaf",
+      "sha256": "6a735fe60255b9ce15293eb22899afba37ba531bec1b42845fc30c37bba5efd7",
+      "dest": "code/jevify-gemma4-26b-a4b",
+      "pip_install": false
+     }
+    ],
+    "venv": {
+     "lockfile": {
+      "code_id": "code/jevify-gemma4-26b-a4b",
+      "path": "uv.lock",
+      "manager": "uv",
+      "extras": [
+       "transformers"
+      ]
+     }
+    }
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:40Z"

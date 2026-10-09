@@ -73,21 +73,24 @@
   "type": "letter_logprobs",
   "endpoint": "openai",
   "backend_agnostic": false,
-  "notes": "Client reads option-letter logprobs from vLLM /v1/completions (logprobs=20, prompt_logprobs fallback). Requires a runtime that returns completion logprobs for the letter tokens. llama.cpp and MLX not verified.",
+  "notes": "Client reads option-letter logprobs from vLLM /v1/completions (logprobs=20, prompt_logprobs fallback). Requires a runtime that returns completion logprobs for the letter tokens. llama.cpp and MLX not verified. Installer image recipe uses source-reviewed BH native Gemma4 letter-logit readout at T=1; no vLLM endpoint approximation.",
   "portable_notes": "No portable unmodified backend established. Author readout/vllm_scoring.py L139–141 uses standard logprobs first, but L155–163 falls back to vLLM prompt_logprobs for missing candidate labels. That fallback is necessary for a full option distribution; therefore backend_agnostic=false. https://raw.githubusercontent.com/shisa-ai/jevbench-results/ae4bdf4e7ab9f5216c541c1bf30bef520ee7fb1f/readout/vllm_scoring.py. No author CPU/MPS server or same-author GGUF/MLX readout found at the pinned revisions. BF16 weights are 51.612 GB despite only 4B active parameters."
  },
  "image_input": {
   "transport": "UNVERIFIED: model card and vendor readout show text-only prompts",
   "limits": "UNVERIFIED",
-  "source": "https://huggingface.co/shisa-ai/shisa-de-1 README 'Serving'"
+  "source": "https://huggingface.co/shisa-ai/shisa-de-1 README 'Serving'",
+  "installer_transport": "POST /v1/multimodal with one data URL -> RGB PIL -> local Gemma4 processor, option-letter logits at temperature1.",
+  "installer_limits": "One image; 2..26 options; exact single-token/boundary/BOS/image-token checks.",
+  "installer_notes": "Source-derived unverified HTTP recipe; see catalog/IMAGE-RECIPES-V2.md."
  },
  "variants": [
   {
    "id": "bf16-vllm",
    "precision": "bf16",
-   "benchmarked": true,
-   "runtime": "vLLM (mainline; author serve-de1.sh)",
-   "runtime_version": "UNVERIFIED (vendor serve script names no version)",
+   "benchmarked": false,
+   "runtime": "PyTorch / Gemma4 native image label logits",
+   "runtime_version": "torch2.8.0 / transformers5.17.0",
    "image": null,
    "platforms": [
     "linux-nvidia"
@@ -188,13 +191,76 @@
      "Readout (client side): render the systemone scaffold, POST /v1/completions with max_tokens=1, temperature=0, logprobs=20; read option-letter logprobs at the answer position (readout/vllm_scoring.py)"
     ]
    },
-   "measured": {
-    "gpu": "UNVERIFIED for BH; the author's own run was 2 x NVIDIA H20-3e at TP2",
-    "p50_ms": 169.6,
-    "source": "imagejev-v03.json ranking shisa_de_1; run03/final-gpu/shisa_de_1.json (run common-v03-3)"
-   },
-   "expected_speed": "About 0.17 s raw p 50 per decision on the BH measurement box (0.49 s adjusted). Author: 12 ms p 50 at concurrency 1 on its fraud-detect suite (2 x H 20-3e) - not comparable to ImageJev. Provisioning class: H 100 80 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "51.6 GB BF16 weights in 2 shards; ROSTER estimate ~53 GB + <1 GB activations (min 53). Recommended 80 GB for a single card with KV headroom at 8192 context (derived). The author's TP2 run reported 129 GB per GPU reserved by vLLM, which is a vLLM reservation, not a requirement. Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "measured": null,
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "51.6 GB BF16 weights in 2 shards; ROSTER estimate ~53 GB + <1 GB activations (min 53). Recommended 80 GB for a single card with KV headroom at 8192 context (derived). The author's TP2 run reported 129 GB per GPU reserved by vLLM, which is a vLLM reservation, not a requirement. Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. Installer recipe is source-derived and unverified; this executable runtime was not benchmarked. See catalog/IMAGE-RECIPES-V2.md for modifications and dependency provenance.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.8.0",
+     "torchvision==0.23.0",
+     "transformers==5.17.0",
+     "accelerate==1.15.0",
+     "pillow==12.3.0",
+     "safetensors==0.8.0",
+     "httpx==0.28.1"
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    if a.device != \"cuda\":\n        raise ValueError(\"This source-derived Shisa image recipe requires CUDA\")\n    import torch\n    import math\n    from transformers import AutoProcessor, Gemma4ForConditionalGeneration\n    from readout.vllm_scoring import DIRECT_SYSTEM, LETTERS\n    processor = AutoProcessor.from_pretrained(a.weights, local_files_only=True)\n    tokenizer = processor.tokenizer\n    model = Gemma4ForConditionalGeneration.from_pretrained(\n        a.weights, dtype=torch.bfloat16, device_map={\"\": 0}, local_files_only=True,\n        attn_implementation=\"sdpa\").eval()\n    def predict(body):\n        photos = images(body, maximum=1)\n        answers = {}\n        input_tokens = 0\n        for qid, q in body[\"questions\"].items():\n            if q[\"type\"] == \"noul\":\n                options = [(\"yes\", \"Yes\"), (\"no\", \"No\")]\n            elif q[\"type\"] == \"choice\":\n                options = [(key, value or key) for key, value in q[\"criteria\"].items()]\n            elif q[\"type\"] == \"score\":\n                options = [(str(i), value) for i, value in enumerate(q[\"criteria\"])]\n            else:\n                raise ValueError(\"unsupported question type\")\n            if not 2 <= len(options) <= 26:\n                raise ValueError(\"Shisa requires 2 to 26 option letters\")\n            letters = list(LETTERS[:len(options)])\n            payload = {\"evidence\": body[\"state\"], \"criterion\": q[\"instructions\"],\n                       \"options\": [{\"letter\": letter, \"description\": desc}\n                                   for letter, (_, desc) in zip(letters, options)]}\n            content = ([{\"type\": \"image\"}] if photos else []) + [{\"type\": \"text\", \"text\": json.dumps(payload, ensure_ascii=False)}]\n            messages = [{\"role\": \"system\", \"content\": DIRECT_SYSTEM}, {\"role\": \"user\", \"content\": content}]\n            prompt = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, enable_thinking=False)\n            prompt_ids = tokenizer.encode(prompt, add_special_tokens=False)\n            slots = []\n            for letter in letters:\n                encoded = tokenizer.encode(letter, add_special_tokens=False)\n                if len(encoded) != 1 or tokenizer.decode(encoded) != letter or tokenizer.encode(prompt + letter, add_special_tokens=False) != prompt_ids + encoded:\n                    raise ValueError(\"answer boundary changes tokenization\")\n                slots.extend(encoded)\n            kw = {\"images\": [photos]} if photos else {}\n            inputs = processor(text=[prompt], return_tensors=\"pt\", add_special_tokens=False, **kw)\n            ids = inputs[\"input_ids\"]\n            input_tokens += int(ids.shape[1])\n            bos = tokenizer.bos_token_id\n            if ids[0, 0].item() != bos or ids[0, 1].item() == bos:\n                raise ValueError(\"unexpected BOS layout\")\n            if photos and not int((ids == processor.image_token_id).sum().item()):\n                raise ValueError(\"image tokens missing\")\n            batch = {key: value.to(\"cuda\", dtype=torch.bfloat16) if value.is_floating_point() else value.to(\"cuda\")\n                     for key, value in inputs.items() if hasattr(value, \"to\")}\n            with torch.inference_mode():\n                row = model(**batch, logits_to_keep=1, use_cache=False).logits[0, -1].float()\n            # BH _tempered_softmax: Python float exp over FP32 selected logits, T=1.\n            logits = row[slots].double().cpu().tolist()\n            peak = max(logits)\n            masses = [math.exp(value - peak) for value in logits]\n            probs = [value / sum(masses) for value in masses]\n            if q[\"type\"] == \"noul\":\n                answers[qid] = {\"type\": \"noul\", \"noul\": probs[0]}\n            elif q[\"type\"] == \"choice\":\n                best = max(range(len(probs)), key=probs.__getitem__)\n                answers[qid] = {\"type\": \"choice\", \"choice\": options[best][0],\n                                \"probabilities\": {key: p for (key, _), p in zip(options, probs)}, \"confidence\": round(probs[best], 6)}\n            else:\n                answers[qid] = {\"type\": \"score\", \"score\": sum(i*p for i, p in enumerate(probs)),\n                                \"probabilities\": {str(i): p for i, p in enumerate(probs)},\n                                \"legend\": {str(i): text(desc) for i, (_, desc) in enumerate(options)}, \"confidence\": round(max(probs), 6)}\n        return {\"model\": \"shisa-de-1\", \"answers\": answers, \"usage\": {\"input_tokens\": input_tokens, \"output_tokens\": 0}}\n    serve(predict, \"shisa-de-1\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "aaedd5aea17f5caacf86ffd0b7a8a20e26a16cac9a8e3c6ff03ca0b459e66684"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/shisa-de-1}/"
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/multimodal",
+     "model": "shisa-de-1",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "shisa-ai/jevbench-results",
+      "revision": "ae4bdf4e7ab9f5216c541c1bf30bef520ee7fb1f",
+      "sha256": "8b6178f5b9cd24562889c184eb9f33fd3e32d4119d752bb31e4a7d7fd9e5c031",
+      "dest": "code/shisa-de-1",
+      "pip_install": false
+     }
+    ]
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:41Z"

@@ -79,13 +79,16 @@
  "image_input": {
   "transport": "multipart/form-data: file field 'image' (0-2 files) + field 'request' (JSON with state and questions)",
   "limits": "0-2 images, resized to at most 400,000 pixels; state up to 32 KB; 1-8 questions; at most 4,096 tokens (refused, not truncated); English only",
-  "source": "https://huggingface.co/mohit67890/imajev-4b (README 'Request limits' and the listing.jpg example)"
+  "source": "https://huggingface.co/mohit67890/imajev-4b (README 'Request limits' and the listing.jpg example)",
+  "installer_transport": "POST /v1/multimodal at gateway -> author /v1/systemone with top-level images data URLs.",
+  "installer_limits": "At most two images; author decoder/calibration and gateway limits apply.",
+  "installer_notes": "Source-derived unverified HTTP recipe; see catalog/IMAGE-RECIPES-V2.md."
  },
  "variants": [
   {
    "id": "bf16-torch-adapter",
    "precision": "bf16",
-   "benchmarked": true,
+   "benchmarked": false,
    "runtime": "pytorch (author playground server, --backend torch)",
    "runtime_version": "torch 2.13.0+cu130 (pinned base image); transformers 5.17.0; peft 0.18.0; Pillow 12.0.0; safetensors 0.8.0; fastapi 0.135.0; uvicorn 0.53.0 (BH recipe requirements.txt)",
    "image": "pytorch/pytorch:2.13.0-cuda13.0-cudnn9-runtime@sha256:db80a41f8428644cebcb3d75b0b62df334ab6c0e75785951eb25f48bfbd42407",
@@ -185,46 +188,6 @@
      "repo": "Qwen/Qwen3.5-4B",
      "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
      "role": "base Qwen/Qwen3.5-4B"
-    },
-    {
-     "path": "adapter_config.json",
-     "size": 1375,
-     "sha256": "a5bad80823e9768c82a8e7459bec6c6b77f835306ddcc9b3ecfe514238b5806e",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "adapter_model.safetensors",
-     "size": 487648432,
-     "sha256": "88c2c44361e0c469352495abcfee789ff73a4deae0811168d9402cfc2b6e749c",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "calibration.json",
-     "size": 1283,
-     "sha256": "1ef51558c476d27b04b729a5144d81fcaa19d860abc2f51e72c2e9d89268de4b",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "decision_readout.json",
-     "size": 14421,
-     "sha256": "4bc0237812d7d8c2611e60f1e7d0de8f108a9c18fbb8402aefecc3c71c54d68c",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "decision_readout.safetensors",
-     "size": 2621520,
-     "sha256": "52ceafd7d824bf3ea5ce55276b48cc08ba9dd6b2c98a55d9bd6a72ed1643a427",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
     }
    ],
    "serve": {
@@ -237,13 +200,137 @@
      "/models/bundle.json = the author bundle/imajev4b bundle (Dockerfile, RUN-PLAN.json, run_eval.py in the BH recipe); its exact contents are not in this dossier (UNVERIFIED)"
     ]
    },
-   "measured": {
-    "gpu": "UNVERIFIED for the v0.3 run (BH recipe folder is named rtx5090)",
-    "p50_ms": 110.1,
-    "source": "imagejev-v03.json ranking imajev_4b; run03/final-gpu/imajev_4b.json (run extra-v03-4)"
-   },
-   "expected_speed": "About 0.11 s raw p 50 per decision on the BH measurement box (0.37 s after the frozen speed adjustment). One prefill per question, up to 4,096 input tokens. Provisioning class: RTX 4090 24 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "Min VRAM 12 GB = 9.3 GB Qwen3.5-4B BF16 safetensors + 0.49 GB adapter_model.safetensors + ~2 GB for activations/KV at 4,096 tokens and two images (derived; BH serve.sh passes no merge flag, the fastlane setup uses --merge-lora). Author/intake estimate ~10 GB. RAM not measured. The fastlane receipt records 4B BF16 weights with a fused server setup; exact peak VRAM not found. Non-benchmarked MLX adapter (mlx/adapters.safetensors) exists on the same repo but needs an MLX base conversion we did not identify, so it is not listed. Host RAM provisioning estimate: pinned weight files sum to 9.810 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "measured": null,
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Min VRAM 12 GB = 9.3 GB Qwen3.5-4B BF16 safetensors + 0.49 GB adapter_model.safetensors + ~2 GB for activations/KV at 4,096 tokens and two images (derived; BH serve.sh passes no merge flag, the fastlane setup uses --merge-lora). Author/intake estimate ~10 GB. RAM not measured. The fastlane receipt records 4B BF16 weights with a fused server setup; exact peak VRAM not found. Non-benchmarked MLX adapter (mlx/adapters.safetensors) exists on the same repo but needs an MLX base conversion we did not identify, so it is not listed. Host RAM provisioning estimate: pinned weight files sum to 9.810 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. Installer recipe is source-derived and unverified; this executable runtime was not benchmarked. See catalog/IMAGE-RECIPES-V2.md for modifications and dependency provenance.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.8.0",
+     "torchvision==0.23.0",
+     "transformers==5.17.0",
+     "accelerate==1.15.0",
+     "pillow==12.3.0",
+     "safetensors==0.8.0",
+     "peft==0.18.0",
+     "fastapi==0.135.0",
+     "uvicorn==0.53.0",
+     "pydantic==2.12.5",
+     "python-multipart==0.0.32",
+     "click==8.5.0",
+     "huggingface-hub==1.33.0"
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "3e4dac9470418455bee6f93c17d6fc72b0640112e0e251ea1203a14eee9308ad"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}",
+       "--code",
+       "{code:code/imajev-4b}",
+       "--adapter",
+       "{weights}/adapter",
+       "--state",
+       "{state}"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/imajev-4b}/src"
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/v1/models",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/systemone",
+     "model": "imajev-4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "mohit67890/imajev",
+      "revision": "8501f5c3b1ed8ef608744eabed40f22b70de4277",
+      "sha256": "a6de8dafb54aa49b2c18782c851ea1065318c62e5dbe2ef518c4f44c3bb12e41",
+      "dest": "code/imajev-4b",
+      "pip_install": false
+     }
+    ],
+    "extra_weights": [
+     {
+      "repo": "mohit67890/imajev-4b",
+      "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+      "dest": "adapter",
+      "files": [
+       {
+        "path": "adapter_config.json",
+        "size": 1375,
+        "sha256": "a5bad80823e9768c82a8e7459bec6c6b77f835306ddcc9b3ecfe514238b5806e",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "adapter_model.safetensors",
+        "size": 487648432,
+        "sha256": "88c2c44361e0c469352495abcfee789ff73a4deae0811168d9402cfc2b6e749c",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "calibration.json",
+        "size": 1283,
+        "sha256": "1ef51558c476d27b04b729a5144d81fcaa19d860abc2f51e72c2e9d89268de4b",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "decision_readout.json",
+        "size": 14421,
+        "sha256": "4bc0237812d7d8c2611e60f1e7d0de8f108a9c18fbb8402aefecc3c71c54d68c",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "decision_readout.safetensors",
+        "size": 2621520,
+        "sha256": "52ceafd7d824bf3ea5ce55276b48cc08ba9dd6b2c98a55d9bd6a72ed1643a427",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "id": "bf16-mlx-author-adapter",
@@ -348,46 +435,6 @@
      "repo": "Qwen/Qwen3.5-4B",
      "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
      "role": "base Qwen/Qwen3.5-4B"
-    },
-    {
-     "path": "calibration.json",
-     "size": 1283,
-     "sha256": "1ef51558c476d27b04b729a5144d81fcaa19d860abc2f51e72c2e9d89268de4b",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "official MLX adapter/readout/calibration"
-    },
-    {
-     "path": "mlx/adapter_config.json",
-     "size": 11522,
-     "sha256": "dec5c599785234b647330c39affffd8096ed3725da56db8eac69408f787d4e55",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "official MLX adapter/readout/calibration"
-    },
-    {
-     "path": "mlx/adapters.safetensors",
-     "size": 487639008,
-     "sha256": "aecbdaefad58f342becd1ed72cb2322b59d2e6b465d85d2fb5d400a6dbffa135",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "official MLX adapter/readout/calibration"
-    },
-    {
-     "path": "mlx/decision_readout.json",
-     "size": 14421,
-     "sha256": "4bc0237812d7d8c2611e60f1e7d0de8f108a9c18fbb8402aefecc3c71c54d68c",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "official MLX adapter/readout/calibration"
-    },
-    {
-     "path": "mlx/decision_readout.safetensors",
-     "size": 2621699,
-     "sha256": "3af52f411763b973d80e9909bbe28c14d8635aff389e4fc109489d06c7f7c047",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "official MLX adapter/readout/calibration"
     }
    ],
    "serve": {
@@ -401,8 +448,133 @@
     ]
    },
    "measured": null,
-   "expected_speed": "Estimate only: recent M-series Apple Silicon may prefill roughly 300–1000 tokens/s for the 4B model, giving about 0.3–5 s per 300–1500-token forward. Each question/rotation adds a forward; no independently measured MLX timing/parity.",
-   "notes": "Best portable path: same-author MLX adapter/readout at mohit67890/imajev-4b@c9e5f132465da85d31735ec502d5557982671a7d, with pinned frozen Qwen3.5-4B base; original author MLXDirect reads the decision head directly (not mlx_lm server). https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/src/vision_decision/backend.py L16: from mlx_vlm import load; L22: self.model, self.processor = load(self.bundle[\"path\"], trust_remote_code=False); L24: from mlx_vlm.trainer.utils import apply_lora_layers; L31: if adapter is not None:. CPU/MPS Torch fallback is also unmodified, but FP32, not BF16: https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/scripts/playground/server.py L119: device = \"cuda\" if torch.cuda.is_available() else \"mps\" if torch.backends.mps.is_available() else \"cpu\"; L124: dtype = torch.bfloat16 if device == \"cuda\" and not float32 else torch.float32; L130: self.engine = TorchDecision(self.bundle[\"path\"], \"cpu\" if merge else device, dtype=torch.float32 if merge else dtype,. Explicit --backend mlx is necessary; auto selection checks a development MLX_ADAPTER directory rather than the passed adapter. Backend_agnostic=false: both implementations read logits/head in-process. MLX/BF16 needs roughly 12.3 GB + OS; FP32 Torch roughly 24.5 GB + OS. Portable runtime and parity not re-tested here. Memory estimate: 9.810 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Author reports Mac parity, not independently remeasured here."
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Best portable path: same-author MLX adapter/readout at mohit67890/imajev-4b@c9e5f132465da85d31735ec502d5557982671a7d, with pinned frozen Qwen3.5-4B base; original author MLXDirect reads the decision head directly (not mlx_lm server). https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/src/vision_decision/backend.py L16: from mlx_vlm import load; L22: self.model, self.processor = load(self.bundle[\"path\"], trust_remote_code=False); L24: from mlx_vlm.trainer.utils import apply_lora_layers; L31: if adapter is not None:. CPU/MPS Torch fallback is also unmodified, but FP32, not BF16: https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/scripts/playground/server.py L119: device = \"cuda\" if torch.cuda.is_available() else \"mps\" if torch.backends.mps.is_available() else \"cpu\"; L124: dtype = torch.bfloat16 if device == \"cuda\" and not float32 else torch.float32; L130: self.engine = TorchDecision(self.bundle[\"path\"], \"cpu\" if merge else device, dtype=torch.float32 if merge else dtype,. Explicit --backend mlx is necessary; auto selection checks a development MLX_ADAPTER directory rather than the passed adapter. Backend_agnostic=false: both implementations read logits/head in-process. MLX/BF16 needs roughly 12.3 GB + OS; FP32 Torch roughly 24.5 GB + OS. Portable runtime and parity not re-tested here. Memory estimate: 9.810 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Author reports Mac parity, not independently remeasured here.",
+   "install": {
+    "runtime": "mlx",
+    "python": "3.12",
+    "packages": [
+     "mlx-vlm==0.7.1",
+     "fastapi==0.135.0",
+     "uvicorn==0.53.0",
+     "pydantic==2.12.5",
+     "python-multipart==0.0.32",
+     "pillow==12.3.0",
+     "huggingface-hub==1.33.0"
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "3e4dac9470418455bee6f93c17d6fc72b0640112e0e251ea1203a14eee9308ad"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}",
+       "--code",
+       "{code:code/imajev-4b}",
+       "--adapter",
+       "{weights}/adapter/mlx",
+       "--state",
+       "{state}",
+       "--backend",
+       "mlx"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/imajev-4b}/src",
+       "CUDA_VISIBLE_DEVICES": ""
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/v1/models",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/systemone",
+     "model": "imajev-4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "macos-arm64"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "mohit67890/imajev",
+      "revision": "8501f5c3b1ed8ef608744eabed40f22b70de4277",
+      "sha256": "a6de8dafb54aa49b2c18782c851ea1065318c62e5dbe2ef518c4f44c3bb12e41",
+      "dest": "code/imajev-4b",
+      "pip_install": false
+     }
+    ],
+    "extra_weights": [
+     {
+      "repo": "mohit67890/imajev-4b",
+      "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+      "dest": "adapter",
+      "files": [
+       {
+        "path": "calibration.json",
+        "size": 1283,
+        "sha256": "1ef51558c476d27b04b729a5144d81fcaa19d860abc2f51e72c2e9d89268de4b",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "official MLX adapter/readout/calibration"
+       },
+       {
+        "path": "mlx/adapter_config.json",
+        "size": 11522,
+        "sha256": "dec5c599785234b647330c39affffd8096ed3725da56db8eac69408f787d4e55",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "official MLX adapter/readout/calibration"
+       },
+       {
+        "path": "mlx/adapters.safetensors",
+        "size": 487639008,
+        "sha256": "aecbdaefad58f342becd1ed72cb2322b59d2e6b465d85d2fb5d400a6dbffa135",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "official MLX adapter/readout/calibration"
+       },
+       {
+        "path": "mlx/decision_readout.json",
+        "size": 14421,
+        "sha256": "4bc0237812d7d8c2611e60f1e7d0de8f108a9c18fbb8402aefecc3c71c54d68c",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "official MLX adapter/readout/calibration"
+       },
+       {
+        "path": "mlx/decision_readout.safetensors",
+        "size": 2621699,
+        "sha256": "3af52f411763b973d80e9909bbe28c14d8635aff389e4fc109489d06c7f7c047",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "official MLX adapter/readout/calibration"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "id": "fp32-torch-cpu",
@@ -508,46 +680,6 @@
      "repo": "Qwen/Qwen3.5-4B",
      "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
      "role": "base Qwen/Qwen3.5-4B"
-    },
-    {
-     "path": "adapter_config.json",
-     "size": 1375,
-     "sha256": "a5bad80823e9768c82a8e7459bec6c6b77f835306ddcc9b3ecfe514238b5806e",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "adapter_model.safetensors",
-     "size": 487648432,
-     "sha256": "88c2c44361e0c469352495abcfee789ff73a4deae0811168d9402cfc2b6e749c",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "calibration.json",
-     "size": 1283,
-     "sha256": "1ef51558c476d27b04b729a5144d81fcaa19d860abc2f51e72c2e9d89268de4b",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "decision_readout.json",
-     "size": 14421,
-     "sha256": "4bc0237812d7d8c2611e60f1e7d0de8f108a9c18fbb8402aefecc3c71c54d68c",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "decision_readout.safetensors",
-     "size": 2621520,
-     "sha256": "52ceafd7d824bf3ea5ce55276b48cc08ba9dd6b2c98a55d9bd6a72ed1643a427",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
     }
    ],
    "serve": {
@@ -561,8 +693,138 @@
     ]
    },
    "measured": null,
-   "expected_speed": "Estimate only: FP 32 doubles weight bandwidth and memory versus BF 16. Expect seconds to tens of seconds for each 300–1500-token forward on CPU or MPS; multiply by questions/rotations. No independent portable timing or parity measurement.",
-   "notes": "Best portable path: same-author MLX adapter/readout at mohit67890/imajev-4b@c9e5f132465da85d31735ec502d5557982671a7d, with pinned frozen Qwen3.5-4B base; original author MLXDirect reads the decision head directly (not mlx_lm server). https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/src/vision_decision/backend.py L16: from mlx_vlm import load; L22: self.model, self.processor = load(self.bundle[\"path\"], trust_remote_code=False); L24: from mlx_vlm.trainer.utils import apply_lora_layers; L31: if adapter is not None:. CPU/MPS Torch fallback is also unmodified, but FP32, not BF16: https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/scripts/playground/server.py L119: device = \"cuda\" if torch.cuda.is_available() else \"mps\" if torch.backends.mps.is_available() else \"cpu\"; L124: dtype = torch.bfloat16 if device == \"cuda\" and not float32 else torch.float32; L130: self.engine = TorchDecision(self.bundle[\"path\"], \"cpu\" if merge else device, dtype=torch.float32 if merge else dtype,. Explicit --backend mlx is necessary; auto selection checks a development MLX_ADAPTER directory rather than the passed adapter. Backend_agnostic=false: both implementations read logits/head in-process. MLX/BF16 needs roughly 12.3 GB + OS; FP32 Torch roughly 24.5 GB + OS. Portable runtime and parity not re-tested here. Memory estimate: 9.810 GB downloaded weights × 2 for fp32 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified."
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Best portable path: same-author MLX adapter/readout at mohit67890/imajev-4b@c9e5f132465da85d31735ec502d5557982671a7d, with pinned frozen Qwen3.5-4B base; original author MLXDirect reads the decision head directly (not mlx_lm server). https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/src/vision_decision/backend.py L16: from mlx_vlm import load; L22: self.model, self.processor = load(self.bundle[\"path\"], trust_remote_code=False); L24: from mlx_vlm.trainer.utils import apply_lora_layers; L31: if adapter is not None:. CPU/MPS Torch fallback is also unmodified, but FP32, not BF16: https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/scripts/playground/server.py L119: device = \"cuda\" if torch.cuda.is_available() else \"mps\" if torch.backends.mps.is_available() else \"cpu\"; L124: dtype = torch.bfloat16 if device == \"cuda\" and not float32 else torch.float32; L130: self.engine = TorchDecision(self.bundle[\"path\"], \"cpu\" if merge else device, dtype=torch.float32 if merge else dtype,. Explicit --backend mlx is necessary; auto selection checks a development MLX_ADAPTER directory rather than the passed adapter. Backend_agnostic=false: both implementations read logits/head in-process. MLX/BF16 needs roughly 12.3 GB + OS; FP32 Torch roughly 24.5 GB + OS. Portable runtime and parity not re-tested here. Memory estimate: 9.810 GB downloaded weights × 2 for fp32 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.8.0",
+     "torchvision==0.23.0",
+     "transformers==5.17.0",
+     "accelerate==1.15.0",
+     "pillow==12.3.0",
+     "safetensors==0.8.0",
+     "peft==0.18.0",
+     "fastapi==0.135.0",
+     "uvicorn==0.53.0",
+     "pydantic==2.12.5",
+     "python-multipart==0.0.32",
+     "click==8.5.0",
+     "huggingface-hub==1.33.0"
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "3e4dac9470418455bee6f93c17d6fc72b0640112e0e251ea1203a14eee9308ad"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}",
+       "--code",
+       "{code:code/imajev-4b}",
+       "--adapter",
+       "{weights}/adapter",
+       "--state",
+       "{state}"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/imajev-4b}/src",
+       "CUDA_VISIBLE_DEVICES": ""
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/v1/models",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/systemone",
+     "model": "imajev-4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-cpu",
+      "windows-cpu"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "mohit67890/imajev",
+      "revision": "8501f5c3b1ed8ef608744eabed40f22b70de4277",
+      "sha256": "a6de8dafb54aa49b2c18782c851ea1065318c62e5dbe2ef518c4f44c3bb12e41",
+      "dest": "code/imajev-4b",
+      "pip_install": false
+     }
+    ],
+    "extra_weights": [
+     {
+      "repo": "mohit67890/imajev-4b",
+      "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+      "dest": "adapter",
+      "files": [
+       {
+        "path": "adapter_config.json",
+        "size": 1375,
+        "sha256": "a5bad80823e9768c82a8e7459bec6c6b77f835306ddcc9b3ecfe514238b5806e",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "adapter_model.safetensors",
+        "size": 487648432,
+        "sha256": "88c2c44361e0c469352495abcfee789ff73a4deae0811168d9402cfc2b6e749c",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "calibration.json",
+        "size": 1283,
+        "sha256": "1ef51558c476d27b04b729a5144d81fcaa19d860abc2f51e72c2e9d89268de4b",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "decision_readout.json",
+        "size": 14421,
+        "sha256": "4bc0237812d7d8c2611e60f1e7d0de8f108a9c18fbb8402aefecc3c71c54d68c",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "decision_readout.safetensors",
+        "size": 2621520,
+        "sha256": "52ceafd7d824bf3ea5ce55276b48cc08ba9dd6b2c98a55d9bd6a72ed1643a427",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "id": "fp32-torch-mps",
@@ -667,46 +929,6 @@
      "repo": "Qwen/Qwen3.5-4B",
      "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
      "role": "base Qwen/Qwen3.5-4B"
-    },
-    {
-     "path": "adapter_config.json",
-     "size": 1375,
-     "sha256": "a5bad80823e9768c82a8e7459bec6c6b77f835306ddcc9b3ecfe514238b5806e",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "adapter_model.safetensors",
-     "size": 487648432,
-     "sha256": "88c2c44361e0c469352495abcfee789ff73a4deae0811168d9402cfc2b6e749c",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "calibration.json",
-     "size": 1283,
-     "sha256": "1ef51558c476d27b04b729a5144d81fcaa19d860abc2f51e72c2e9d89268de4b",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "decision_readout.json",
-     "size": 14421,
-     "sha256": "4bc0237812d7d8c2611e60f1e7d0de8f108a9c18fbb8402aefecc3c71c54d68c",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
-    },
-    {
-     "path": "decision_readout.safetensors",
-     "size": 2621520,
-     "sha256": "52ceafd7d824bf3ea5ce55276b48cc08ba9dd6b2c98a55d9bd6a72ed1643a427",
-     "repo": "mohit67890/imajev-4b",
-     "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
-     "role": "adapter mohit67890/imajev-4b"
     }
    ],
    "serve": {
@@ -720,8 +942,137 @@
     ]
    },
    "measured": null,
-   "expected_speed": "Estimate only: FP 32 doubles weight bandwidth and memory versus BF 16. Expect seconds to tens of seconds for each 300–1500-token forward on CPU or MPS; multiply by questions/rotations. No independent portable timing or parity measurement.",
-   "notes": "Best portable path: same-author MLX adapter/readout at mohit67890/imajev-4b@c9e5f132465da85d31735ec502d5557982671a7d, with pinned frozen Qwen3.5-4B base; original author MLXDirect reads the decision head directly (not mlx_lm server). https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/src/vision_decision/backend.py L16: from mlx_vlm import load; L22: self.model, self.processor = load(self.bundle[\"path\"], trust_remote_code=False); L24: from mlx_vlm.trainer.utils import apply_lora_layers; L31: if adapter is not None:. CPU/MPS Torch fallback is also unmodified, but FP32, not BF16: https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/scripts/playground/server.py L119: device = \"cuda\" if torch.cuda.is_available() else \"mps\" if torch.backends.mps.is_available() else \"cpu\"; L124: dtype = torch.bfloat16 if device == \"cuda\" and not float32 else torch.float32; L130: self.engine = TorchDecision(self.bundle[\"path\"], \"cpu\" if merge else device, dtype=torch.float32 if merge else dtype,. Explicit --backend mlx is necessary; auto selection checks a development MLX_ADAPTER directory rather than the passed adapter. Backend_agnostic=false: both implementations read logits/head in-process. MLX/BF16 needs roughly 12.3 GB + OS; FP32 Torch roughly 24.5 GB + OS. Portable runtime and parity not re-tested here. Memory estimate: 9.810 GB downloaded weights × 2 for fp32 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac."
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Best portable path: same-author MLX adapter/readout at mohit67890/imajev-4b@c9e5f132465da85d31735ec502d5557982671a7d, with pinned frozen Qwen3.5-4B base; original author MLXDirect reads the decision head directly (not mlx_lm server). https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/src/vision_decision/backend.py L16: from mlx_vlm import load; L22: self.model, self.processor = load(self.bundle[\"path\"], trust_remote_code=False); L24: from mlx_vlm.trainer.utils import apply_lora_layers; L31: if adapter is not None:. CPU/MPS Torch fallback is also unmodified, but FP32, not BF16: https://raw.githubusercontent.com/mohit67890/imajev/8501f5c3b1ed8ef608744eabed40f22b70de4277/scripts/playground/server.py L119: device = \"cuda\" if torch.cuda.is_available() else \"mps\" if torch.backends.mps.is_available() else \"cpu\"; L124: dtype = torch.bfloat16 if device == \"cuda\" and not float32 else torch.float32; L130: self.engine = TorchDecision(self.bundle[\"path\"], \"cpu\" if merge else device, dtype=torch.float32 if merge else dtype,. Explicit --backend mlx is necessary; auto selection checks a development MLX_ADAPTER directory rather than the passed adapter. Backend_agnostic=false: both implementations read logits/head in-process. MLX/BF16 needs roughly 12.3 GB + OS; FP32 Torch roughly 24.5 GB + OS. Portable runtime and parity not re-tested here. Memory estimate: 9.810 GB downloaded weights × 2 for fp32 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.8.0",
+     "torchvision==0.23.0",
+     "transformers==5.17.0",
+     "accelerate==1.15.0",
+     "pillow==12.3.0",
+     "safetensors==0.8.0",
+     "peft==0.18.0",
+     "fastapi==0.135.0",
+     "uvicorn==0.53.0",
+     "pydantic==2.12.5",
+     "python-multipart==0.0.32",
+     "click==8.5.0",
+     "huggingface-hub==1.33.0"
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Launch the unchanged author server against installer-verified local paths.\"\"\"\nimport argparse\nimport json\nimport runpy\nimport sys\nfrom pathlib import Path\n\ndef main():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--code\", required=True)\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--adapter\", required=True)\n    p.add_argument(\"--state\", required=True)\n    p.add_argument(\"--port\", required=True)\n    p.add_argument(\"--backend\", default=\"torch\", choices=[\"torch\", \"mlx\"])\n    a = p.parse_args()\n    bundle = Path(a.state)/\"imajev-local-bundle.json\"\n    bundle.parent.mkdir(parents=True, exist_ok=True)\n    bundle.write_text(json.dumps({\"repo\": \"Qwen/Qwen3.5-4B\", \"revision\": \"851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a\", \"path\": a.weights}))\n    source = str(Path(a.code)/\"scripts/playground/server.py\")\n    sys.argv = [source, \"--backend\", a.backend, \"--model-bundle\", str(bundle), \"--adapter\", a.adapter,\n                \"--calibration\", str(Path(a.adapter).parent/\"calibration.json\") if a.backend == \"mlx\" else str(Path(a.adapter)/\"calibration.json\"),\n                \"--rotations\", \"1\", \"--max-input-tokens\", \"4096\", \"--model-name\", \"imajev-4b\",\n                \"--host\", \"127.0.0.1\", \"--port\", a.port]\n    runpy.run_path(source, run_name=\"__main__\")\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "3e4dac9470418455bee6f93c17d6fc72b0640112e0e251ea1203a14eee9308ad"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}",
+       "--code",
+       "{code:code/imajev-4b}",
+       "--adapter",
+       "{weights}/adapter",
+       "--state",
+       "{state}"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/imajev-4b}/src",
+       "CUDA_VISIBLE_DEVICES": ""
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/v1/models",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/systemone",
+     "model": "imajev-4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "macos-arm64"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "mohit67890/imajev",
+      "revision": "8501f5c3b1ed8ef608744eabed40f22b70de4277",
+      "sha256": "a6de8dafb54aa49b2c18782c851ea1065318c62e5dbe2ef518c4f44c3bb12e41",
+      "dest": "code/imajev-4b",
+      "pip_install": false
+     }
+    ],
+    "extra_weights": [
+     {
+      "repo": "mohit67890/imajev-4b",
+      "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+      "dest": "adapter",
+      "files": [
+       {
+        "path": "adapter_config.json",
+        "size": 1375,
+        "sha256": "a5bad80823e9768c82a8e7459bec6c6b77f835306ddcc9b3ecfe514238b5806e",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "adapter_model.safetensors",
+        "size": 487648432,
+        "sha256": "88c2c44361e0c469352495abcfee789ff73a4deae0811168d9402cfc2b6e749c",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "calibration.json",
+        "size": 1283,
+        "sha256": "1ef51558c476d27b04b729a5144d81fcaa19d860abc2f51e72c2e9d89268de4b",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "decision_readout.json",
+        "size": 14421,
+        "sha256": "4bc0237812d7d8c2611e60f1e7d0de8f108a9c18fbb8402aefecc3c71c54d68c",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       },
+       {
+        "path": "decision_readout.safetensors",
+        "size": 2621520,
+        "sha256": "52ceafd7d824bf3ea5ce55276b48cc08ba9dd6b2c98a55d9bd6a72ed1643a427",
+        "repo": "mohit67890/imajev-4b",
+        "revision": "c9e5f132465da85d31735ec502d5557982671a7d",
+        "role": "adapter mohit67890/imajev-4b"
+       }
+      ]
+     }
+    ]
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:40Z"

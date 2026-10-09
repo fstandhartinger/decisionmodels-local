@@ -86,13 +86,16 @@
  "image_input": {
   "transport": "Python API: predict(..., media='/path/to/file', modality='image'); no HTTP field documented",
   "limits": "UNVERIFIED for image size (card caps audio at 30 s and video at 16 frames)",
-  "source": "https://huggingface.co/akhilaaa3/Jev-Omni README ('media=' example)"
+  "source": "https://huggingface.co/akhilaaa3/Jev-Omni README ('media=' example)",
+  "installer_transport": "POST /v1/multimodal with one data URL -> RGB PIL -> temporary PNG path -> author JevOmni.predict(modality=image).",
+  "installer_limits": "One image, 2..256 distinct option descriptions; gateway limits also apply.",
+  "installer_notes": "Source-derived unverified HTTP recipe; see catalog/IMAGE-RECIPES-V2.md."
  },
  "variants": [
   {
    "id": "fp32-backbone-bf16-autocast",
    "precision": "fp32 weights, bf16 autocast",
-   "benchmarked": true,
+   "benchmarked": false,
    "runtime": "transformers 5.17.0 + torch 2.8.0+cu128 (in-process adapter)",
    "runtime_version": "transformers 5.17.0; torch 2.8.0+cu128",
    "image": "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35",
@@ -320,62 +323,6 @@
      "repo": "akhilaaa3/Jev-Omni",
      "revision": "c050d51354147985d13286cf4acf90f562f2c631",
      "role": "Jev-Omni backbone (fp32), head, buffers, loader"
-    },
-    {
-     "path": "chat_template.jinja",
-     "size": 18683,
-     "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
-     "repo": "google/gemma-4-12B-it",
-     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
-     "role": "base google/gemma-4-12B-it multimodal components"
-    },
-    {
-     "path": "config.json",
-     "size": 4423,
-     "sha256": "478c46e8d2c52d5c2d85bf67e3b3e8c90e7c9d91086cee27e3c267907e936bd9",
-     "repo": "google/gemma-4-12B-it",
-     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
-     "role": "base google/gemma-4-12B-it multimodal components"
-    },
-    {
-     "path": "generation_config.json",
-     "size": 260,
-     "sha256": "a8349d9bd64cc5841297fcb5002f0fdc4749c473c8f1b10ea337f9ce4ee7014e",
-     "repo": "google/gemma-4-12B-it",
-     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
-     "role": "base google/gemma-4-12B-it multimodal components"
-    },
-    {
-     "path": "model.safetensors",
-     "size": 23919549408,
-     "sha256": "5a84cb313260ac447237b890387116dfa8682e49a6b44bc585ae8353abbff18d",
-     "repo": "google/gemma-4-12B-it",
-     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
-     "role": "base google/gemma-4-12B-it multimodal components"
-    },
-    {
-     "path": "processor_config.json",
-     "size": 1382,
-     "sha256": "6b938e76555b3e9946890770e1abcd442a4718f34041a58e8139dc8ad34545c9",
-     "repo": "google/gemma-4-12B-it",
-     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
-     "role": "base google/gemma-4-12B-it multimodal components"
-    },
-    {
-     "path": "tokenizer.json",
-     "size": 32169626,
-     "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
-     "repo": "google/gemma-4-12B-it",
-     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
-     "role": "base google/gemma-4-12B-it multimodal components"
-    },
-    {
-     "path": "tokenizer_config.json",
-     "size": 3089,
-     "sha256": "a62f4e85a47c0c136edaaa3a4f591fd6783717299a9def47e5ad03a49f6a5eb9",
-     "repo": "google/gemma-4-12B-it",
-     "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
-     "role": "base google/gemma-4-12B-it multimodal components"
     }
    ],
    "serve": {
@@ -388,13 +335,131 @@
      "A Jev-compatible endpoint needs our wrapper; not part of the BH recipe"
     ]
    },
-   "measured": {
-    "gpu": "RTX PRO 6000 Blackwell 97,887 MiB (ROSTER notes, historical run); v0.3 run GPU not named",
-    "p50_ms": 87.4,
-    "source": "imagejev-v03.json ranking jev_omni; run03/final-gpu/jev_omni.json (run extra-v03-2)"
-   },
-   "expected_speed": "About 0.09 s raw p 50 per decision on the BH measurement box (0.32 s adjusted). Model load reads ~50 GB of fp 32 backbone shards, so load time and CPU RAM are the practical limits. Provisioning class: L 40S 48 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "Files: fp32 backbone 13 shards (~50 GB) + base Gemma 4 12B multimodal components (23.9 GB, the author loader downloads them). Disk 74 GB is required because both are needed. The repo's unified/model.safetensors (23.9 GB, bf16) is not used by the BH loader and is excluded. VRAM min 40 from BH meta; recommended 48 (BH run 8 used a 48 GB L40 with the bf16 cast). head.pt and runtime_buffers.pt are loaded with weights_only=True (author loader); sha256.json and verification.json are included for checking. Host RAM provisioning estimate: pinned weight files sum to 71.553 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 92 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "measured": null,
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Files: fp32 backbone 13 shards (~50 GB) + base Gemma 4 12B multimodal components (23.9 GB, the author loader downloads them). Disk 74 GB is required because both are needed. The repo's unified/model.safetensors (23.9 GB, bf16) is not used by the BH loader and is excluded. VRAM min 40 from BH meta; recommended 48 (BH run 8 used a 48 GB L40 with the bf16 cast). head.pt and runtime_buffers.pt are loaded with weights_only=True (author loader); sha256.json and verification.json are included for checking. Host RAM provisioning estimate: pinned weight files sum to 71.553 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 92 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. Installer recipe is source-derived and unverified; this executable runtime was not benchmarked. See catalog/IMAGE-RECIPES-V2.md for modifications and dependency provenance.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.8.0",
+     "torchvision==0.23.0",
+     "transformers==5.17.0",
+     "accelerate==1.15.0",
+     "pillow==12.3.0",
+     "safetensors==0.8.0",
+     "numpy==2.5.3"
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    if a.device != \"cuda\" or not a.base:\n        raise ValueError(\"Jev-Omni requires CUDA and a verified local Gemma base\")\n    import importlib.util\n    from pathlib import Path\n    import torch\n    import transformers\n    from transformers import AutoConfig, AutoProcessor\n    def module(name, filename):\n        spec = importlib.util.spec_from_file_location(name, Path(a.weights)/filename)\n        value = importlib.util.module_from_spec(spec)\n        spec.loader.exec_module(value)\n        return value\n    loader = module(\"omni_text_loader\", \"load_model.py\")\n    native = module(\"omni_multimodal\", \"jev_omni.py\")\n    # Author multimodal assembly, with BH CPU-first placement to avoid an FP32 CUDA copy.\n    decoder, head, _ = loader.load_model(a.weights, device=\"cpu\")\n    for layer in decoder.modules():\n        if isinstance(layer, torch.nn.Linear):\n            layer.weight.data = layer.weight.data.to(torch.bfloat16)\n    decoder, head = decoder.to(\"cuda\").eval(), head.to(\"cuda\").eval()\n    config = AutoConfig.from_pretrained(a.base, local_files_only=True)\n    model = getattr(transformers, config.architectures[0]).from_pretrained(\n        a.base, dtype=torch.bfloat16, device_map=\"cuda\", local_files_only=True).eval()\n    path, old = native._find_backbone(model)\n    parent, _, name = path.rpartition(\".\")\n    setattr(model.get_submodule(parent) if parent else model, name, decoder)\n    del old\n    torch.cuda.empty_cache()\n    processor = AutoProcessor.from_pretrained(a.base, local_files_only=True)\n    class CountingProcessor:\n        def __init__(self):\n            self.input_tokens = 0\n        def apply_chat_template(self, *args, **kwargs):\n            inputs = processor.apply_chat_template(*args, **kwargs)\n            self.input_tokens += int(inputs[\"input_ids\"].shape[1])\n            return inputs\n    counter = CountingProcessor()\n    engine = native.JevOmni(model, head, counter, decoder, \"cuda\")\n    def predict(body):\n        import tempfile\n        photos = images(body, maximum=1)\n        answers, originals = {}, {}\n        counter.input_tokens = 0\n        with tempfile.TemporaryDirectory(prefix=\"dm-omni-\") as tmp:\n            media = None\n            if photos:\n                media = str(Path(tmp)/\"image.png\")\n                photos[0].save(media)\n            for qid, q in body[\"questions\"].items():\n                if q[\"type\"] == \"noul\":\n                    criteria = q.get(\"criteria\") or {}\n                    keys = [\"no\", \"yes\"]\n                    rubric = {\"no\": criteria.get(\"false\", \"No\"), \"yes\": criteria.get(\"true\", \"Yes\")}\n                elif q[\"type\"] == \"choice\":\n                    keys = list(q[\"criteria\"])\n                    rubric = {key: value or key for key, value in q[\"criteria\"].items()}\n                elif q[\"type\"] == \"score\":\n                    keys = [str(i) for i in range(len(q[\"criteria\"]))]\n                    rubric = dict(zip(keys, q[\"criteria\"]))\n                else:\n                    raise ValueError(\"unsupported question type\")\n                # Preserve duplicate descriptions: author probabilities dict collapses duplicate keys.\n                # Reject ambiguity rather than invent a distribution.\n                options = [text(rubric[key]) for key in keys]\n                if len(set(options)) != len(options):\n                    raise ValueError(\"Jev-Omni requires distinct option descriptions\")\n                result = engine.predict(state=text(body[\"state\"]),\n                                        question=text(q[\"instructions\"])+\"\\nRubric: \"+json.dumps(rubric, ensure_ascii=False),\n                                        options=options, media=media, modality=\"image\" if media else \"text\")\n                originals[qid] = result\n                probs = [result[\"probabilities\"][option] for option in options]\n                if q[\"type\"] == \"noul\":\n                    answers[qid] = {\"type\": \"noul\", \"noul\": probs[1], \"confidence\": result[\"confidence\"]}\n                elif q[\"type\"] == \"choice\":\n                    answers[qid] = {\"type\": \"choice\", \"choice\": keys[result[\"prediction_index\"]],\n                                    \"probabilities\": dict(zip(keys, probs)), \"confidence\": result[\"confidence\"]}\n                else:\n                    answers[qid] = {\"type\": \"score\", \"score\": sum(i*p for i, p in enumerate(probs)),\n                                    \"probabilities\": dict(zip(keys, probs)), \"legend\": dict(zip(keys, options)),\n                                    \"confidence\": result[\"confidence\"]}\n        return {\"model\": \"jev-omni\", \"answers\": answers, \"native\": originals, \"usage\": {\"input_tokens\": counter.input_tokens, \"output_tokens\": 0}}\n    serve(predict, \"jev-omni\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "6c04c4f49af06051bcbeb6310ab24414eadd9f3ba7b6de2bad66cd36aa4264ff"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}",
+       "--base",
+       "{weights}/base"
+      ],
+      "cwd": "{weights}",
+      "env": {},
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/multimodal",
+     "model": "jev-omni",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "extra_weights": [
+     {
+      "repo": "google/gemma-4-12B-it",
+      "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+      "dest": "base",
+      "files": [
+       {
+        "path": "chat_template.jinja",
+        "size": 18683,
+        "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+        "repo": "google/gemma-4-12B-it",
+        "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+        "role": "base google/gemma-4-12B-it multimodal components"
+       },
+       {
+        "path": "config.json",
+        "size": 4423,
+        "sha256": "478c46e8d2c52d5c2d85bf67e3b3e8c90e7c9d91086cee27e3c267907e936bd9",
+        "repo": "google/gemma-4-12B-it",
+        "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+        "role": "base google/gemma-4-12B-it multimodal components"
+       },
+       {
+        "path": "generation_config.json",
+        "size": 260,
+        "sha256": "a8349d9bd64cc5841297fcb5002f0fdc4749c473c8f1b10ea337f9ce4ee7014e",
+        "repo": "google/gemma-4-12B-it",
+        "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+        "role": "base google/gemma-4-12B-it multimodal components"
+       },
+       {
+        "path": "model.safetensors",
+        "size": 23919549408,
+        "sha256": "5a84cb313260ac447237b890387116dfa8682e49a6b44bc585ae8353abbff18d",
+        "repo": "google/gemma-4-12B-it",
+        "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+        "role": "base google/gemma-4-12B-it multimodal components"
+       },
+       {
+        "path": "processor_config.json",
+        "size": 1382,
+        "sha256": "6b938e76555b3e9946890770e1abcd442a4718f34041a58e8139dc8ad34545c9",
+        "repo": "google/gemma-4-12B-it",
+        "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+        "role": "base google/gemma-4-12B-it multimodal components"
+       },
+       {
+        "path": "tokenizer.json",
+        "size": 32169626,
+        "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+        "repo": "google/gemma-4-12B-it",
+        "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+        "role": "base google/gemma-4-12B-it multimodal components"
+       },
+       {
+        "path": "tokenizer_config.json",
+        "size": 3089,
+        "sha256": "a62f4e85a47c0c136edaaa3a4f591fd6783717299a9def47e5ad03a49f6a5eb9",
+        "repo": "google/gemma-4-12B-it",
+        "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+        "role": "base google/gemma-4-12B-it multimodal components"
+       }
+      ]
+     }
+    ]
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:40Z"

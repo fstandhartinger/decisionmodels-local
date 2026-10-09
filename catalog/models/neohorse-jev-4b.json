@@ -29,12 +29,16 @@
  },
  "weights": {
   "repo": "TokenRhythm/NeoHorse-Jev-4B",
-  "revision": "56c36ae625a3ccca47d9a34fb7ca6203b39b309e",
+  "revision": "434cb21d3a994a953d3ae5788405fcb2c4970554",
   "url": "https://huggingface.co/TokenRhythm/NeoHorse-Jev-4B/tree/434cb21d3a994a953d3ae5788405fcb2c4970554",
   "gated": false,
-  "revision_status": "BH pin 56c36ae not resolvable on HF; files taken from 434cb21 (see variant notes)"
+  "revision_status": "BH pin 56c36ae not resolvable on HF; files taken from 434cb21 (see variant notes)",
+  "benchmark_revision": "56c36ae625a3ccca47d9a34fb7ca6203b39b309e"
  },
- "code": null,
+ "code": {
+  "repo": "https://github.com/TokenRhythm/NeoHorse",
+  "revision": "c494069accfc2d08839675961c1fdfcc54ba0b92"
+ },
  "base_model": {
   "repo": "TokenRhythm/NeoHorse-1-4B",
   "licence": "UNVERIFIED (card not fetched); README says the upstream base is Qwen/Qwen3.5-4B (Apache-2.0)"
@@ -72,17 +76,20 @@
   "portable_notes": "Unmodified native author server accepts --device cpu/mps in cli.py L12: p.add_argument('--device', default='cuda'); L19: engine = DecisionEngine(a.model_dir, a.device) (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/cli.py); _inference.py L22 loads BF16 and L34 calls backbone.to(device=device, dtype=torch.bfloat16), with FP32 pointer head (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/_inference.py). CPU/MPS variants are candidates, not benchmarked; source is independently pinned to c494069accfc2d08839675961c1fdfcc54ba0b92; weight manifests use the resolvable fallback 434cb21, not the missing BH pin. MPS operator support/parity remains unmeasured. Official GGUF at b1bc36970f69cef2bfea75aec8f820fd3d20b040 includes a valid native head readout, but runtime/build.py L36 forces -DGGML_CUDA=ON and builds Linux .so bridges, so add only NVIDIA Q8/Q4 candidates, no CPU/Metal claim. https://huggingface.co/TokenRhythm/NeoHorse-Jev-4B-GGUF/raw/b1bc36970f69cef2bfea75aec8f820fd3d20b040/runtime/build.py . Neither native pointer-head runtime nor token-embedding GPU adapters are standard logprobs => backend_agnostic=false."
  },
  "image_input": {
-  "transport": "Python: VisionDecisionEngine.predict({...}) with a PIL image in the state (README section 4); HTTP image encoding not documented in the README",
-  "limits": "UNVERIFIED",
-  "source": "https://huggingface.co/TokenRhythm/NeoHorse-Jev-4B (README, '4. Image and Text Decisions')"
+  "transport": "Gateway images array: one PNG/JPEG/WebP data URL decoded to RGB PIL and passed to VisionDecisionEngine.predict(request,image=...).",
+  "limits": "One image and one question; author enforces 4 Mpixels, 1024 visual tokens and 12288 expanded tokens.",
+  "source": "https://github.com/TokenRhythm/NeoHorse/blob/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/vision.py",
+  "installer_transport": "POST /v1/multimodal with one data URL -> author decode_image -> VisionDecisionEngine.predict(image=PIL).",
+  "installer_limits": "One image and one question; exact author decoder enforces 4 MiB / 4 Mpixels / no animation; visual/expanded token limits apply.",
+  "installer_notes": "Source-derived unverified HTTP recipe; see catalog/IMAGE-RECIPES-V2.md."
  },
  "variants": [
   {
    "id": "bf16-author-bundle",
    "precision": "bf16",
-   "benchmarked": true,
-   "runtime": "UNVERIFIED (BH intake config; author supports vLLM 0.28.0, SGLang and a native runtime)",
-   "runtime_version": null,
+   "benchmarked": false,
+   "runtime": "PyTorch / author VisionDecisionEngine multimodal pointer head",
+   "runtime_version": "torch2.8.0 / transformers5.17.0 / authorc494069a",
    "image": null,
    "platforms": [
     "linux-nvidia"
@@ -215,13 +222,74 @@
      "python infer/vllm/infer.py --bundle /path/to/model --url http://127.0.0.1:30000 --request infer/request.json"
     ]
    },
-   "measured": {
-    "gpu": "UNVERIFIED",
-    "p50_ms": 139.6,
-    "source": "imagejev-v03.json ranking neohorse_jev_4b; run03/final-gpu/neohorse_jev_4b.json (run carry-v03-4)"
-   },
-   "expected_speed": "About 0.14 s raw p 50 per decision on the BH measurement box (0.43 s adjusted). Provisioning class: RTX 4090 24 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "BH pin 56c36ae is NOT in the HF commit history (only b50e043 'Release' and 434cb21 'citation' exist). The LFS oids of all weight files are identical at b50e043 and 434cb21 (only README.md and SHA256SUMS differ), so the file list here is taken from 434cb21. Whether 56c36ae has identical weights is UNVERIFIED; ask the author. Memory: 9.1 GB of BF16 shards plus the pointer head; min 12 / recommended 16 GB (vendor/ROSTER estimate 10-12 GB). GGUF and a conversion by the same author (TokenRhythm/NeoHorse-Jev-4B-GGUF) exist, not evaluated. Host RAM provisioning estimate: pinned weight files sum to 9.084 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "measured": null,
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "BH pin 56c36ae is NOT in the HF commit history (only b50e043 'Release' and 434cb21 'citation' exist). The LFS oids of all weight files are identical at b50e043 and 434cb21 (only README.md and SHA256SUMS differ), so the file list here is taken from 434cb21. Whether 56c36ae has identical weights is UNVERIFIED; ask the author. Memory: 9.1 GB of BF16 shards plus the pointer head; min 12 / recommended 16 GB (vendor/ROSTER estimate 10-12 GB). GGUF and a conversion by the same author (TokenRhythm/NeoHorse-Jev-4B-GGUF) exist, not evaluated. Host RAM provisioning estimate: pinned weight files sum to 9.084 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. Installer recipe is source-derived and unverified; this executable runtime was not benchmarked. See catalog/IMAGE-RECIPES-V2.md for modifications and dependency provenance.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.8.0",
+     "transformers==5.17.0",
+     "safetensors==0.8.0",
+     "pydantic==2.13.5",
+     "pillow==12.3.0"
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    from neohorse_decision.vision import VisionDecisionEngine\n    from neohorse_decision.systemone import format_response, validate_request\n    from neohorse_decision.image_input import decode_image\n    engine = VisionDecisionEngine(a.weights, a.device)\n    def predict(body):\n        refs = body.get(\"images\", [])\n        if not isinstance(refs, list) or len(refs) > 1:\n            raise ValueError(\"NeoHorse accepts exactly one image per visual request\")\n        request = {key: value for key, value in body.items() if key != \"images\"}\n        request[\"model\"] = \"NeoHorse-Jev-4B\"\n        request = validate_request(request)\n        if refs and len(body[\"questions\"]) != 1:\n            raise ValueError(\"NeoHorse visual requests support exactly one question\")\n        # The author's decoder enforces MIME, animation, 4 MiB and 4 Mpixel limits.\n        image = decode_image(refs[0]) if refs else None\n        try:\n            result = engine.predict(request, image=image)\n            return format_response(result, engine.text.tokenizer)\n        finally:\n            if image is not None:\n                image.close()\n    serve(predict, \"NeoHorse-Jev-4B\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "86c9aada256c47750b9834790d148d4b56237130a7d21baee467d02f95a5887d"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/neohorse}/jev/package/src"
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/multimodal",
+     "model": "NeoHorse-Jev-4B",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "TokenRhythm/NeoHorse",
+      "revision": "c494069accfc2d08839675961c1fdfcc54ba0b92",
+      "sha256": "995d5723430b9c34fa0b60a0c398a18b909cdc9814c87578285926eea6461875",
+      "dest": "code/neohorse",
+      "pip_install": false
+     }
+    ]
+   }
   },
   {
    "id": "bf16-torch-cpu",
@@ -363,7 +431,7 @@
     ]
    },
    "measured": null,
-   "expected_speed": "Estimate only: roughly 100–300 prefill tokens/s on a recent 16-core CPU for a 4B model, so 300–1500 tokens take about 1–15 s per forward pass. No CPU benchmark or probability parity check.",
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
    "notes": "Unmodified native author server accepts --device cpu/mps in cli.py L12: p.add_argument('--device', default='cuda'); L19: engine = DecisionEngine(a.model_dir, a.device) (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/cli.py); _inference.py L22 loads BF16 and L34 calls backbone.to(device=device, dtype=torch.bfloat16), with FP32 pointer head (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/_inference.py). CPU/MPS variants are candidates, not benchmarked; source is independently pinned to c494069accfc2d08839675961c1fdfcc54ba0b92; weight manifests use the resolvable fallback 434cb21, not the missing BH pin. MPS operator support/parity remains unmeasured. Official GGUF at b1bc36970f69cef2bfea75aec8f820fd3d20b040 includes a valid native head readout, but runtime/build.py L36 forces -DGGML_CUDA=ON and builds Linux .so bridges, so add only NVIDIA Q8/Q4 candidates, no CPU/Metal claim. https://huggingface.co/TokenRhythm/NeoHorse-Jev-4B-GGUF/raw/b1bc36970f69cef2bfea75aec8f820fd3d20b040/runtime/build.py . Neither native pointer-head runtime nor token-embedding GPU adapters are standard logprobs => backend_agnostic=false. Memory estimate: 9.084 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified.",
    "install": {
     "runtime": "venv",
@@ -373,19 +441,13 @@
      "transformers==5.17.0",
      "safetensors==0.8.0",
      "pydantic==2.13.5",
-     "fastapi==0.141.1",
-     "uvicorn==0.53.0",
-     "starlette==1.6.0",
      "pillow==12.3.0"
     ],
-    "code": [
+    "support_files": [
      {
-      "source": "github",
-      "repo": "TokenRhythm/NeoHorse",
-      "revision": "c494069accfc2d08839675961c1fdfcc54ba0b92",
-      "sha256": "995d5723430b9c34fa0b60a0c398a18b909cdc9814c87578285926eea6461875",
-      "dest": "code/neohorse",
-      "pip_install": false
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    from neohorse_decision.vision import VisionDecisionEngine\n    from neohorse_decision.systemone import format_response, validate_request\n    from neohorse_decision.image_input import decode_image\n    engine = VisionDecisionEngine(a.weights, a.device)\n    def predict(body):\n        refs = body.get(\"images\", [])\n        if not isinstance(refs, list) or len(refs) > 1:\n            raise ValueError(\"NeoHorse accepts exactly one image per visual request\")\n        request = {key: value for key, value in body.items() if key != \"images\"}\n        request[\"model\"] = \"NeoHorse-Jev-4B\"\n        request = validate_request(request)\n        if refs and len(body[\"questions\"]) != 1:\n            raise ValueError(\"NeoHorse visual requests support exactly one question\")\n        # The author's decoder enforces MIME, animation, 4 MiB and 4 Mpixel limits.\n        image = decode_image(refs[0]) if refs else None\n        try:\n            result = engine.predict(request, image=image)\n            return format_response(result, engine.text.tokenizer)\n        finally:\n            if image is not None:\n                image.close()\n    serve(predict, \"NeoHorse-Jev-4B\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "86c9aada256c47750b9834790d148d4b56237130a7d21baee467d02f95a5887d"
      }
     ],
     "processes": [
@@ -393,26 +455,22 @@
       "name": "api",
       "command": [
        "{python}",
-       "-c",
-       "from neohorse_decision.cli import main; main()",
-       "serve",
-       "--model-dir",
+       "{support_dir}/server.py",
+       "--weights",
        "{weights}",
-       "--device",
-       "cpu",
-       "--host",
-       "127.0.0.1",
        "--port",
-       "{port:api}"
+       "{port:api}",
+       "--device",
+       "cpu"
       ],
+      "cwd": "{weights}",
       "env": {
        "PYTHONPATH": "{code:code/neohorse}/jev/package/src",
        "CUDA_VISIBLE_DEVICES": ""
       },
-      "cwd": "{weights}",
       "ready": {
        "url": "http://127.0.0.1:{port:api}/health",
-       "timeout_s": 1200
+       "timeout_s": 1800
       }
      }
     ],
@@ -420,8 +478,8 @@
      "mode": "proxy_jev",
      "port": "api",
      "text_path": "/v1/systemone",
-     "image_path": null,
-     "model": null,
+     "image_path": "/v1/multimodal",
+     "model": "NeoHorse-Jev-4B",
      "auth_header": null
     },
     "requires": {
@@ -431,7 +489,17 @@
     },
     "verified": {
      "status": "unverified"
-    }
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "TokenRhythm/NeoHorse",
+      "revision": "c494069accfc2d08839675961c1fdfcc54ba0b92",
+      "sha256": "995d5723430b9c34fa0b60a0c398a18b909cdc9814c87578285926eea6461875",
+      "dest": "code/neohorse",
+      "pip_install": false
+     }
+    ]
    }
   },
   {
@@ -573,7 +641,7 @@
     ]
    },
    "measured": null,
-   "expected_speed": "Estimate only: a recent M-series Mac GPU may prefill roughly 300–1000 tokens/s for a 4B model, so 300–1500 tokens take about 0.3–5 s per forward pass. No MPS benchmark or probability parity check.",
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
    "notes": "Unmodified native author server accepts --device cpu/mps in cli.py L12: p.add_argument('--device', default='cuda'); L19: engine = DecisionEngine(a.model_dir, a.device) (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/cli.py); _inference.py L22 loads BF16 and L34 calls backbone.to(device=device, dtype=torch.bfloat16), with FP32 pointer head (https://raw.githubusercontent.com/TokenRhythm/NeoHorse/c494069accfc2d08839675961c1fdfcc54ba0b92/jev/package/src/neohorse_decision/_inference.py). CPU/MPS variants are candidates, not benchmarked; source is independently pinned to c494069accfc2d08839675961c1fdfcc54ba0b92; weight manifests use the resolvable fallback 434cb21, not the missing BH pin. MPS operator support/parity remains unmeasured. Official GGUF at b1bc36970f69cef2bfea75aec8f820fd3d20b040 includes a valid native head readout, but runtime/build.py L36 forces -DGGML_CUDA=ON and builds Linux .so bridges, so add only NVIDIA Q8/Q4 candidates, no CPU/Metal claim. https://huggingface.co/TokenRhythm/NeoHorse-Jev-4B-GGUF/raw/b1bc36970f69cef2bfea75aec8f820fd3d20b040/runtime/build.py . Neither native pointer-head runtime nor token-embedding GPU adapters are standard logprobs => backend_agnostic=false. Memory estimate: 9.084 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac.",
    "install": {
     "runtime": "venv",
@@ -583,19 +651,13 @@
      "transformers==5.17.0",
      "safetensors==0.8.0",
      "pydantic==2.13.5",
-     "fastapi==0.141.1",
-     "uvicorn==0.53.0",
-     "starlette==1.6.0",
      "pillow==12.3.0"
     ],
-    "code": [
+    "support_files": [
      {
-      "source": "github",
-      "repo": "TokenRhythm/NeoHorse",
-      "revision": "c494069accfc2d08839675961c1fdfcc54ba0b92",
-      "sha256": "995d5723430b9c34fa0b60a0c398a18b909cdc9814c87578285926eea6461875",
-      "dest": "code/neohorse",
-      "pip_install": false
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    from neohorse_decision.vision import VisionDecisionEngine\n    from neohorse_decision.systemone import format_response, validate_request\n    from neohorse_decision.image_input import decode_image\n    engine = VisionDecisionEngine(a.weights, a.device)\n    def predict(body):\n        refs = body.get(\"images\", [])\n        if not isinstance(refs, list) or len(refs) > 1:\n            raise ValueError(\"NeoHorse accepts exactly one image per visual request\")\n        request = {key: value for key, value in body.items() if key != \"images\"}\n        request[\"model\"] = \"NeoHorse-Jev-4B\"\n        request = validate_request(request)\n        if refs and len(body[\"questions\"]) != 1:\n            raise ValueError(\"NeoHorse visual requests support exactly one question\")\n        # The author's decoder enforces MIME, animation, 4 MiB and 4 Mpixel limits.\n        image = decode_image(refs[0]) if refs else None\n        try:\n            result = engine.predict(request, image=image)\n            return format_response(result, engine.text.tokenizer)\n        finally:\n            if image is not None:\n                image.close()\n    serve(predict, \"NeoHorse-Jev-4B\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "86c9aada256c47750b9834790d148d4b56237130a7d21baee467d02f95a5887d"
      }
     ],
     "processes": [
@@ -603,26 +665,22 @@
       "name": "api",
       "command": [
        "{python}",
-       "-c",
-       "from neohorse_decision.cli import main; main()",
-       "serve",
-       "--model-dir",
+       "{support_dir}/server.py",
+       "--weights",
        "{weights}",
-       "--device",
-       "mps",
-       "--host",
-       "127.0.0.1",
        "--port",
-       "{port:api}"
+       "{port:api}",
+       "--device",
+       "mps"
       ],
+      "cwd": "{weights}",
       "env": {
        "PYTHONPATH": "{code:code/neohorse}/jev/package/src",
        "CUDA_VISIBLE_DEVICES": ""
       },
-      "cwd": "{weights}",
       "ready": {
        "url": "http://127.0.0.1:{port:api}/health",
-       "timeout_s": 1200
+       "timeout_s": 1800
       }
      }
     ],
@@ -630,8 +688,8 @@
      "mode": "proxy_jev",
      "port": "api",
      "text_path": "/v1/systemone",
-     "image_path": null,
-     "model": null,
+     "image_path": "/v1/multimodal",
+     "model": "NeoHorse-Jev-4B",
      "auth_header": null
     },
     "requires": {
@@ -641,7 +699,17 @@
     },
     "verified": {
      "status": "unverified"
-    }
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "TokenRhythm/NeoHorse",
+      "revision": "c494069accfc2d08839675961c1fdfcc54ba0b92",
+      "sha256": "995d5723430b9c34fa0b60a0c398a18b909cdc9814c87578285926eea6461875",
+      "dest": "code/neohorse",
+      "pip_install": false
+     }
+    ]
    }
   },
   {

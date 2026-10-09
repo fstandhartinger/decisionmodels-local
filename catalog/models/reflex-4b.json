@@ -92,13 +92,16 @@
  "image_input": {
   "transport": "state item {'type':'image','source': <file path | URL | data: URI>} anywhere in the state (README)",
   "limits": "UNVERIFIED",
-  "source": "https://github.com/kshetrajna12/reflex README ('state can be a string or any JSON')"
+  "source": "https://github.com/kshetrajna12/reflex README ('state can be a string or any JSON')",
+  "installer_transport": "POST /v1/multimodal with images data URLs -> native state image objects {type:image,source:dataURL}.",
+  "installer_limits": "Gateway image limits and author image processor/question limits; stable two permutations.",
+  "installer_notes": "Source-derived unverified HTTP recipe; see catalog/IMAGE-RECIPES-V2.md."
  },
  "variants": [
   {
    "id": "bf16-torch-stable",
    "precision": "bf16",
-   "benchmarked": true,
+   "benchmarked": false,
    "runtime": "reflex-serve (PyTorch, stable configuration: frozen base, no adapter)",
    "runtime_version": "torch 2.11.0+cu128, torchvision 0.26.0, transformers 5.17.0, peft 0.21.0 (BH text recipe; image-row stack UNVERIFIED)",
    "image": "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404@sha256:0a360022e8de4375af99430f84e8b38951acc397252163a37ceac7204d01be35",
@@ -209,13 +212,76 @@
      "Do not use the BH text recipe's LoRA (kshetrajna12/reflex-qwen3.5-4b-lora@9df1cbbb): the ImageJev row uses the stable configuration, which has no adapter"
     ]
    },
-   "measured": {
-    "gpu": "RTX PRO 6000 Blackwell (ROSTER notes, historical kitA run)",
-    "p50_ms": 166.6,
-    "source": "imagejev-v03.json ranking reflex_4b; run03/final-gpu/reflex_4b.json (run extra-v03-2)"
-   },
-   "expected_speed": "About 0.17 s raw p 50 per decision on the BH measurement box (0.48 s adjusted). Two option orders double the forward passes per question. Provisioning class: RTX 4090 24 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-   "notes": "Memory: 9.3 GB Qwen3.5-4B BF16 weights; BH meta min_vram_gb 12, README says a 16 GB CUDA card. Peak memory not logged by BH. Host RAM provisioning estimate: pinned weight files sum to 9.320 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more."
+   "measured": null,
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Memory: 9.3 GB Qwen3.5-4B BF16 weights; BH meta min_vram_gb 12, README says a 16 GB CUDA card. Peak memory not logged by BH. Host RAM provisioning estimate: pinned weight files sum to 9.320 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. Installer recipe is source-derived and unverified; this executable runtime was not benchmarked. See catalog/IMAGE-RECIPES-V2.md for modifications and dependency provenance.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    import torch\n    from reflex.engine import Engine\n    from reflex.schema import SystemOneRequest\n    engine = Engine.load(a.weights, dtype=torch.bfloat16, device=a.device,\n                         adapter_path=None, calibration_path=None,\n                         prompt_style=\"markdown\", default_permutations=2)\n    def predict(body):\n        images(body)\n        request = {key: value for key, value in body.items() if key != \"images\"}\n        if body.get(\"images\"):\n            request[\"state\"] = {\"text\": body[\"state\"], \"images\":\n                                [{\"type\": \"image\", \"source\": ref} for ref in body[\"images\"]]}\n        return engine.answer(SystemOneRequest(**request)).model_dump(exclude_none=True)\n    serve(predict, \"reflex-4b\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "5f2b9ef7c69ac47a55b08c468a9e940db78a2b1c6c98e70ffbe91a9f7ee9ec99"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/reflex-4b}/src"
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/multimodal",
+     "model": "reflex-4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia"
+     ],
+     "cuda_min": "13.0"
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "kshetrajna12/reflex",
+      "revision": "231f896d818a62b94fec305ed553df1088486dcb",
+      "sha256": "dc9a4c3541935dedb87d2c06627f332ab46ae7e3f0bd000fbb87aab4e6117c58",
+      "dest": "code/reflex-4b",
+      "pip_install": false
+     }
+    ],
+    "venv": {
+     "lockfile": {
+      "code_id": "code/reflex-4b",
+      "path": "uv.lock",
+      "manager": "uv"
+     }
+    }
+   }
   },
   {
    "id": "bf16-torch-cpu",
@@ -333,8 +399,80 @@
     ]
    },
    "measured": null,
-   "expected_speed": "Estimate only: 100–300 prefill tokens/s on a recent 16-core CPU; 300–1500 tokens take about 1–15 s per forward, then multiply by two option orders and question count. CPU parity not measured.",
-   "notes": "Unmodified CPU and MPS author server available for the frozen stable Qwen3.5-4B base (no adapter). https://raw.githubusercontent.com/kshetrajna12/reflex/231f896d818a62b94fec305ed553df1088486dcb/src/reflex/server.py L240: ap.add_argument(\"--dtype\", default=\"bfloat16\", choices=[\"bfloat16\", \"float16\", \"float32\"]); L241: ap.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"mps\", \"cpu\"]); L288: dtype=getattr(torch, args.dtype),; L289: device=args.device,. https://raw.githubusercontent.com/kshetrajna12/reflex/231f896d818a62b94fec305ed553df1088486dcb/src/reflex/engine.py L290: model_id, dtype=dtype, device_map=device, attn_implementation=attn_implementation; L293: from reflex.mps import patch_delta_rule. README L212–217 recommends float16 rather than bfloat16 on MPS and says 4B does not fit an 18 GB Mac under its memory cap. Therefore MPS variant is honestly labelled fp16-torch-mps, not bf16. Two option orders mean two forwards per question. In-process logits / SGLang-specific readout means backend_agnostic=false. Memory estimate: 9.320 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified."
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Unmodified CPU and MPS author server available for the frozen stable Qwen3.5-4B base (no adapter). https://raw.githubusercontent.com/kshetrajna12/reflex/231f896d818a62b94fec305ed553df1088486dcb/src/reflex/server.py L240: ap.add_argument(\"--dtype\", default=\"bfloat16\", choices=[\"bfloat16\", \"float16\", \"float32\"]); L241: ap.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"mps\", \"cpu\"]); L288: dtype=getattr(torch, args.dtype),; L289: device=args.device,. https://raw.githubusercontent.com/kshetrajna12/reflex/231f896d818a62b94fec305ed553df1088486dcb/src/reflex/engine.py L290: model_id, dtype=dtype, device_map=device, attn_implementation=attn_implementation; L293: from reflex.mps import patch_delta_rule. README L212–217 recommends float16 rather than bfloat16 on MPS and says 4B does not fit an 18 GB Mac under its memory cap. Therefore MPS variant is honestly labelled fp16-torch-mps, not bf16. Two option orders mean two forwards per question. In-process logits / SGLang-specific readout means backend_agnostic=false. Memory estimate: 9.320 GB downloaded weights × 1 for bf16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Windows means WSL2 with CPU PyTorch; native Windows dependencies were not verified.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.14.0",
+     "torchvision==0.29.0",
+     "transformers==5.17.0",
+     "accelerate==1.15.0",
+     "pydantic==2.13.5",
+     "numpy==2.5.3",
+     "safetensors==0.8.0",
+     "pillow==12.3.0"
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    import torch\n    from reflex.engine import Engine\n    from reflex.schema import SystemOneRequest\n    engine = Engine.load(a.weights, dtype=torch.bfloat16, device=a.device,\n                         adapter_path=None, calibration_path=None,\n                         prompt_style=\"markdown\", default_permutations=2)\n    def predict(body):\n        images(body)\n        request = {key: value for key, value in body.items() if key != \"images\"}\n        if body.get(\"images\"):\n            request[\"state\"] = {\"text\": body[\"state\"], \"images\":\n                                [{\"type\": \"image\", \"source\": ref} for ref in body[\"images\"]]}\n        return engine.answer(SystemOneRequest(**request)).model_dump(exclude_none=True)\n    serve(predict, \"reflex-4b\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "5f2b9ef7c69ac47a55b08c468a9e940db78a2b1c6c98e70ffbe91a9f7ee9ec99"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}",
+       "--device",
+       "cpu"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/reflex-4b}/src",
+       "CUDA_VISIBLE_DEVICES": ""
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/multimodal",
+     "model": "reflex-4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-cpu",
+      "windows-cpu"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "kshetrajna12/reflex",
+      "revision": "231f896d818a62b94fec305ed553df1088486dcb",
+      "sha256": "dc9a4c3541935dedb87d2c06627f332ab46ae7e3f0bd000fbb87aab4e6117c58",
+      "dest": "code/reflex-4b",
+      "pip_install": false
+     }
+    ]
+   }
   },
   {
    "id": "fp16-torch-mps",
@@ -451,8 +589,79 @@
     ]
    },
    "measured": null,
-   "expected_speed": "Estimate only: a recent M-series Mac GPU may prefill roughly 300–1000 tokens/s for a 4B model, so 300–1500 tokens take about 0.3–5 s per forward pass. No MPS benchmark or probability parity check.",
-   "notes": "Unmodified CPU and MPS author server available for the frozen stable Qwen3.5-4B base (no adapter). https://raw.githubusercontent.com/kshetrajna12/reflex/231f896d818a62b94fec305ed553df1088486dcb/src/reflex/server.py L240: ap.add_argument(\"--dtype\", default=\"bfloat16\", choices=[\"bfloat16\", \"float16\", \"float32\"]); L241: ap.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"mps\", \"cpu\"]); L288: dtype=getattr(torch, args.dtype),; L289: device=args.device,. https://raw.githubusercontent.com/kshetrajna12/reflex/231f896d818a62b94fec305ed553df1088486dcb/src/reflex/engine.py L290: model_id, dtype=dtype, device_map=device, attn_implementation=attn_implementation; L293: from reflex.mps import patch_delta_rule. README L212–217 recommends float16 rather than bfloat16 on MPS and says 4B does not fit an 18 GB Mac under its memory cap. Therefore MPS variant is honestly labelled fp16-torch-mps, not bf16. Two option orders mean two forwards per question. In-process logits / SGLang-specific readout means backend_agnostic=false. Memory estimate: 9.320 GB downloaded weights × 1 for fp16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac."
+   "expected_speed": "Not measured for this installer recipe. Historical published benchmark timings describe a separate runtime.",
+   "notes": "Unmodified CPU and MPS author server available for the frozen stable Qwen3.5-4B base (no adapter). https://raw.githubusercontent.com/kshetrajna12/reflex/231f896d818a62b94fec305ed553df1088486dcb/src/reflex/server.py L240: ap.add_argument(\"--dtype\", default=\"bfloat16\", choices=[\"bfloat16\", \"float16\", \"float32\"]); L241: ap.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"mps\", \"cpu\"]); L288: dtype=getattr(torch, args.dtype),; L289: device=args.device,. https://raw.githubusercontent.com/kshetrajna12/reflex/231f896d818a62b94fec305ed553df1088486dcb/src/reflex/engine.py L290: model_id, dtype=dtype, device_map=device, attn_implementation=attn_implementation; L293: from reflex.mps import patch_delta_rule. README L212–217 recommends float16 rather than bfloat16 on MPS and says 4B does not fit an 18 GB Mac under its memory cap. Therefore MPS variant is honestly labelled fp16-torch-mps, not bf16. Two option orders mean two forwards per question. In-process logits / SGLang-specific readout means backend_agnostic=false. Memory estimate: 9.320 GB downloaded weights × 1 for fp16 × 1.25 working-memory allowance; minimum RAM rounded up with OS/runtime allowance. Image requests, long contexts and concurrent questions can need more. Unified RAM is the constraint; GPU VRAM fields are zero because there is no discrete NVIDIA GPU. Runtime operator support must still be checked on the target Mac.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.14.0",
+     "torchvision==0.29.0",
+     "transformers==5.17.0",
+     "accelerate==1.15.0",
+     "pydantic==2.13.5",
+     "numpy==2.5.3",
+     "safetensors==0.8.0",
+     "pillow==12.3.0"
+    ],
+    "support_files": [
+     {
+      "path": "server.py",
+      "content": "\"\"\"Decision Models transport wrapper. Native distributions are never recalibrated.\"\"\"\nimport argparse\nimport base64\nimport io\nimport json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n\ndef text(value):\n    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)\n\ndef images(body, maximum=4):\n    refs = body.get(\"images\", [])\n    if not isinstance(refs, list) or len(refs) > maximum:\n        raise ValueError(\"unsupported image count\")\n    from PIL import Image\n    result = []\n    for ref in refs:\n        if not isinstance(ref, str) or not ref.startswith((\"data:image/png;base64,\", \"data:image/jpeg;base64,\", \"data:image/webp;base64,\")):\n            raise ValueError(\"images must be PNG/JPEG/WebP base64 data URLs\")\n        raw = base64.b64decode(ref.split(\",\", 1)[1], validate=True)\n        if len(raw) > 8_000_000:\n            raise ValueError(\"image exceeds 8 MB\")\n        with Image.open(io.BytesIO(raw)) as image:\n            if image.width * image.height > 16_000_000:\n                raise ValueError(\"image exceeds 16 million pixels\")\n            result.append(image.convert(\"RGB\"))\n    return result\n\ndef serve(predict, model, port):\n    class Handler(BaseHTTPRequestHandler):\n        def send(self, status, value):\n            data = json.dumps(value, ensure_ascii=False, allow_nan=False).encode()\n            self.send_response(status)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(data)))\n            self.end_headers()\n            self.wfile.write(data)\n        def do_GET(self):\n            if self.path == \"/health\":\n                self.send(200, {\"status\": \"ok\", \"model\": model})\n            else:\n                self.send(404, {\"error\": \"not found\"})\n        def do_POST(self):\n            if self.path not in (\"/v1/systemone\", \"/v1/multimodal\"):\n                return self.send(404, {\"error\": \"not found\"})\n            try:\n                size = int(self.headers.get(\"Content-Length\", \"0\"))\n                if not 0 < size <= 48_000_000:\n                    return self.send(413, {\"error\": \"request exceeds limit\"})\n                body = json.loads(self.rfile.read(size))\n                if not isinstance(body.get(\"questions\"), dict) or not body[\"questions\"]:\n                    raise ValueError(\"questions must be a nonempty object\")\n                if self.path == \"/v1/multimodal\" and not body.get(\"images\"):\n                    raise ValueError(\"multimodal requires images\")\n                self.send(200, predict(body))\n            except (ValueError, KeyError, TypeError) as exc:\n                self.send(422, {\"error\": str(exc)})\n            except Exception as exc:\n                self.send(500, {\"error\": type(exc).__name__})\n        def log_message(self, *args):\n            pass\n    # Single worker: native caches and hooks are serialized across requests.\n    HTTPServer((\"127.0.0.1\", port), Handler).serve_forever()\n\ndef args():\n    p = argparse.ArgumentParser()\n    p.add_argument(\"--weights\", required=True)\n    p.add_argument(\"--port\", type=int, required=True)\n    p.add_argument(\"--device\", default=\"cuda\", choices=[\"cuda\", \"cpu\", \"mps\"])\n    p.add_argument(\"--base\")\n    return p.parse_args()\n\ndef main():\n    a = args()\n    import torch\n    from reflex.engine import Engine\n    from reflex.schema import SystemOneRequest\n    engine = Engine.load(a.weights, dtype=torch.float16, device=a.device,\n                         adapter_path=None, calibration_path=None,\n                         prompt_style=\"markdown\", default_permutations=2)\n    def predict(body):\n        images(body)\n        request = {key: value for key, value in body.items() if key != \"images\"}\n        if body.get(\"images\"):\n            request[\"state\"] = {\"text\": body[\"state\"], \"images\":\n                                [{\"type\": \"image\", \"source\": ref} for ref in body[\"images\"]]}\n        return engine.answer(SystemOneRequest(**request)).model_dump(exclude_none=True)\n    serve(predict, \"reflex-4b\", a.port)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "sha256": "aace96aca17659abc016a96f1353783701d6ba1f5b8b5f8702627bd4af65ac56"
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{support_dir}/server.py",
+       "--weights",
+       "{weights}",
+       "--port",
+       "{port:api}",
+       "--device",
+       "mps"
+      ],
+      "cwd": "{weights}",
+      "env": {
+       "PYTHONPATH": "{code:code/reflex-4b}/src",
+       "CUDA_VISIBLE_DEVICES": ""
+      },
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 1800
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": "/v1/multimodal",
+     "model": "reflex-4b",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "macos-arm64"
+     ]
+    },
+    "verified": {
+     "status": "unverified"
+    },
+    "code": [
+     {
+      "source": "github",
+      "repo": "kshetrajna12/reflex",
+      "revision": "231f896d818a62b94fec305ed553df1088486dcb",
+      "sha256": "dc9a4c3541935dedb87d2c06627f332ab46ae7e3f0bd000fbb87aab4e6117c58",
+      "dest": "code/reflex-4b",
+      "pip_install": false
+     }
+    ]
+   }
   }
  ],
  "sources_checked_utc": "2026-10-09T16:40Z"
