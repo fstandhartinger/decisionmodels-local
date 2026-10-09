@@ -45,11 +45,16 @@ def _llama_platform_key(variant, hw):
     return None
 
 
+# Vendors market memory in GB while tools report GiB/MiB (a "24 GB" RTX 4090 reports 24,564 MiB = 23.99 GiB).
+VRAM_TOLERANCE = 0.97
+RAM_TOLERANCE = 0.92
+
+
 def assess_variant(variant, model, hw):
     reasons = []
     if not _platform_supported(variant, hw):
         reasons.append("unsupported operating system, architecture, or accelerator")
-    memory_gb = _available_vram_gb(hw)
+    memory_gb = _available_vram_gb(hw) / VRAM_TOLERANCE
     min_vram = variant.get("min_vram_gb")
     recommended_vram = variant.get("recommended_vram_gb", min_vram)
     runtime = installer_runtime(variant)
@@ -80,7 +85,7 @@ def assess_variant(variant, model, hw):
                 reasons.append(f"requires NVIDIA compute capability {required:g} or newer")
     ram = hw.get("ram_gb") or {}
     min_ram = variant.get("min_ram_gb")
-    if min_ram is not None and (ram.get("total") or 0) < float(min_ram):
+    if min_ram is not None and (ram.get("total") or 0) / RAM_TOLERANCE < float(min_ram):
         reasons.append(f"needs {min_ram:g} GB system RAM; detected {(ram.get('total') or 0):.1f} GB")
     disk = variant.get("disk_gb")
     if disk is not None and (hw.get("disk_free_gb") or 0) < float(disk) * 1.1:
