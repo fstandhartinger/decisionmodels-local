@@ -46,7 +46,9 @@ try {
         }
         $actual = $LASTEXITCODE
         if ($actual -ne $expected) { throw "$mode delete=$delete returned $actual, expected $expected" }
-        $arguments = @(Get-Content -LiteralPath $receipt -Raw | ConvertFrom-Json)
+        # Windows PowerShell 5.1 emits the JSON array as one pipeline object.
+        # Assign it directly; @(...pipeline...) would create a nested array.
+        $arguments = Get-Content -LiteralPath $receipt -Raw | ConvertFrom-Json
         if ($arguments.Count -ne 3 -or $arguments[0] -cne $argument -or $arguments[1] -cne $deleteText -or $arguments[2] -cne [string]$expected) {
           throw "Launcher changed arguments: $(Get-Content -LiteralPath $receipt -Raw)"
         }
