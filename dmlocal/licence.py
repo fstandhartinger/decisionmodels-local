@@ -125,7 +125,7 @@ def require_install(model, state_root, usage=None, accept=False, input_fn=input,
             raise RuntimeError("licence declaration was not accepted")
     if status == "supported_noncommercial_only":
         print("Model licence summary: " + str(model.get("licence", {}).get("notes", "non-commercial use only")))
-        if chosen == "company":
+        if chosen in ("small_company", "company"):
             raise RuntimeError("this model is not installable for company usage under its non-commercial licence")
         if not accept:
             answer = input_fn("Confirm that your use complies with this model's licence? [y/N] ").strip().lower()

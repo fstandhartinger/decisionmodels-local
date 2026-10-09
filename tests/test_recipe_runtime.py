@@ -90,6 +90,13 @@ class RecipeValidationTests(unittest.TestCase):
             self.assertTrue(any("macOS 14.0" in error for error in requires_errors(candidate, {**hardware, "os_version": version})))
         self.assertEqual(requires_errors(candidate, {**hardware, "os_version": "14.0.1"}), [])
 
+    def test_glibc_wheel_minimum_rejects_musl_old_and_unknown_libc(self):
+        candidate = variant()
+        candidate["install"]["requires"] = {"glibc_min": "2.39"}
+        for libc in ({}, {"name": "musl", "version": "2.40"}, {"name": "glibc", "version": "2.35"}):
+            self.assertTrue(requires_errors(candidate, {"os": "linux", "libc": libc}))
+        self.assertEqual(requires_errors(candidate, {"os": "linux", "libc": {"name": "glibc", "version": "2.39"}}), [])
+
 
 class RecipeRuntimeTests(unittest.TestCase):
     def test_placeholder_expansion_and_stable_port_allocation(self):

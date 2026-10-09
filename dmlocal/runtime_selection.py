@@ -255,7 +255,7 @@ def recipe_errors(variant):
         if not isinstance(requires, dict):
             errors.append("install.requires must be an object")
         else:
-            for key in ("cuda_min", "driver_min", "gpu_arch_min", "macos_min"):
+            for key in ("cuda_min", "driver_min", "gpu_arch_min", "macos_min", "glibc_min"):
                 if key in requires and not isinstance(requires[key], str):
                     errors.append(f"install.requires.{key} must be a string")
             if "platforms" in requires and (not isinstance(requires["platforms"], list) or any(not isinstance(x, str) for x in requires["platforms"])):
@@ -316,6 +316,11 @@ def requires_errors(variant, hw):
         actual, wanted = _version_tuple(hw.get("os_version")), _version_tuple(requires["macos_min"])
         if actual is None or wanted is None or actual < wanted:
             errors.append(f"requires macOS {requires['macos_min']} or newer; detected {hw.get('os_version') or 'unknown version'}")
+    if requires.get("glibc_min") and hw.get("os") == "linux":
+        libc = hw.get("libc") or {}
+        actual, wanted = _version_tuple(libc.get("version")), _version_tuple(requires["glibc_min"])
+        if libc.get("name") != "glibc" or actual is None or wanted is None or actual < wanted:
+            errors.append(f"requires glibc {requires['glibc_min']} or newer; detected {libc.get('name') or 'unknown libc'} {libc.get('version') or ''}".strip())
     cuda_min = requires.get("cuda_min")
     if cuda_min:
         detected = hw.get("cuda_version")

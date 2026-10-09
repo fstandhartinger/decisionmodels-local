@@ -39,8 +39,9 @@ class LicenceAndUninstallTests(unittest.TestCase):
     def test_noncommercial_model_refuses_company(self):
         with tempfile.TemporaryDirectory() as tmp:
             model = model_with_variants([variant()], policy="supported_noncommercial_only")
-            with self.assertRaisesRegex(RuntimeError, "not installable for company"):
-                licence.require_install(model, tmp, "company", accept=True)
+            for usage in ("small_company", "company"):
+                with self.subTest(usage=usage), self.assertRaisesRegex(RuntimeError, "not installable for company"):
+                    licence.require_install(model, tmp, usage, accept=True)
 
     def test_company_offline_grace_is_bounded_to_fourteen_days_after_cache(self):
         with tempfile.TemporaryDirectory() as tmp:

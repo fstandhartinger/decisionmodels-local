@@ -132,6 +132,7 @@ def detect(state_path=None):
     return {
         "os": system, "arch": machine, "platform": f"{system}-{machine}",
         "os_version": platform.mac_ver()[0] if system == "darwin" else platform.release(),
+        "libc": {"name": platform.libc_ver()[0], "version": platform.libc_ver()[1]} if system == "linux" else None,
         "wsl2": bool(system == "linux" and "microsoft" in Path("/proc/version").read_text(errors="ignore").lower()) if Path("/proc/version").exists() else False,
         "cpu": platform.processor() or platform.machine(), "cpu_count": os.cpu_count(), "ram_gb": _ram_gb(),
         "disk_free_gb": disk_free, "gpus": gpu, "cuda_driver": next((g.get("driver_version") for g in gpu if g["vendor"] == "nvidia"), None),
