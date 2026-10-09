@@ -483,6 +483,19 @@ def _uninstall_all(yes):
             wrapper.unlink()
     except OSError:
         pass
+    if os.name == "nt" and os.environ.get("LOCALAPPDATA"):
+        default_root = Path(os.environ["LOCALAPPDATA"]) / "DecisionModels"
+        if root.resolve() == default_root.resolve():
+            import winreg
+            try:
+                with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment", 0, winreg.KEY_READ | winreg.KEY_WRITE) as env_key:
+                    user_path, kind = winreg.QueryValueEx(env_key, "Path")
+                    owned_bin = os.path.normcase(str(default_root / "bin").rstrip("\\/"))
+                    remaining = [entry for entry in user_path.split(";") if os.path.normcase(entry.rstrip("\\/")) != owned_bin]
+                    if len(remaining) != len(user_path.split(";")):
+                        winreg.SetValueEx(env_key, "Path", 0, kind, ";".join(remaining))
+            except FileNotFoundError:
+                pass
     shutil.rmtree(root)
     return {"removed": slugs, "state_dir": str(root)}
 

@@ -74,6 +74,8 @@ jobs:
           "$HOME/.local/bin/dm-local" version
           "$HOME/.local/bin/dm-local" doctor --json
           "$HOME/.local/bin/dm-local" list --json
+          "$HOME/.local/bin/dm-local" uninstall --all --yes
+          test ! -e "$HOME/.local/bin/dm-local"
       - name: Install signed release on Windows
         if: runner.os == 'Windows'
         shell: powershell
@@ -86,3 +88,7 @@ jobs:
           & "$env:LOCALAPPDATA\DecisionModels\bin\dm-local.cmd" doctor --json
           & "$env:LOCALAPPDATA\DecisionModels\bin\dm-local.cmd" list --json
           if ($LASTEXITCODE -ne 0) { throw 'Signed installer smoke failed.' }
+          & "$env:LOCALAPPDATA\DecisionModels\bin\dm-local.cmd" uninstall --all --yes
+          if ($LASTEXITCODE -ne 0) { throw 'Uninstall failed.' }
+          if (Test-Path "$env:LOCALAPPDATA\DecisionModels") { throw 'Uninstall left installer state.' }
+          if (([Environment]::GetEnvironmentVariable('Path', 'User') -split ';') -contains "$env:LOCALAPPDATA\DecisionModels\bin") { throw 'Uninstall left its PATH entry.' }
