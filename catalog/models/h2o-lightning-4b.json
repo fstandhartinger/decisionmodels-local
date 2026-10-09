@@ -265,9 +265,9 @@
         },
         "verified": {
           "status": "verified",
-          "where": "RunPod NVIDIA RTX 4090 24 GB, Ubuntu Linux, 2026-10-09",
+          "where": "RunPod RTX4090 24GB and CoreWeave RTX PRO6000 Blackwell96GB, Linux, 2026-10-09",
           "selftest": "pass; install, Jev-compatible endpoint, SSH tunnel, test and uninstall",
-          "notes": "Installer sample-choice median41.8ms; this is a functional check, not a new benchmark measurement."
+          "notes": "Functional installer checks: sample-choice median41.8ms on RTX4090 and25.148ms on CoreWeave RTX PRO6000, five calls each. These are not new benchmark measurements."
         }
       }
     }

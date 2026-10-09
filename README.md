@@ -24,7 +24,7 @@ dm-local plan <model-slug>
 dm-local install <model-slug>
 ```
 
-The installer uses Python 3.9+ when available. Otherwise it downloads the pinned `uv` runtime and uses Python 3.12. The first install asks whether the software is used by an individual, an eligible small company, or a larger company. Non-interactive installs must pass `--usage individual|small_company|company --accept`. Company installs need an activated commercial licence.
+The installer uses Python 3.9+ when available. Otherwise it downloads the pinned `uv` runtime and uses Python 3.12. The first install asks whether the software is used by an individual, an eligible small company, or a larger company. Individuals and companies with up to 10 employees and up to USD 1M ARR can use the installer free. Companies above either threshold pay USD 1,000 once plus USD 100/month, based on self-declaration. Model licences still apply separately. Non-interactive installs must pass `--usage individual|small_company|company --accept`. Company installs need an activated commercial licence.
 
 The gateway listens on `127.0.0.1:8484` by default. Set `--listen 0.0.0.0` only when you also set `--api-key`; remote clients must send `Authorization: Bearer <key>`. Do not expose an unauthenticated gateway to a network.
 
@@ -36,14 +36,14 @@ Install through SSH using the system OpenSSH client. The command copies the runn
 dm-local remote -p 22 -i ~/.ssh/id_ed25519 user@gpu-host -- install <model-slug> --port 8484
 ```
 
-Choose another local tunnel port with `--forward-port`, for example `--forward-port 18484`. The local endpoint is then `http://127.0.0.1:8484`. Manage that tunnel with:
+Choose another local tunnel port with `--forward-port`, for example `--forward-port 18484`. The local endpoint uses the selected local port: `http://127.0.0.1:18484` with `--forward-port 18484`. Manage that tunnel with:
 
 ```sh
 dm-local tunnel user@gpu-host status
 dm-local tunnel user@gpu-host stop
 ```
 
-This works with AWS, Azure, GCP, RunPod, Lium, CoreWeave, and self-managed SSH nodes when their OS, GPU, drivers, and catalog variant are supported. SSH keys stay with OpenSSH; `dm-local` does not copy them.
+Use this SSH transport with AWS, Azure, GCP, RunPod, Lium, CoreWeave, and self-managed nodes that expose SSH and meet the selected variant’s requirements. See [validation evidence](docs/VALIDATION.md) for the tested providers and platforms. SSH keys stay with OpenSSH; `dm-local` does not copy them.
 
 ## Commands
 
@@ -70,7 +70,7 @@ cosign verify-blob --bundle dm-local.pyz.sigstore.json \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com dm-local.pyz
 ```
 
-No telemetry is sent. The CLI's outbound requests are limited to Hugging Face model downloads, pinned runtime downloads, pinned Docker image pulls, and the commercial licence verification endpoint.
+Decision Models adds no usage telemetry. Setup contacts official model and source repositories, runtime and package registries, and release-signature services; commercial installations also contact the licence verification endpoint. Author runtimes remain subject to their own network behaviour.
 
 ## Troubleshooting
 

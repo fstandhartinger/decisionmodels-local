@@ -1,4 +1,5 @@
 """Strict validation and hardware checks for catalog install recipes."""
+import hashlib
 import re
 from pathlib import PurePosixPath
 
@@ -62,6 +63,54 @@ def recipe_errors(variant):
             errors.append("install.extra_index_urls must contain HTTPS URLs")
     if "index_strategy" in recipe and recipe["index_strategy"] not in ("first-index", "unsafe-first-match", "unsafe-best-match"):
         errors.append("install.index_strategy is not a supported uv pip index strategy")
+
+    support_files = recipe.get("support_files", [])
+    if not isinstance(support_files, list):
+        errors.append("install.support_files must be an array")
+    else:
+        support_names = set()
+        for index, item in enumerate(support_files):
+            label = f"install.support_files[{index}]"
+            if not isinstance(item, dict):
+                errors.append(f"{label} must be an object")
+                continue
+            path = item.get("path")
+            if (not _safe_relative(path) or any(part in ("", ".", "..") for part in path.split("/"))
+                    or "\x00" in path):
+                errors.append(f"{label}.path must be a safe relative path")
+            elif path.casefold() in support_names:
+                errors.append(f"{label}.path is duplicated")
+            else:
+                support_names.add(path.casefold())
+            content, digest = item.get("content"), item.get("sha256")
+            if (not isinstance(content, str) or not isinstance(digest, str)
+                    or not _SHA256.fullmatch(digest)
+                    or hashlib.sha256(content.encode("utf-8")).hexdigest() != digest):
+                errors.append(f"{label} needs UTF-8 content matching its SHA-256")
+
+    venv = recipe.get("venv", {})
+    if not isinstance(venv, dict):
+        errors.append("install.venv must be an object")
+    elif "lockfile" in venv:
+        lock = venv["lockfile"]
+        if not isinstance(lock, dict) or lock.get("manager") != "uv":
+            errors.append("install.venv.lockfile must use manager=uv")
+        else:
+            if runtime not in ("venv", "mlx"):
+                errors.append("install.venv.lockfile requires venv or mlx")
+            path = lock.get("path")
+            if not _safe_relative(path) or PurePosixPath(path).name != "uv.lock":
+                errors.append("install.venv.lockfile.path must name a relative uv.lock")
+            codes = recipe.get("code", [])
+            if (not isinstance(lock.get("code_id"), str) or not lock["code_id"]
+                    or not isinstance(codes, list)
+                    or sum(isinstance(item, dict) and (item.get("id") or item.get("dest")) == lock["code_id"] for item in codes) != 1):
+                errors.append("install.venv.lockfile.code_id must name one author checkout")
+            if recipe.get("packages") or (isinstance(codes, list) and any(isinstance(item, dict) and item.get("pip_install") for item in codes)):
+                errors.append("frozen author projects cannot use package overlays")
+            extras = lock.get("extras", [])
+            if not isinstance(extras, list) or any(not isinstance(extra, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", extra) for extra in extras):
+                errors.append("install.venv.lockfile.extras must contain project extra names")
 
     image = recipe.get("image")
     if runtime in ("docker", "docker-compose"):
