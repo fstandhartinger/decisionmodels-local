@@ -14,7 +14,7 @@ New-Item -ItemType Directory -Force -Path $Temp | Out-Null
 $Bin = Join-Path $env:LOCALAPPDATA 'DecisionModels\bin'
 $Lib = Join-Path $env:LOCALAPPDATA 'DecisionModels\lib'
 New-Item -ItemType Directory -Force -Path $Bin,$Lib | Out-Null
-function Download($Url, $Path) { Invoke-WebRequest -UseBasicParsing -Uri $Url -OutFile $Path }
+function Download($Url, $Path) { $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -UseBasicParsing -Uri $Url -OutFile $Path }
 function Get-PinnedHash($SumFile, $Name) {
   $Line = Get-Content $SumFile | Where-Object { $_ -match ("\s\*?" + [regex]::Escape($Name) + '$') } | Select-Object -First 1
   if (-not $Line) { throw "Missing checksum for $Name." }
@@ -54,7 +54,6 @@ try {
       if ($LASTEXITCODE -eq 0) { $Python = @{ Exe = $Probe; Prefix = $Prefix }; break }
     } catch {}
   }
-  $UseUv = $false
   if (-not $Python) {
     $Arch = if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'aarch64' } else { 'x86_64' }
     $UvFile = "uv-$Arch-pc-windows-msvc.zip"
@@ -71,7 +70,9 @@ try {
     Copy-Item -LiteralPath $UvExe.FullName -Destination (Join-Path $Bin 'uv.exe') -Force
     & (Join-Path $Bin 'uv.exe') python install 3.12
     if ($LASTEXITCODE -ne 0) { throw 'Could not install the pinned Python runtime with uv.' }
-    $UseUv = $true
+    $ManagedPython = & (Join-Path $Bin 'uv.exe') python find 3.12
+    if ($LASTEXITCODE -ne 0 -or -not $ManagedPython) { throw 'Could not locate the installed Python runtime.' }
+    $Python = @{ Exe = ([string]$ManagedPython).Trim(); Prefix = @() }
   }
 
   $PyZ = Join-Path $Temp 'dm-local.pyz'
@@ -80,12 +81,10 @@ try {
   Copy-Item -LiteralPath $PyZ -Destination (Join-Path $Lib 'dm-local.pyz') -Force
   $PyzPath = Join-Path $Lib 'dm-local.pyz'
   $Cmd = Join-Path $Bin 'dm-local.cmd'
-  if ($UseUv) {
-    @('@echo off', '"%LOCALAPPDATA%\DecisionModels\bin\uv.exe" run --no-project --python 3.12 python "%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz" %*') | Set-Content -Encoding ASCII $Cmd
-  } else {
-    $PyCommand = if ($Python.Exe -eq 'py') { 'py -3' } else { $Python.Exe }
-    @('@echo off', "$PyCommand `"%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz`" %*") | Set-Content -Encoding ASCII $Cmd
-  }
+  $PyCommand = if ($Python.Exe -eq 'py') { 'py -3' } else { '"' + $Python.Exe + '"' }
+  # Keep the success/failure exit on this same physical line: uninstall may delete
+  # this batch file while Python runs, so cmd must not reopen it afterwards.
+  @('@echo off', "$PyCommand `"%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz`" %* && exit /b 0 || exit /b 1") | Set-Content -Encoding ASCII $Cmd
   # Make the one-command install usable now and in future user terminals.
   $UserPath = [Environment]::GetEnvironmentVariable('Path', 'User')
   if (($UserPath -split ';') -notcontains $Bin) {

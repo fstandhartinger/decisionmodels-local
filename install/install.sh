@@ -80,9 +80,8 @@ if [ -z "$py" ]; then
   cp "$uv_bin" "$HOME/.decisionmodels/bin/uv"
   chmod 755 "$HOME/.decisionmodels/bin/uv"
   "$HOME/.decisionmodels/bin/uv" python install 3.12
-  uv_mode=1
-else
-  uv_mode=0
+  py=$("$HOME/.decisionmodels/bin/uv" python find 3.12)
+  [ -n "$py" ] || { echo "Could not locate the installed Python runtime." >&2; exit 1; }
 fi
 
 get "$release/dm-local.pyz" "$tmp/dm-local.pyz"
@@ -90,19 +89,11 @@ expected=$(sha_of "$tmp/SHA256SUMS" "dm-local.pyz")
 [ -n "$expected" ] || { echo "dm-local.pyz is missing from SHA256SUMS." >&2; exit 1; }
 sha_check "$expected" "$tmp/dm-local.pyz"
 cp "$tmp/dm-local.pyz" "$HOME/.decisionmodels/bin/dm-local.pyz"
-if [ "$uv_mode" -eq 1 ]; then
-  cat > "$HOME/.local/bin/dm-local" <<'WRAPPER'
-#!/bin/sh
-# installed by dm-local bootstrap
-exec "$HOME/.decisionmodels/bin/uv" run --no-project --python 3.12 python "$HOME/.decisionmodels/bin/dm-local.pyz" "$@"
-WRAPPER
-else
-  cat > "$HOME/.local/bin/dm-local" <<WRAPPER
+cat > "$HOME/.local/bin/dm-local" <<WRAPPER
 #!/bin/sh
 # installed by dm-local bootstrap
 exec "$py" "$HOME/.decisionmodels/bin/dm-local.pyz" "\$@"
 WRAPPER
-fi
 chmod 755 "$HOME/.local/bin/dm-local"
 echo "Installed dm-local in $HOME/.local/bin. Add that directory to PATH if needed."
 echo "Next: dm-local doctor; dm-local list"
