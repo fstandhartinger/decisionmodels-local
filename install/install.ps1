@@ -82,9 +82,9 @@ try {
   $PyzPath = Join-Path $Lib 'dm-local.pyz'
   $Cmd = Join-Path $Bin 'dm-local.cmd'
   $PyCommand = if ($Python.Exe -eq 'py') { 'py -3' } else { '"' + $Python.Exe + '"' }
-  # Keep the success/failure exit on this same physical line: uninstall may delete
-  # this batch file while Python runs, so cmd must not reopen it afterwards.
-  @('@echo off', "$PyCommand `"%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz`" %* && exit /b 0 || exit /b 1") | Set-Content -Encoding ASCII $Cmd
+  # CMD parses a parenthesized block before running it. Uninstall can therefore
+  # delete this file without CMD reopening it to read the exit command.
+  @('@echo off', 'setlocal EnableDelayedExpansion', '(', "$PyCommand `"%LOCALAPPDATA%\DecisionModels\lib\dm-local.pyz`" %*", 'exit /b !errorlevel!', ')') | Set-Content -Encoding ASCII $Cmd
   # Make the one-command install usable now and in future user terminals.
   $UserPath = [Environment]::GetEnvironmentVariable('Path', 'User')
   if (($UserPath -split ';') -notcontains $Bin) {
