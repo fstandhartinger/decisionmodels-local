@@ -185,6 +185,8 @@ html,body { max-width:100%; overflow-x:clip; }
 .licence-card ul { margin:12px 0; }
 .licence-price { margin:10px 0 2px; font-family:"Inter Tight",var(--dm-font-display); font-size:2.5rem; font-weight:600; line-height:1.05; }
 .trust-note { margin:16px 0; padding:12px 14px; border-left:3px solid var(--dm-emerald); background:var(--accent-wash); color:var(--ink) !important; font-size:1rem !important; }
+.mobile-scroll-hint { display:none; }
+.consent-link { white-space:nowrap; }
 
 @media(max-width:767px) {
   html,body { overflow-x:clip; }
@@ -195,7 +197,9 @@ html,body { max-width:100%; overflow-x:clip; }
   .model-grid,.benefit-grid,.panel-grid,.split,.faq,.timeline { grid-template-columns:minmax(0,1fr); }
   .table-wrap { overflow-x:auto; overscroll-behavior-inline:contain; }
   .table-wrap table { min-width:680px; }
-  .tab-list { max-width:100%; scrollbar-width:thin; }
+  .tab-list { max-width:100%; flex-wrap:wrap; overflow:visible; }
+  .tab { padding:8px 10px; }
+  .mobile-scroll-hint { display:block; margin-top:8px; color:var(--muted); font-size:.75rem; }
   .tab-panel { padding:12px 14px 16px; }
   .step-list li { grid-template-columns:26px minmax(0,1fr); }
   .step-list li code { min-width:0; overflow-wrap:anywhere; }

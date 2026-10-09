@@ -37,7 +37,7 @@ export function ContactForm({ models, selectedModel }: { models: Array<{ slug: s
       <label>Where will it run?<select name="location" required defaultValue="office"><option value="office">Office</option><option value="edge">Edge device</option><option value="factory">Factory</option><option value="other">Other</option></select></label>
       <label>Timeline<select name="timeline" required defaultValue="researching"><option value="researching">Researching</option><option value="this-month">This month</option><option value="this-quarter">This quarter</option><option value="later">Later</option></select></label>
       <label className="full-width">Message<textarea name="message" rows={4} maxLength={4000} placeholder="What should the setup handle?" /></label>
-      <label className="checkbox-line full-width"><input name="consent" type="checkbox" value="yes" required />I agree that Decision Models can use these details to respond. See the <a href="https://decisionmodels.io/privacy">privacy notice</a>.</label>
+      <label className="checkbox-line full-width"><input name="consent" type="checkbox" value="yes" required /><span>I agree that Decision Models can use these details to respond. See the <a className="consent-link" href="https://decisionmodels.io/privacy">privacy notice</a>.</span></label>
       <div className="trap" aria-hidden="true"><label>Leave this field empty<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
       <button className="button button-primary" type="submit" disabled={busy}>{busy ? "Sending…" : "Request a hardware quote"}</button>
       {message && <p className="form-status" role="status">{message}</p>}

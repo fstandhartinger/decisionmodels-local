@@ -43,10 +43,10 @@ export function suggestedDeviceFor(model: Model, prices = loadHardwarePrices()) 
 
 export function classRunsToday(models: Model[], devices: Device[], definition: DeviceClass): string {
   const members = devices.filter((device) => definition.device_ids.includes(device.id));
-  const names = models.filter((model) => {
-    if (!model.lists?.some((list) => list === "jevbench-top10" || list === "imagejevbench-top10")) return false;
-    if (!["supported", "supported_noncommercial_only"].includes(model.installer_policy?.status ?? "")) return false;
-    return (model.variants ?? []).some((variant) => {
+  const tested = models.flatMap((model) => {
+    if (!model.lists?.some((list) => list === "jevbench-top10" || list === "imagejevbench-top10")) return [];
+    if (!["supported", "supported_noncommercial_only"].includes(model.installer_policy?.status ?? "")) return [];
+    return (model.variants ?? []).filter((variant) => {
       if (!hasExecutableInstallRecipe(variant) || variant.install?.verified?.status !== "verified") return false;
       if (!(variant.platforms ?? []).some((platform) => definition.platforms.includes(platform))) return false;
       const needed = definition.id === "apple-silicon" ? variant.min_ram_gb : variant.recommended_vram_gb;
@@ -56,11 +56,11 @@ export function classRunsToday(models: Model[], devices: Device[], definition: D
         if ((model.params?.total_b ?? Infinity) > 4 || !/q\d|quant|int[48]|fp8|nvfp4/.test(precision)) return false;
       }
       return members.some((device) => typeof device.memory_gb === "number" && Number.isFinite(device.memory_gb) && device.memory_gb >= needed);
-    });
-  }).map((model) => model.name);
-  if (names.length) {
-    const shown = names.slice(0, 5).join(", ");
-    return `Install tested: ${shown}${names.length > 5 ? `, plus ${names.length - 5} more` : ""}.`;
+    }).map((variant) => ({ model: model.name, hardware: typeof variant.install?.verified?.where === "string" ? variant.install.verified.where.trim() : "" })).filter((item) => item.hardware);
+  });
+  if (tested.length) {
+    const shown = tested.slice(0, 4).map((item) => `${item.model} on ${item.hardware}`).join("; ");
+    return `Install tested: recorded checks on ${shown}${tested.length > 4 ? `; plus ${tested.length - 4} more` : ""}. Listed devices are fit estimates; the hardware names above identify the recorded test systems.`;
   }
   const recipes = models.filter((model) => (model.variants ?? []).some((variant) =>
     hasExecutableInstallRecipe(variant) && variant.install?.verified?.status !== "verified"
@@ -71,7 +71,7 @@ export function classRunsToday(models: Model[], devices: Device[], definition: D
       })
   )).map((model) => model.name);
   const estimate = recipes.length ? ` Recipe available but unverified for ${recipes.slice(0, 4).join(", ")}${recipes.length > 4 ? `, plus ${recipes.length - 4} more` : ""}.` : "";
-  return `Install tested: none for this platform and memory tier.${estimate}`;
+  return `Install tested: none on listed devices; no recorded recipe test matches this platform and memory tier.${estimate} Listed devices are fit estimates.`;
 }
 
 export function cloudRequirement(model: Model): number | null {
@@ -136,6 +136,6 @@ export function dateText(value: unknown) {
 }
 
 export function sourcePublisher(value?: string) {
-  try { return new URL(sourceUrl(value) ?? "").hostname.replace(/^www\./, "") || "Source not listed"; }
-  catch { return "Source not listed"; }
+  try { return new URL(sourceUrl(value) ?? "").hostname.replace(/^www\./, "") || "Source URL not supplied"; }
+  catch { return "Source URL not supplied"; }
 }

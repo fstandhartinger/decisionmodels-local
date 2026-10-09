@@ -5,7 +5,7 @@ import { loadCatalog } from "@/lib/catalog";
 import { classRunsToday, cloudRequirement, dateText, hourlyMoney, loadDeviceClasses, loadHardwarePrices, money, publicCloudGpuName, publicCloudInstanceName, publicCloudProviderName, quoteSummary, sourcePublisher, sourceUrl, suggestedDeviceFor, cheapestCloudOptionFor } from "@/lib/hardware-data";
 import { deviceDisplayName, type Device, type DeviceClass } from "@/lib/hardware-core.mjs";
 
-export const metadata: Metadata = { alternates: { canonical: "/hardware" } };
+export const metadata: Metadata = { title: "Pre-installed hardware", description: "Compare sourced hardware configurations and see which local model recipes may fit.", alternates: { canonical: "/hardware" } };
 
 type HardwareProps = { searchParams: Promise<{ model?: string }> };
 
@@ -27,7 +27,7 @@ function HardwareQuoteCard({ device, definition, selected }: { device: Device; d
     {quotes.map((item) => <div className="quote-card" key={item.currency}>
       <p className="price">{money(item.quote, item.currency)}<span> indicative</span></p>
       <p>Median sourced street price: {money(item.street, item.currency)} before the quote margin.</p>
-      <details className="price-source-disclosure"><summary>Price sources ({item.sources.length})</summary><ul className="price-source-list">{item.sources.map((source, index) => <li key={`${source.source}-${index}`}>{sourceUrl(source.source) ? <a href={sourceUrl(source.source)}>{sourcePublisher(source.source)} · {dateText(source.date)}</a> : <span>Source not supplied · {dateText(source.date)}</span>}</li>)}</ul></details>
+      <details className="price-source-disclosure"><summary>Price sources ({item.sources.length})</summary><ul className="price-source-list">{item.sources.map((source, index) => <li key={`${source.source}-${index}`}>{sourceUrl(source.source) ? <a href={sourceUrl(source.source)}>{sourcePublisher(source.source)} · {dateText(source.date)}</a> : <span>Source URL not supplied · {dateText(source.date)}</span>}</li>)}</ul></details>
     </div>)}
     {!quotes.length && <p className="callout muted">No sourced price is available for this configuration. Ask us to confirm availability and pricing.</p>}
     {selected && <span className="badge signal">Suggested for your model</span>}
@@ -70,18 +70,20 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
       <details className="disclosure"><summary>How we price this</summary><p>For each currency, we take the median of the sourced street prices, add 30% or at least 150 units, then round upward to an amount ending in 9. For GPU workstations, the street price includes the GPU card plus a USD 1,500 / EUR 1,400 base system: CPU, 64–128 GB RAM, 2 TB NVMe, PSU, and case. The final quote is confirmed by email.</p></details>
     </section>
 
-    <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Model fit</p><h2>Which hardware for which model</h2></div><p>Suggestions use an executable model recipe and recorded memory requirements. Each row identifies whether the install recipe has been tested or remains unverified.</p></div>
+    <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Model fit</p><h2>Which hardware for which model</h2></div><p>Suggestions use an executable recipe and recorded memory requirements. A tested recipe may have been tested on different hardware; each listed device is a fit estimate.</p></div>
       {!suggestions.length ? <div className="callout muted"><strong>No model currently has a complete hardware recommendation.</strong><p>Suggestions appear when an executable recipe has a matching platform, memory target, and sourced device price.</p></div> : <div className="table-wrap"><table><thead><tr><th>Model</th><th>Smallest fitting option</th><th>Indicative price</th><th>Install check</th><th>Details</th></tr></thead><tbody>{suggestions.map(({ model, suggestion }) => {
         const price = suggestion.price_usd ? money(suggestion.price_usd, "USD") : suggestion.price_eur ? money(suggestion.price_eur, "EUR") : "Price on request";
-        return <tr key={model.slug}><td>{model.name}</td><td>{suggestion.name}<div className="source-note">{suggestion.memory_gb} GB {suggestion.memory_kind ?? "memory"}</div></td><td>{price}</td><td>{suggestion.install_status === "tested" ? "Install tested" : "Recipe ready · unverified"}</td><td><Link href={`/models/${model.slug}/local`}>Model requirements →</Link></td></tr>;
+        return <tr key={model.slug}><td>{model.name}</td><td>{suggestion.name}<div className="source-note">{suggestion.memory_gb} GB {suggestion.memory_kind ?? "memory"}</div></td><td>{price}</td><td>{suggestion.install_status === "tested" ? "Recipe tested on other hardware; this device is a fit estimate" : "Recipe ready · unverified; this device is a fit estimate"}</td><td><Link href={`/models/${model.slug}/local`}>Model requirements →</Link></td></tr>;
       })}</tbody></table></div>}
+      <p className="mobile-scroll-hint">Swipe horizontally to see all model details.</p>
     </section>
 
     <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Cloud and remote GPUs</p><h2>Use a GPU you already rent</h2></div><p>For each model, this lists the least expensive sourced instance with enough recorded GPU memory. Prices change; check before renting.</p></div>
       {!cloudModels.length ? <p className="fine-print">No supported NVIDIA variants with a recorded memory requirement are available.</p> : <div className="table-wrap"><table><thead><tr><th>Model</th><th>Recommended VRAM</th><th>Cheapest matching instance</th><th>Price</th><th>Source and date</th></tr></thead><tbody>{cloudModels.map(({ model, requirement, offer }) => <tr key={model.slug}>
         <td><Link href={`/models/${model.slug}/local`}>{model.name}</Link></td><td>{requirement} GB</td>
-        {offer ? <><td>{publicCloudProviderName(offer.provider)} · {publicCloudInstanceName(offer.instance)}<div className="source-note">{publicCloudGpuName(offer.gpu)} · {offer.vram_gb} GB</div></td><td>{hourlyMoney(offer.usd_per_hour)}/h</td><td><a href={offer.source ?? "#"}>Price source · {dateText(offer.date)}</a>{offer.region ? ` · ${offer.region}` : ""}</td></> : <><td colSpan={3}>No matching sourced instance today.</td></>}
+        {offer ? <><td>{publicCloudProviderName(offer.provider)} · {publicCloudInstanceName(offer.instance)}<div className="source-note">{publicCloudGpuName(offer.gpu)} · {offer.vram_gb} GB</div></td><td>{hourlyMoney(offer.usd_per_hour)}/h</td><td>{sourceUrl(offer.source) ? <a href={sourceUrl(offer.source)}>Price source · {dateText(offer.date)}</a> : <span>Source URL not supplied · {dateText(offer.date)}</span>}{offer.region ? ` · ${offer.region}` : ""}</td></> : <><td colSpan={3}>No matching sourced instance today.</td></>}
       </tr>)}</tbody></table></div>}
+      <p className="mobile-scroll-hint">Swipe horizontally to see all cloud price and source details.</p>
       <p className="source-note">Availability, region, storage, and egress can change the total cost. Check the provider’s current listing before renting.</p>
     </section>
 

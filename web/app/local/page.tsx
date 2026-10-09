@@ -84,7 +84,7 @@ export default function LocalOverviewPage() {
     <section className="section-wrap hero">
       <div className="hero-grid">
         <div><p className="eyebrow">Decision Models · Run locally</p><h1>Decision models, close to your data.</h1><p className="lede">Choose an open-weight model, check the hardware it needs, and serve it through a Jev-compatible endpoint on a machine you control.</p><div className="hero-actions"><Link className="button button-primary" href="#models">Explore local models</Link><Link className="button button-secondary" href="/hardware">Plan a hardware setup</Link></div></div>
-        <aside className="hero-note"><strong>Install dm-local</strong><span>Linux and macOS:</span><div className="command-line"><code>curl -fsSL https://decisionmodels.io/local/install.sh | sh</code><CopyCommand value="curl -fsSL https://decisionmodels.io/local/install.sh | sh" /></div><span>Windows PowerShell: <code>irm https://decisionmodels.io/local/install.ps1 | iex</code></span><p className="fine-print">Then check a model with <code>dm-local plan &lt;model&gt;</code>.</p></aside>
+        <aside className="hero-note"><strong>Install dm-local</strong><span>Linux and macOS:</span><div className="command-line"><code>curl -fsSL https://decisionmodels.io/local/install.sh | sh</code><CopyCommand value="curl -fsSL https://decisionmodels.io/local/install.sh | sh" /></div><span>Windows PowerShell:</span><div className="command-line"><code>irm https://decisionmodels.io/local/install.ps1 | iex</code><CopyCommand value="irm https://decisionmodels.io/local/install.ps1 | iex" /></div><p className="fine-print">Then check a model with <code>dm-local plan &lt;model&gt;</code>.</p></aside>
       </div>
     </section>
 
