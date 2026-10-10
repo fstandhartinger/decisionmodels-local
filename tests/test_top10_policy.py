@@ -16,6 +16,9 @@ UNION = {"quyet-1-0-large", "jeff-1-0-large", "decisio-gemma-4-31b-v080", "deck3
          "bobcat-flash-1.2", "surogate-rune-26b-a4b-v3", "decider-12b", "xor-26b-a4b", "torchcast-decision-12b",
          "winnow-12b", "cygnet"}
 
+# Union members that are on_request until a full end-to-end test has passed (xor needs a Docker host).
+UNTESTED = {"xor-26b-a4b"}
+
 
 class Top10PolicyTests(unittest.TestCase):
     def test_catalog_supports_exactly_the_union(self):
@@ -26,7 +29,8 @@ class Top10PolicyTests(unittest.TestCase):
                 continue
             status = entry["installer_policy"]["status"]
             (supported.add(entry["slug"]) if status in ("supported", "supported_noncommercial_only") else other.__setitem__(entry["slug"], status))
-        self.assertEqual(supported, UNION)
+        self.assertEqual(supported, UNION - UNTESTED)
+        self.assertEqual({k for k, v in other.items() if k in UNION}, UNTESTED)
         self.assertTrue(other)
         self.assertEqual(set(other.values()), {"on_request"})
 

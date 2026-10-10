@@ -56,10 +56,11 @@
   "display_note": "The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs."
  },
  "installer_policy": {
-  "status": "supported",
-  "reason": "Open licence (apache-2.0). The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs.",
-  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
-  "worker_proposal": "excluded"
+  "status": "on_request",
+  "reason": "In the union of the open JevBench board's top 10 by Capability Score (#10) but not yet tested end to end: the author's recipe needs Docker with the NVIDIA container runtime and a >=64 GB GPU, and the rented pod types available to this job (RunPod/Lium containers) cannot run Docker. Local install is available on request until a Docker-capable GPU host has run the full install, self-test and uninstall.",
+  "decided_by": "installer-top10 worker (conservative reading of Florian's DECISIONS 2026-10-10 18:45Z, board #17057: support only models tested end to end); lead may flip to supported after a Docker host test",
+  "previous_status": "supported",
+  "previous_reason": "Open licence (apache-2.0). The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs."
  },
  "readout": {
   "type": "author_server",
