@@ -30,17 +30,19 @@ describe("hardware prices", () => {
       { value: 1200, currency: "USD", source: "b", date: "2026-10-09" },
       { value: 900, currency: "EUR", source: "c", date: "2026-10-09" }
     ] })).toEqual({ USD: 1100, EUR: 900 });
-    expect(marginQuote(1000)).toBe(1309);
+    expect(marginQuote(1000)).toBe(2009);
+    expect(marginQuote(3099)).toBe(5439);
+    expect(marginQuote(19499.99)).toBe(29109);
     expect(marginQuote(100)).toBe(259);
     expect(marginQuote(0)).toBeNull();
-    expect(deviceQuotes({ id: "x", name: "X", class: "gpu-workstation", memory_gb: 24, prices: [{ value: 1000, currency: "USD", source: "a", date: "2026-10-09" }] })).toEqual({ USD: 1309 });
+    expect(deviceQuotes({ id: "x", name: "X", class: "gpu-workstation", memory_gb: 24, prices: [{ value: 1000, currency: "USD", source: "a", date: "2026-10-09" }] })).toEqual({ USD: 2009 });
   });
 
   it("adds the complete base system before applying the existing quote margin", () => {
     const card = { id: "5090", name: "RTX 5090", class: "gpu-workstation", memory_gb: 32, memory_kind: "vram", prices: [{ value: 2000, currency: "USD", source: "a", date: "2026-10-09" }] };
     const definition = { id: "gpu-workstation", title: "GPU workstation", platforms: ["linux-nvidia"], device_ids: ["5090"], auto_suggest: true, base_system_by_currency: { USD: 1500, EUR: 1400 } };
     expect(deviceStreetPrices(card, definition)).toEqual({ USD: 3500 });
-    expect(deviceQuotes(card, definition)).toEqual({ USD: 4559 });
+    expect(deviceQuotes(card, definition)).toEqual({ USD: 6149 });
   });
 
   it("picks a device that fits the recommended memory and image needs", () => {
@@ -88,7 +90,7 @@ describe("hardware prices", () => {
       { id: "gpu-workstation", title: "GPU workstation", platforms: ["linux-nvidia"], device_ids: ["gpu"], auto_suggest: true, base_system_by_currency: { USD: 1500 } },
       { id: "gb10", title: "GB10", platforms: ["linux-arm64"], device_ids: ["spark"], auto_suggest: false }
     ];
-    expect(suggestDevice(model, devices, classes)).toMatchObject({ id: "gpu", price_usd: 3259 });
+    expect(suggestDevice(model, devices, classes)).toMatchObject({ id: "gpu", price_usd: 5009 });
     expect(deviceFits(model, devices[0], model.variants[0], classes)).toBe(true);
     expect(deviceFits(model, devices[1], model.variants[0], classes)).toBe(false);
     expect(suggestDevice(model, devices, [{ ...classes[0], device_ids: ["other-gpu"] }, classes[1]])).toBeNull();

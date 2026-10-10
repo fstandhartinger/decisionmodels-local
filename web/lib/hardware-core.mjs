@@ -8,7 +8,10 @@ export function median(values) {
 export function marginQuote(streetPrice) {
   const street = Number(streetPrice);
   if (!Number.isFinite(street) || street <= 0) return null;
-  const target = Math.max(street * 1.3, street + 150);
+  // Pricing policy (Florian, 10 Oct 2026, card 17008): banded gross margin after ~3 % payment fees:
+  // street <= 2,500: x2.0 (~47 %); <= 6,000: ~40 %; above: ~30 %. Floor of street + 150 kept.
+  const factor = street <= 2500 ? 2.0 : street <= 6000 ? 1 / (1 - 0.40 - 0.03) : 1 / (1 - 0.30 - 0.03);
+  const target = Math.max(street * factor, street + 150);
   return Math.ceil((target + 1) / 10) * 10 - 1;
 }
 

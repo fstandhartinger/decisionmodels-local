@@ -58,7 +58,7 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
     {selectedModel && <section className="section-wrap"><div className="callout"><strong>Selected model: {selectedModel.name}</strong><p>{selectedSuggestion?.name ?? "No listed configuration currently meets its recorded requirements."} Compatibility depends on the model variant and the target configuration.</p><Link href={`/models/${selectedModel.slug}/local`}>View model requirements →</Link></div></section>}
 
     <section className="section-wrap section">
-      <div className="section-heading"><div><p className="section-kicker">Device classes</p><h2>Compare sourced hardware</h2></div><p>Prices use the median sourced street price in each currency. Indicative quotes add 30%, or at least 150 currency units, and round up to the next amount ending in 9. Shipping and VAT are excluded.</p></div>
+      <div className="section-heading"><div><p className="section-kicker">Device classes</p><h2>Compare sourced hardware</h2></div><p>Prices use the median sourced street price in each currency. Indicative quotes include pre-installation, burn-in testing, support and our margin, rounded up to an amount ending in 9. Shipping and VAT are excluded.</p></div>
       {definitions.map((definition) => {
         const members = devices.filter((device) => definition.device_ids.includes(device.id));
         return <div className="section hardware-class" key={definition.id}>
@@ -67,7 +67,7 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
           {members.length ? <div className="model-grid">{members.map((device) => <HardwareQuoteCard key={device.id} device={device} definition={definition} selected={selectedSuggestion?.id === device.id} />)}</div> : <p className="fine-print">No sourced device entry is available for this class yet.</p>}
         </div>;
       })}
-      <details className="disclosure"><summary>How we price this</summary><p>For each currency, we take the median of the sourced street prices, add 30% or at least 150 units, then round upward to an amount ending in 9. For GPU workstations, the street price includes the GPU card plus a USD 1,500 / EUR 1,400 base system: CPU, 64–128 GB RAM, 2 TB NVMe, PSU, and case. The final quote is confirmed by email.</p></details>
+      <details className="disclosure"><summary>How we price this</summary><p>For each currency, we take the median of the sourced street prices, add pre-installation, burn-in testing, support and our margin, then round upward to an amount ending in 9. For GPU workstations, the street price includes the GPU card plus a USD 1,500 / EUR 1,400 base system: CPU, 64–128 GB RAM, 2 TB NVMe, PSU, and case. The final quote is confirmed by email.</p></details>
     </section>
 
     <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Model fit</p><h2>Which hardware for which model</h2></div><p>Suggestions use an executable recipe and recorded memory requirements. A tested recipe may have been tested on different hardware; each listed device is a fit estimate.</p></div>

@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-10-09T19:37:54.239Z",
+  "generated_utc": "2026-10-10T18:33:16.052Z",
   "suggestions": {
     "autojev-27b": {
       "id": "rtx-pro-6000-blackwell-96",
@@ -12,7 +12,7 @@
       "platforms": [
         "linux-nvidia"
       ],
-      "price_usd": 25359,
+      "price_usd": 29109,
       "price_eur": null,
       "street_prices": {
         "USD": 19499.99
@@ -38,7 +38,7 @@
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 25359,
+      "price_usd": 29109,
       "price_eur": null,
       "street_prices": {
         "USD": 19499.99
@@ -63,8 +63,8 @@
       "platforms": [
         "macos-arm64"
       ],
-      "price_usd": 2469,
-      "price_eur": 2889,
+      "price_usd": 3799,
+      "price_eur": 4439,
       "street_prices": {
         "USD": 1899,
         "EUR": 2219
@@ -96,7 +96,7 @@
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 25359,
+      "price_usd": 29109,
       "price_eur": null,
       "street_prices": {
         "USD": 19499.99
@@ -122,7 +122,7 @@
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 25359,
+      "price_usd": 29109,
       "price_eur": null,
       "street_prices": {
         "USD": 19499.99
@@ -148,7 +148,7 @@
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 12799,
+      "price_usd": 14689,
       "price_eur": null,
       "street_prices": {
         "USD": 9841
@@ -173,8 +173,8 @@
       "platforms": [
         "macos-arm64"
       ],
-      "price_usd": 1169,
-      "price_eur": 1369,
+      "price_usd": 1799,
+      "price_eur": 2099,
       "street_prices": {
         "USD": 899,
         "EUR": 1049
@@ -205,7 +205,7 @@
       "platforms": [
         "linux-nvidia"
       ],
-      "price_usd": 25359,
+      "price_usd": 29109,
       "price_eur": null,
       "street_prices": {
         "USD": 19499.99
@@ -230,8 +230,8 @@
       "platforms": [
         "macos-arm64"
       ],
-      "price_usd": 7149,
-      "price_eur": 8579,
+      "price_usd": 9649,
+      "price_eur": 9859,
       "street_prices": {
         "USD": 5499,
         "EUR": 6599
@@ -262,7 +262,7 @@
       "platforms": [
         "linux-nvidia"
       ],
-      "price_usd": 12799,
+      "price_usd": 14689,
       "price_eur": null,
       "street_prices": {
         "USD": 9841
@@ -287,8 +287,8 @@
       "platforms": [
         "macos-arm64"
       ],
-      "price_usd": 2209,
-      "price_eur": 2599,
+      "price_usd": 3399,
+      "price_eur": 3999,
       "street_prices": {
         "USD": 1699,
         "EUR": 1999
@@ -319,8 +319,8 @@
       "platforms": [
         "macos-arm64"
       ],
-      "price_usd": 7149,
-      "price_eur": 8579,
+      "price_usd": 9649,
+      "price_eur": 9859,
       "street_prices": {
         "USD": 5499,
         "EUR": 6599
@@ -351,8 +351,8 @@
       "platforms": [
         "macos-arm64"
       ],
-      "price_usd": 2469,
-      "price_eur": 2889,
+      "price_usd": 3799,
+      "price_eur": 4439,
       "street_prices": {
         "USD": 1899,
         "EUR": 2219
@@ -384,7 +384,7 @@
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 25359,
+      "price_usd": 29109,
       "price_eur": null,
       "street_prices": {
         "USD": 19499.99
@@ -409,7 +409,7 @@
       "platforms": [
         "linux-nvidia"
       ],
-      "price_usd": 25359,
+      "price_usd": 29109,
       "price_eur": null,
       "street_prices": {
         "USD": 19499.99
@@ -434,7 +434,7 @@
       "platforms": [
         "linux-nvidia"
       ],
-      "price_usd": 25359,
+      "price_usd": 29109,
       "price_eur": null,
       "street_prices": {
         "USD": 19499.99
@@ -460,7 +460,7 @@
         "linux-nvidia",
         "wsl2-nvidia"
       ],
-      "price_usd": 25359,
+      "price_usd": 29109,
       "price_eur": null,
       "street_prices": {
         "USD": 19499.99
@@ -486,7 +486,7 @@
       "platforms": [
         "linux-nvidia"
       ],
-      "price_usd": 25359,
+      "price_usd": 29109,
       "price_eur": null,
       "street_prices": {
         "USD": 19499.99
