@@ -54,7 +54,7 @@ export function factNote(badge: string, note?: string | null): string | undefine
     const rest = text.slice(word.length + 1).trim();
     return rest.charAt(0).toUpperCase() + rest.slice(1);
   }
-  if (word === "no" && text.startsWith("No ")) return `There is no ${text.slice(3)}`;
+  if ((word === "no" || word === "not yet") && text.startsWith("No ")) return `There is no ${text.slice(3)}`;
   return text;
 }
 
