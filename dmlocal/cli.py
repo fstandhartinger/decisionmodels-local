@@ -325,6 +325,7 @@ def _list(args):
     else:
         for row in output:
             selected = f"; recommended {row['selected']}" if row["selected"] else "; no listed variant fits"
+            if row["installer_policy"] == "on_request": selected = "; local install on request (not in the one-command installer)"
             print(f"{row['slug']}: {row['name']}{selected}")
 
 

@@ -64,10 +64,11 @@
   "display_note": "The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs."
  },
  "installer_policy": {
-  "status": "supported_noncommercial_only",
-  "reason": "The model licence (cc-by-nc-4.0) allows non-commercial use only. The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs.",
-  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
-  "worker_proposal": "excluded"
+  "status": "on_request",
+  "reason": "Not in the union of the open JevBench board's top 10 by Capability Score and top 10 by Composite Score (board v1.7.43, 2026-10-10), so the one-command installer does not support it. Local install is available on request.",
+  "decided_by": "Florian, DECISIONS 2026-10-10 18:45Z (board #17057)",
+  "previous_status": "supported_noncommercial_only",
+  "previous_reason": "The model licence (cc-by-nc-4.0) allows non-commercial use only. The author has not published where the training data came from. We found no statement or evidence that it was distilled from Jev outputs."
  },
  "readout": {
   "type": "author_server",

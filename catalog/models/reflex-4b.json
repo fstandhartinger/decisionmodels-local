@@ -77,10 +77,11 @@
   "url": "https://raw.githubusercontent.com/kshetrajna12/reflex/231f896d818a62b94fec305ed553df1088486dcb/README.md"
  },
  "installer_policy": {
-  "status": "supported",
-  "reason": "The shipped configuration is an untrained base model. Trained adapters and distillation experiments exist in the repo but are not served.",
-  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
-  "worker_proposal": "supported"
+  "status": "on_request",
+  "reason": "Not in the union of the open JevBench board's top 10 by Capability Score and top 10 by Composite Score (board v1.7.43, 2026-10-10), so the one-command installer does not support it. Local install is available on request.",
+  "decided_by": "Florian, DECISIONS 2026-10-10 18:45Z (board #17057)",
+  "previous_status": "supported",
+  "previous_reason": "The shipped configuration is an untrained base model. Trained adapters and distillation experiments exist in the repo but are not served."
  },
  "readout": {
   "type": "author_server",

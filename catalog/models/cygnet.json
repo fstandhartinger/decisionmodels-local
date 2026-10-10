@@ -1,0 +1,249 @@
+{
+ "schema": "decisionmodels-local-catalog/1",
+ "slug": "cygnet",
+ "name": "Cygnet",
+ "author": "blockbrain",
+ "lists": [
+  "jevbench-top10"
+ ],
+ "benchmarks": {
+  "jevbench": {
+   "version": "v1.7.43 board (2026-10-10)",
+   "key": "cygnet",
+   "capability_rank": 15,
+   "capability": 70.9,
+   "composite_rank": 10,
+   "composite": 68.6,
+   "page": "https://benchmarkheaven.com/jev-models/cygnet"
+  }
+ },
+ "modalities": [
+  "text"
+ ],
+ "question_types": {
+  "choice": "native",
+  "noul": "native",
+  "score": "native"
+ },
+ "weights": {
+  "repo": "google/gemma-4-12B-it",
+  "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "url": "https://huggingface.co/google/gemma-4-12B-it/tree/707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "gated": false
+ },
+ "code": {
+  "repo": "https://github.com/blockbrain-ai/cygnet-recipe",
+  "revision": "10b4099a61e7dca6a82032b54c74dc0a8c496d4b"
+ },
+ "base_model": {
+  "repo": "google/gemma-4-12B-it",
+  "licence": "apache-2.0",
+  "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "revision_note": "Cygnet serves the stock, frozen Gemma-4-12B-it weights at this revision (README: no fine-tuning)."
+ },
+ "params": {
+  "total_b": 12.0,
+  "active_b": 12.0
+ },
+ "licence": {
+  "spdx": "apache-2.0",
+  "commercial_use": "yes",
+  "redistribution": "yes",
+  "notes": "The served weights are Google's unmodified Gemma-4-12B-it (Apache-2.0, Gemma Prohibited Use Policy applies). The Cygnet readout shim is MIT.",
+  "evidence": [
+   "https://huggingface.co/google/gemma-4-12B-it/raw/707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7/README.md",
+   "https://raw.githubusercontent.com/blockbrain-ai/cygnet-recipe/10b4099a61e7dca6a82032b54c74dc0a8c496d4b/LICENSE"
+  ]
+ },
+ "jev_distillation": {
+  "status": "none_found",
+  "evidence": "No training: Cygnet uses stock, frozen Gemma-4-12B-it with a letter-probability readout and one calibration temperature (README).",
+  "url": "https://github.com/blockbrain-ai/cygnet-recipe/blob/10b4099a61e7dca6a82032b54c74dc0a8c496d4b/README.md"
+ },
+ "installer_policy": {
+  "status": "supported",
+  "reason": "Open licence (apache-2.0 weights, MIT shim); in the union of the open JevBench board's top 10 by Composite Score.",
+  "decided_by": "Florian, DECISIONS 2026-10-10 18:45Z (board #17057)"
+ },
+ "readout": {
+  "type": "author_shim",
+  "endpoint": "jev",
+  "backend_agnostic": false,
+  "notes": "Author decision_server.py (stdlib only) calls vLLM POST /v1/chat/completions with logprobs/top_logprobs=20 and reads the option-letter probabilities at the first answer token, then applies one calibration temperature (SHIM_TEMPERATURE=3.4).",
+  "portable_notes": "Not verified on llama.cpp or MLX; the pinned shim targets vLLM chat-completions logprobs."
+ },
+ "variants": [
+  {
+   "id": "bf16-vllm-shim",
+   "precision": "bf16",
+   "benchmarked": true,
+   "runtime": "vllm",
+   "runtime_version": "0.30.0 (unmodified, image pinned)",
+   "image": "vllm/vllm-openai@sha256:8a69ffad015f138d7170c4ddc429e230a3bc1c1719f67e14324749df200a4b90",
+   "platforms": [
+    "linux-nvidia",
+    "wsl2-nvidia"
+   ],
+   "gpu_arch_min": "sm_80",
+   "min_vram_gb": 40,
+   "recommended_vram_gb": 48,
+   "min_ram_gb": 32,
+   "disk_gb": 23.95,
+   "files": [
+    {
+     "path": "model.safetensors",
+     "size": 23919549408,
+     "sha256": "5a84cb313260ac447237b890387116dfa8682e49a6b44bc585ae8353abbff18d",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "config.json",
+     "size": 4423,
+     "sha256": "478c46e8d2c52d5c2d85bf67e3b3e8c90e7c9d91086cee27e3c267907e936bd9",
+     "git_blob_sha1": "324c841b79e36f42e27f08c572c327533469c859"
+    },
+    {
+     "path": "generation_config.json",
+     "size": 260,
+     "sha256": "a8349d9bd64cc5841297fcb5002f0fdc4749c473c8f1b10ea337f9ce4ee7014e",
+     "git_blob_sha1": "d09dccf1b9aee197ef72a6e88a1ceff74b842ff3"
+    },
+    {
+     "path": "processor_config.json",
+     "size": 1382,
+     "sha256": "6b938e76555b3e9946890770e1abcd442a4718f34041a58e8139dc8ad34545c9",
+     "git_blob_sha1": "b889adcd78015bf5a0139438c5fb0b7067529a61"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 32169626,
+     "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 3089,
+     "sha256": "a62f4e85a47c0c136edaaa3a4f591fd6783717299a9def47e5ad03a49f6a5eb9",
+     "git_blob_sha1": "6520cdc25462a5eba96fdac6d8cf3caa461feb35"
+    },
+    {
+     "path": "chat_template.jinja",
+     "size": 18683,
+     "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+     "git_blob_sha1": "4741bf6e4132ba23a5537f9d6e74e9a6d613d7cd"
+    }
+   ],
+   "serve": {
+    "port": 8010,
+    "steps": [
+     "Use vLLM 0.30.0 (pinned image or vllm==0.30.0+cu129 wheel).",
+     "vllm serve <snapshot of google/gemma-4-12B-it @ 707f0a3b> --served-model-name cygnet --host 127.0.0.1 --port 8890 --max-model-len 16384 --gpu-memory-utilization 0.90",
+     "SHIM_VLLM=http://127.0.0.1:8890/v1/chat/completions SHIM_MODEL=cygnet SHIM_TEMPERATURE=3.4 CYGNET_PORT=8010 python3 shim/decision_server.py (cygnet-recipe @ 10b4099)."
+    ]
+   },
+   "measured": {
+    "gpu": "RTX A6000 48GB / L40S 48GB (author README)",
+    "p50_ms": 66,
+    "source": "cygnet-recipe README (public set, standard tier, serial)"
+   },
+   "expected_speed": "About 0.05-0.07 s per decision on a 48 GB card (author-measured, serial). Not measured elsewhere.",
+   "notes": "Stock Gemma-4-12B-it weights (bf16, 23.9 GB) served by vLLM; the author's decision_server.py is the only extra code. Same VRAM class as the torchcast-decision-12b entry (same base). Not individually exercised before 2026-10-10; see verified.where for the test.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "vllm==0.30.0+cu129",
+     "torchcodec==0.16.0+cu129"
+    ],
+    "processes": [
+     {
+      "name": "engine",
+      "command": [
+       "{python}",
+       "-m",
+       "vllm.entrypoints.cli.main",
+       "serve",
+       "{weights}",
+       "--served-model-name",
+       "cygnet",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:engine}",
+       "--max-model-len",
+       "16384",
+       "--gpu-memory-utilization",
+       "0.90"
+      ],
+      "env": {
+       "VLLM_NO_USAGE_STATS": "1",
+       "VLLM_USE_FLASHINFER_SAMPLER": "0"
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:engine}/health",
+       "timeout_s": 1200
+      }
+     },
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{code:code/author}/shim/decision_server.py"
+      ],
+      "env": {
+       "SHIM_VLLM": "http://127.0.0.1:{port:engine}/v1/chat/completions",
+       "SHIM_MODEL": "cygnet",
+       "SHIM_TEMPERATURE": "3.4",
+       "CYGNET_PORT": "{port:api}",
+       "CYGNET_HOST": "127.0.0.1"
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/v1/models",
+       "timeout_s": 120
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "cygnet",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia",
+      "wsl2-nvidia"
+     ],
+     "cuda_min": "12.9",
+     "gpu_arch_min": "sm_80"
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe written 2026-10-10, test pending",
+     "selftest": "not run"
+    },
+    "extra_index_urls": [
+     "https://wheels.vllm.ai/0.30.0/cu129",
+     "https://download.pytorch.org/whl/cu129"
+    ],
+    "index_strategy": "unsafe-best-match",
+    "code": [
+     {
+      "id": "author",
+      "source": "github",
+      "repo": "blockbrain-ai/cygnet-recipe",
+      "revision": "10b4099a61e7dca6a82032b54c74dc0a8c496d4b",
+      "sha256": "0a1cfeda2e5d83c22ad48a8dd58457da9f24922c4877960648526362a9cb5f85",
+      "dest": "code/author",
+      "pip_install": false
+     }
+    ]
+   }
+  }
+ ],
+ "sources_checked_utc": "2026-10-10T19:30Z"
+}

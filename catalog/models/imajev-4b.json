@@ -64,10 +64,11 @@
   "url": "https://huggingface.co/mohit67890/imajev-4b/raw/c9e5f132465da85d31735ec502d5557982671a7d/README.md"
  },
  "installer_policy": {
-  "status": "supported",
-  "reason": "Apache-2.0 weights; author states no Jev or JevBench outputs in training. Serving uses the author's own torch server; no third-party binaries.",
-  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
-  "worker_proposal": "supported"
+  "status": "on_request",
+  "reason": "Not in the union of the open JevBench board's top 10 by Capability Score and top 10 by Composite Score (board v1.7.43, 2026-10-10), so the one-command installer does not support it. Local install is available on request.",
+  "decided_by": "Florian, DECISIONS 2026-10-10 18:45Z (board #17057)",
+  "previous_status": "supported",
+  "previous_reason": "Apache-2.0 weights; author states no Jev or JevBench outputs in training. Serving uses the author's own torch server; no third-party binaries."
  },
  "readout": {
   "type": "author_server",

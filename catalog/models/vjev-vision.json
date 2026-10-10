@@ -59,10 +59,11 @@
   "url": "https://huggingface.co/yah01/vjev-vision/raw/2fa8b58e40e5bc351a7d6dd39b953469a8f3ded2/README.md"
  },
  "installer_policy": {
-  "status": "excluded",
-  "reason": "This model is not offered in this installer release while its training-data and licensing review is pending.",
-  "decided_by": "lead (Decision Models workstream E), 2026-10-09",
-  "worker_proposal": "supported_noncommercial_only"
+  "status": "on_request",
+  "reason": "Not in the union of the open JevBench board's top 10 by Capability Score and top 10 by Composite Score (board v1.7.43, 2026-10-10), so the one-command installer does not support it. Local install is available on request.",
+  "decided_by": "Florian, DECISIONS 2026-10-10 18:45Z (board #17057)",
+  "previous_status": "excluded",
+  "previous_reason": "This model is not offered in this installer release while its training-data and licensing review is pending."
  },
  "readout": {
   "type": "other",

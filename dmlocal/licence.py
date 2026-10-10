@@ -99,6 +99,9 @@ def _check_commercial(config, state_root, opener):
 def require_install(model, state_root, usage=None, accept=False, input_fn=input, opener=urllib.request.urlopen):
     policy = model.get("installer_policy", {})
     status = policy.get("status", "excluded")
+    if status == "on_request":
+        raise RuntimeError("local install of this model is available on request, not through the one-command installer. "
+                           "Ask for it at info@decisionmodels.io and we will set it up for you.")
     if status == "excluded":
         raise RuntimeError(f"this model is excluded from the installer: {policy.get('reason', 'policy')}")
     if status not in ("supported", "supported_noncommercial_only"):

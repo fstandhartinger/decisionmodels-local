@@ -1,0 +1,319 @@
+{
+ "schema": "decisionmodels-local-catalog/1",
+ "slug": "jeff-1-0-large",
+ "name": "Jeff-1.0-Large",
+ "author": "Jonathan Geuter (jgeuter)",
+ "lists": [
+  "jevbench-top10"
+ ],
+ "benchmarks": {
+  "jevbench": {
+   "version": "v1.6.4 draw, board v1.7.43 (2026-10-10)",
+   "key": "jeff_1_0_large",
+   "capability_rank": 2,
+   "capability": 81.5,
+   "composite_rank": 9,
+   "composite": 68.6,
+   "page": "https://benchmarkheaven.com/jev-models/jeff-1-0-large"
+  }
+ },
+ "modalities": [
+  "text"
+ ],
+ "question_types": {
+  "choice": "native",
+  "noul": "native",
+  "score": "native"
+ },
+ "weights": {
+  "repo": "jgeuter/Jeff-1.0-Large",
+  "revision": "275325a5eab52cce4f109a09ee3832f2eb89fe2f",
+  "url": "https://huggingface.co/jgeuter/Jeff-1.0-Large/tree/275325a5eab52cce4f109a09ee3832f2eb89fe2f",
+  "gated": false
+ },
+ "code": {
+  "repo": "https://github.com/j-geuter/jeff-serve",
+  "revision": "240d0c9f1972b651a3d4d32f63af6ef5c0f4512f"
+ },
+ "base_model": {
+  "repo": "google/gemma-4-31B-it",
+  "licence": "apache-2.0",
+  "revision": "842da3794eaa0b77d5f08bae87a17459d91ff475",
+  "revision_note": "base revision from jeff_config.json"
+ },
+ "params": {
+  "total_b": 31.0,
+  "active_b": 31.0
+ },
+ "licence": {
+  "spdx": "cc-by-nc-4.0",
+  "commercial_use": "no",
+  "redistribution": "conditional",
+  "notes": "Weights are CC BY-NC 4.0 (non-commercial), derived from Gemma 4 31B (Apache-2.0); the training data includes sources with non-commercial terms. Serving code is Apache-2.0.",
+  "evidence": [
+   "https://huggingface.co/jgeuter/Jeff-1.0-Large/raw/275325a5eab52cce4f109a09ee3832f2eb89fe2f/README.md",
+   "https://raw.githubusercontent.com/j-geuter/jeff-serve/240d0c9f1972b651a3d4d32f63af6ef5c0f4512f/LICENSE"
+  ]
+ },
+ "jev_distillation": {
+  "status": "none_found",
+  "evidence": "\"No JevBench item (public or sealed) was used for training, model selection or calibration.\" Teacher labels come from Qwen3.5-122B-A10B and Qwen3.6-27B, not from Jev outputs (README).",
+  "url": "https://huggingface.co/jgeuter/Jeff-1.0-Large/raw/275325a5eab52cce4f109a09ee3832f2eb89fe2f/README.md"
+ },
+ "installer_policy": {
+  "status": "supported_noncommercial_only",
+  "reason": "The model licence (cc-by-nc-4.0) allows non-commercial use only. In the union of the open JevBench board's top 10 (Capability #2, Composite #9).",
+  "decided_by": "Florian, DECISIONS 2026-10-10 18:45Z (board #17057)"
+ },
+ "readout": {
+  "type": "author_server",
+  "endpoint": "jev",
+  "backend_agnostic": false,
+  "notes": "jeff-serve (transformers, in-process) runs one forward pass, applies the decision head (head.safetensors) and the serving_rule.json temperatures, and answers POST /v1/systemone.",
+  "portable_notes": "The answers come from the decision head, not from the LM head, so no stock llama.cpp/vLLM server reproduces them."
+ },
+ "variants": [
+  {
+   "id": "bf16-jeff-serve",
+   "precision": "bf16",
+   "benchmarked": true,
+   "runtime": "transformers (jeff-serve, in-process)",
+   "runtime_version": "torch 2.13.0+cu130, transformers 5.17.0 (author requirements.txt)",
+   "image": null,
+   "platforms": [
+    "linux-nvidia",
+    "wsl2-nvidia"
+   ],
+   "gpu_arch_min": "sm_80",
+   "min_vram_gb": 70,
+   "recommended_vram_gb": 80,
+   "min_ram_gb": 80,
+   "disk_gb": 61.43,
+   "files": [
+    {
+     "path": "chat_template.jinja",
+     "size": 18683,
+     "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+     "git_blob_sha1": "4741bf6e4132ba23a5537f9d6e74e9a6d613d7cd"
+    },
+    {
+     "path": "config.json",
+     "size": 3463,
+     "sha256": "d9a64ad80e4da7a13fee20619a966e21a0d4255bbd06e789719e4d87c7eed9dd",
+     "git_blob_sha1": "73349b76ea9ee173cef865391e8dc361c0e53204"
+    },
+    {
+     "path": "generation_config.json",
+     "size": 204,
+     "sha256": "ab62926273a435bed81af368050f3a0ba5b7298d8b09f0e7615ccc41bc787103",
+     "git_blob_sha1": "72c589a8f7f824bed703feaabf0704fef794e721"
+    },
+    {
+     "path": "head.safetensors",
+     "size": 753236,
+     "sha256": "7eda163d39b2b97702b59470100f0de0e66e9a8b34c1eb28e1fd878d45ec7d07",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "head_config.json",
+     "size": 171,
+     "sha256": "97cf24528961e7df0dac5ee314ffe3f5b0f557ea1dc677bf3d6bee867438322f",
+     "git_blob_sha1": "3ebba1a15f4e1a9f7c497e432c8f898b216d4cd2"
+    },
+    {
+     "path": "jeff_config.json",
+     "size": 679,
+     "sha256": "b5e028c4e001f8ca0fa66c670da09978d352a65e1d0d6dd8ee28e712451d1ae0",
+     "git_blob_sha1": "59eac2d9a177c2e4515059209f40a6cd6c7816d0"
+    },
+    {
+     "path": "model-00001-of-00013.safetensors",
+     "size": 4965634142,
+     "sha256": "1a0e75ae7c7ce380630559c1dbc7d90aee66607ed9fabba0129bbc56d8992e7c",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00002-of-00013.safetensors",
+     "size": 4899700474,
+     "sha256": "8cd4966d605cb1d32b3acdfb5ba61903157f3a0de001569e137801c66bfd1e77",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00003-of-00013.safetensors",
+     "size": 4899700482,
+     "sha256": "f8cc1a8c87a738c07f6318911df6997d859caffc0d2725760a2a8d7c59f55517",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00004-of-00013.safetensors",
+     "size": 4789599154,
+     "sha256": "786864927fed6ee7414479e556b4c71a4867a2eaa410b50f7e75bb4fc5055c27",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00005-of-00013.safetensors",
+     "size": 4899700546,
+     "sha256": "1032acf5b4910a0366aabc04f68b407971d594404dd69ec97904d4ac8a188de9",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00006-of-00013.safetensors",
+     "size": 4899700538,
+     "sha256": "95287c9fd6312da30b633621ef587e9f10fc408debe4f1cc2e851d91a31013f7",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00007-of-00013.safetensors",
+     "size": 4899700538,
+     "sha256": "babfa663dbff3f1042b9b7f8f69be9a1d1e2101c31012a1fd612a7c751547c70",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00008-of-00013.safetensors",
+     "size": 4899700538,
+     "sha256": "f168c19c3d0a0d37a3045a933996c973e65ae5b693123347d0e5ce2fa0242978",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00009-of-00013.safetensors",
+     "size": 4899700538,
+     "sha256": "abe6ec14377372eeb09b87fa0e7e095819466ae81498bef3ed0d603b52ac3615",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00010-of-00013.safetensors",
+     "size": 4789599154,
+     "sha256": "c828d42b59da4643d4b951c54b58604f94dd27debff06a73827c421e35581441",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00011-of-00013.safetensors",
+     "size": 4899700546,
+     "sha256": "5a5333efc420fd59be57de971cf2d28e20901a3ee16d0066ed182c925008f9e4",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00012-of-00013.safetensors",
+     "size": 4899700538,
+     "sha256": "f8f43dcf70803cfaa00cd8a01a09a3955535512d890295ea6f8972e6d99bebc2",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model-00013-of-00013.safetensors",
+     "size": 2752649636,
+     "sha256": "759e65d0eebbd15b5720ac72bc65628b57aa64fe0236085df73af09ac8672e4d",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "model.safetensors.index.json",
+     "size": 69234,
+     "sha256": "d3d85e6f00eef25b3e41b475f7818e9360d1129873c775bfb543bce7bdc9b7dc",
+     "git_blob_sha1": "d5063e5836fb0352facb32ce2fcfccc975b38884"
+    },
+    {
+     "path": "serving_rule.json",
+     "size": 82,
+     "sha256": "c7d5724d4017b26be2b37827f7acfd4f70a4ac65254d0cac458d1bf9344686c2",
+     "git_blob_sha1": "ad282a6d5d7d859d321b2c101c100a936b58fa70"
+    },
+    {
+     "path": "tokenizer.json",
+     "size": 32169626,
+     "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "tokenizer_config.json",
+     "size": 3728,
+     "sha256": "a8462e624938609a5042f72d53adafc27a12f5fb0a00ddb7cb75d81230867b10",
+     "git_blob_sha1": "7014993468907baffd85622733c56cec5968537e"
+    }
+   ],
+   "serve": {
+    "port": 8013,
+    "steps": [
+     "pip install -r requirements.txt && pip install --no-deps . from j-geuter/jeff-serve @ 240d0c9 (Python 3.12, torch 2.13.0+cu130).",
+     "jeff-serve <snapshot of jgeuter/Jeff-1.0-Large @ 275325a5> --host 127.0.0.1 --port 8013 (POST /v1/systemone). A C compiler (gcc) must be present for Triton."
+    ]
+   },
+   "measured": {
+    "gpu": "RTX PRO 6000 96GB / H100 80GB class (author README: at least 80 GB)",
+    "p50_ms": 310,
+    "source": "BH board v1.7.43 latency 0.31 s"
+   },
+   "expected_speed": "About 0.3 s per decision on the BH card (board latency 0.31 s). Not measured elsewhere.",
+   "notes": "bf16 weights 62 GB; author states one 80 GB GPU is the minimum. Needs a C compiler (Triton) and an NVIDIA driver for CUDA 13.0 (R580+). Non-commercial only.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [
+     "torch==2.13.0+cu130",
+     "transformers==5.17.0",
+     "safetensors==0.8.0",
+     "huggingface-hub==1.32.0",
+     "accelerate==1.15.0"
+    ],
+    "extra_index_urls": [
+     "https://download.pytorch.org/whl/cu130"
+    ],
+    "index_strategy": "unsafe-best-match",
+    "code": [
+     {
+      "id": "author",
+      "source": "github",
+      "repo": "j-geuter/jeff-serve",
+      "revision": "240d0c9f1972b651a3d4d32f63af6ef5c0f4512f",
+      "sha256": "0fa69484d22903e4c7e4f09fe39b0747920ed8c9d3f29e731be9ec6fcf53a23d",
+      "dest": "code/author",
+      "pip_install": false
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "-m",
+       "jeff.serve",
+       "{weights}",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:api}"
+      ],
+      "env": {
+       "PYTHONPATH": "{code:code/author}/src"
+      },
+      "cwd": "{weights}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/",
+       "timeout_s": 1200
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "Jeff-1.0-Large",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia",
+      "wsl2-nvidia"
+     ],
+     "cuda_min": "13.0",
+     "gpu_arch_min": "sm_80"
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe written 2026-10-10, test pending",
+     "selftest": "not run"
+    }
+   }
+  }
+ ],
+ "sources_checked_utc": "2026-10-10T19:30Z"
+}
