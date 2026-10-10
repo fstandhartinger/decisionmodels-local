@@ -325,6 +325,9 @@ def requires_errors(variant, hw):
         actual, wanted = _version_tuple(libc.get("version")), _version_tuple(requires["glibc_min"])
         if libc.get("name") != "glibc" or actual is None or wanted is None or actual < wanted:
             errors.append(f"requires glibc {requires['glibc_min']} or newer; detected {libc.get('name') or 'unknown libc'} {libc.get('version') or ''}".strip())
+    for flag in requires.get("cpu_flags") or []:
+        if hw.get("os") == "linux" and flag not in (hw.get("cpu_flags") or []):
+            errors.append(f"requires a CPU with {flag.upper()}; this CPU does not report it")
     cuda_min = requires.get("cuda_min")
     if cuda_min:
         detected = hw.get("cuda_version")

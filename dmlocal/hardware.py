@@ -106,6 +106,17 @@ def parse_windows_memory(total_bytes, available_bytes):
     return {"total": round(int(total_bytes) / 1e9, 2), "free": round(int(available_bytes) / 1e9, 2)}
 
 
+def _cpu_flags():
+    """Selected x86 CPU feature flags (Linux only); recipes may require them (e.g. a prebuilt binary that needs AVX-512)."""
+    try: text = Path("/proc/cpuinfo").read_text(errors="ignore")
+    except OSError: return []
+    for line in text.splitlines():
+        if line.lower().startswith("flags"):
+            have = set(line.split(":", 1)[1].split())
+            return sorted(have & {"avx2", "avx512f", "avx512bw", "avx512vl", "avx512_vnni", "amx_tile"})
+    return []
+
+
 def detect(state_path=None):
     system = platform.system().lower()
     machine = platform.machine().lower()
@@ -135,7 +146,7 @@ def detect(state_path=None):
         "os_version": platform.mac_ver()[0] if system == "darwin" else platform.release(),
         "libc": {"name": platform.libc_ver()[0], "version": platform.libc_ver()[1]} if system == "linux" else None,
         "wsl2": bool(system == "linux" and "microsoft" in Path("/proc/version").read_text(errors="ignore").lower()) if Path("/proc/version").exists() else False,
-        "cpu": platform.processor() or platform.machine(), "cpu_count": os.cpu_count(), "ram_gb": _ram_gb(),
+        "cpu": platform.processor() or platform.machine(), "cpu_flags": _cpu_flags(), "cpu_count": os.cpu_count(), "ram_gb": _ram_gb(),
         "disk_free_gb": disk_free, "gpus": gpu, "cuda_driver": next((g.get("driver_version") for g in gpu if g["vendor"] == "nvidia"), None),
         "cuda_version": _cuda_version() if any(g.get("vendor") == "nvidia" for g in gpu) else None,
         "docker": {"available": bool(docker and _run([docker, "--version"])), "nvidia_runtime": bool(docker) and ("nvidia" in docker_runtimes or "nvidia" in _run([docker, "info"], timeout=6).lower())},

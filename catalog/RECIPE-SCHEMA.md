@@ -39,7 +39,7 @@ A variant is installable only when it has a valid `install` object. Prose in `se
     "model": "h2oai/h2o-lightning-4b",   // model id the author server expects in the request body (null = leave as sent)
     "auth_header": null                  // e.g. "Authorization: Bearer local" if the author server insists on one
   },
-  "requires": {"cuda_min": "12.8", "gpu_arch_min": "sm_80", "driver_min": "570", "platforms": ["linux-nvidia"]},
+  "requires": {"cuda_min": "12.8", "gpu_arch_min": "sm_80", "driver_min": "570", "platforms": ["linux-nvidia"], "cpu_flags": ["avx512f"], "glibc_min": "2.39"},
   "verified": {"status": "unverified|verified", "where": "e.g. RunPod RTX 4090, 2026-10-09", "selftest": "pass"}
 }
 ```

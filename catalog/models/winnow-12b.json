@@ -122,7 +122,7 @@
     "source": "author README (BH latency shown on the board page)"
    },
    "expected_speed": "Author measured about 0.15-0.2 s for a four-question request cold-cache on RTX 5070 Ti; board latency for Q8 is on the Winnow page.",
-   "notes": "Q8_0 GGUF 12.67 GB; author's memory guide 12.8-14.8 GiB at 8K context. Only the prebuilt sm_120 (Blackwell) Linux build is supported by this installer.",
+   "notes": "Q8_0 GGUF 12.67 GB; author's memory guide 12.8-14.8 GiB at 8K context. Only the prebuilt sm_120 (Blackwell) Linux build is supported by this installer. The author's prebuilt server uses AVX-512 unconditionally (crashes with 'Illegal instruction' on AVX2-only CPUs such as AMD EPYC 7663), so the recipe requires a CPU with AVX-512.",
    "install": {
     "runtime": "venv",
     "python": "3.12",
@@ -229,7 +229,10 @@
       "linux-nvidia"
      ],
      "cuda_min": "13.0",
-     "gpu_arch_min": "sm_120"
+     "gpu_arch_min": "sm_120",
+     "cpu_flags": [
+      "avx512f"
+     ]
     },
     "verified": {
      "status": "unverified",
