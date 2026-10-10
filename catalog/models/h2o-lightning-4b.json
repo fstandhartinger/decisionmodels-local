@@ -182,7 +182,7 @@
         "source": "data/jevbench-latest.json (p50_s_raw); BH v1.1 row is UNPUBLISHED internal (recipe NOTES)"
       },
       "expected_speed": "Fast: about 30 ms p 50 per decision on the BH card (raw, serial). The live file also carries an assumed-adjusted 0.21 s; that adjustment is an assumption, not a measurement. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-      "notes": "min_vram_gb 24 is from BH meta.json; recommended 96 is the BH card, not a derived figure. Weights 8.41 GB bf16 on disk. Base Qwen3.5-4B. Requires the author shim and vLLM 0.30.0. Host RAM provisioning estimate: pinned weight files sum to 8.412 GB; \u00d71.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more.",
+      "notes": "min_vram_gb 24 is from BH meta.json; recommended 96 is the BH card, not a derived figure. Weights 8.41 GB bf16 on disk. Base Qwen3.5-4B. Requires the author shim and vLLM 0.30.0. Host RAM provisioning estimate: pinned weight files sum to 8.412 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 16 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more.",
       "install": {
         "runtime": "venv",
         "python": "3.12",
@@ -264,10 +264,16 @@
         },
         "verified": {
           "status": "verified",
-          "where": "RunPod RTX4090 24GB and CoreWeave RTX PRO6000 Blackwell96GB, Linux, 2026-10-09",
-          "selftest": "pass; install, Jev-compatible endpoint, SSH tunnel, test and uninstall",
-          "notes": "Functional installer checks: sample-choice median41.8ms on RTX4090 and25.148ms on CoreWeave RTX PRO6000, five calls each. These are not new benchmark measurements."
+          "where": "NVIDIA RTX PRO 4500 Blackwell, RunPod, 2026-10-10: full dm-local install, self-test, 5 local requests, uninstall",
+          "selftest": "pass",
+          "install_s": 331.0,
+          "p50_ms_local_gateway": 40.8
         }
+      },
+      "measured_local": {
+        "gpu": "NVIDIA RTX PRO 4500 Blackwell",
+        "p50_ms": 40.8,
+        "source": "decisionmodels-offering-upgrade-20261010 installer-top10 test, median of 5 gateway requests, 2026-10-10"
       }
     }
   ],

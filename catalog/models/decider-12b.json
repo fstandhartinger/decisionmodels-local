@@ -211,9 +211,11 @@
      "gpu_arch_min": "sm_80"
     },
     "verified": {
-     "status": "unverified",
-     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
-     "selftest": "not run"
+     "status": "verified",
+     "where": "NVIDIA RTX PRO 6000 Blackwell Server Edition, RunPod, 2026-10-10: full dm-local install, self-test, 5 local requests, uninstall",
+     "selftest": "pass",
+     "install_s": 1180.0,
+     "p50_ms_local_gateway": 54.0
     },
     "code": [
      {
@@ -229,6 +231,11 @@
      "https://download.pytorch.org/whl/cu130"
     ],
     "index_strategy": "unsafe-best-match"
+   },
+   "measured_local": {
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "p50_ms": 54.0,
+    "source": "decisionmodels-offering-upgrade-20261010 installer-top10 test, median of 5 gateway requests, 2026-10-10"
    }
   },
   {

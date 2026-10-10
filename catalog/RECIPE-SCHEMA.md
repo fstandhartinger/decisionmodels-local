@@ -43,6 +43,13 @@ A variant is installable only when it has a valid `install` object. Prose in `se
   "verified": {"status": "unverified|verified", "where": "e.g. RunPod RTX 4090, 2026-10-09", "selftest": "pass"}
 }
 ```
+`code[].source` is `github` (codeload archive of `repo`@`revision`) or `github-release` (the pinned release asset
+`https://github.com/<repo>/releases/download/<tag>/<asset>`; fields `tag` and `asset` are plain file-name tokens, `revision` is
+still the 40-hex commit and `sha256` the SHA-256 of the downloaded asset). The archive is extracted like a source archive.
+`requires.cpu_flags` (list, e.g. `["avx512f"]`) makes the recipe unavailable on Linux CPUs that do not report the flag
+(`hardware.cpu_flags`), for prebuilt binaries that need AVX-512. `installer_policy.status` is `supported`,
+`supported_noncommercial_only`, `excluded` or `on_request` (the installer refuses it with a friendly "available on request"
+message; the model page offers a request button).
 Placeholders: `{python}` venv interpreter, `{weights}` local weight dir, `{code:<dest>}` code dir, `{code_<id>}` named code dir,
 `{support_dir}` installer wrapper dir, `{port:<name>}` ports allocated
 by dm-local (names are free; `api` is the one the gateway proxies), `{state}` state dir, `{gpu}` first GPU index.

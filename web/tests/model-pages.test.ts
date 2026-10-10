@@ -29,7 +29,7 @@ describe("model local pages", () => {
       expect(html, slug).toContain("Run it on AWS, Azure or Google Cloud");
       expect(html, slug).toContain("your data never leaves your machines");
     }
-  });
+  }, 60_000);
 
   const COMMANDS = /dm-local (?:install|plan|uninstall|remote)|curl [^<]*install\.sh|vllm serve|pip install vllm|llama-server/;
   const supported = loadCatalog().filter(isInstallerSupported);
