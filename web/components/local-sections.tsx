@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CopyCommand } from "@/components/copy-command";
-import { CLOUD_PROVIDERS, hasKnownHardware, type HardwareEntry, type HwCloud } from "@/lib/hardware-all";
+import { CLOUD_PROVIDERS, hasKnownHardware, sourceLink, type HardwareEntry, type HwCloud } from "@/lib/hardware-all";
 import { POSIX_INSTALL_COMMAND } from "@/lib/install-commands";
 
 export const REQUEST_EMAIL = "info@decisionmodels.io";
@@ -57,7 +57,7 @@ export function HardwareCard({ hw }: { hw?: HardwareEntry }) {
 
 function offerLine(offer?: HwCloud | null) {
   if (!offer?.instance) return null;
-  return { instance: offer.instance, gpu: offer.gpu, price: Number.isFinite(offer.usd_per_hour) ? `about USD ${Number(offer.usd_per_hour).toFixed(2)}/h on demand` : "price on the provider page", regions: offer.eu_regions, source: offer.source };
+  return { instance: offer.instance, gpu: offer.gpu, price: Number.isFinite(offer.usd_per_hour) ? `about USD ${Number(offer.usd_per_hour).toFixed(2)}/h on demand${offer.price_region ? ` in ${offer.price_region}` : ""}` : "price on the provider page", regions: offer.eu_regions, source: sourceLink(offer.source) };
 }
 
 export function CloudGuide({ slug, hw, installer }: { slug: string; hw?: HardwareEntry; installer: boolean }) {
