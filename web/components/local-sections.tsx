@@ -58,7 +58,7 @@ export function HardwareCard({ hw }: { hw?: HardwareEntry }) {
   return <section className="section-wrap section" id="hardware-requirements">
     <div className="section-heading"><div><p className="section-kicker">Hardware</p><h2>Minimum and recommended hardware</h2></div><p>{hw.params_total_b ? `${hw.params_total_b}B parameters${hw.params_active_b && hw.params_active_b !== hw.params_total_b ? ` (${hw.params_active_b}B active)` : ""}. ` : ""}Sized for decision readouts with inputs up to about 8k tokens.</p></div>
     <div className="hw-grid">
-      <article className="panel"><div className="table-wrap"><table className="hw-table"><thead><tr><th></th><th>Minimum</th><th>Recommended</th></tr></thead><tbody>{rows.map(([label, min, rec]) => <tr key={label}><th scope="row">{label}</th><td>{min || "—"}</td><td>{rec || "—"}</td></tr>)}</tbody></table></div></article>
+      <article className="panel"><div className="table-wrap" tabIndex={0} role="region" aria-label="Minimum and recommended hardware"><table className="hw-table"><thead><tr><th><span className="sr-only">Requirement</span></th><th>Minimum</th><th>Recommended</th></tr></thead><tbody>{rows.map(([label, min, rec]) => <tr key={label}><th scope="row">{label}</th><td>{min || "—"}</td><td>{rec || "—"}</td></tr>)}</tbody></table></div></article>
       <article className="panel"><dl className="hw-facts">
         <div><dt>CPU only</dt><dd><span className={`badge ${cpu?.possible ? "signal" : ""}`}>{cpu?.possible ? "Yes, slowly" : "No"}</span> {cpu?.note}</dd></div>
         <div><dt>Apple Silicon</dt><dd><span className={`badge ${apple?.possible ? "signal" : ""}`}>{apple?.possible ? `Yes, ${apple.min_unified_memory_gb ?? "—"} GB+ unified memory` : "Not yet"}</span> {apple?.note}</dd></div>
