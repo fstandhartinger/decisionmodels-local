@@ -98,7 +98,7 @@
       "min_vram_gb": 80,
       "recommended_vram_gb": 80,
       "min_ram_gb": 68,
-      "disk_gb": 51.64,
+      "disk_gb": 80.88,
       "files": [
         {
           "path": "model-00001-of-00011.safetensors",
@@ -237,7 +237,7 @@
         "source": "data/jevbench-latest.json (p50_s_raw)"
       },
       "expected_speed": "About 0.12 s p 50 per decision (raw, serial) on the BH measurement; the GPU for that row is UNVERIFIED. Provisioning class: RTX PRO 6000 96 GB; this names a memory class, not a latency measurement or confirmation of architecture compatibility. CPU/Mac speed is estimated only in separate portable variants.",
-      "notes": "Benchmarked revision bd4a7cbb is the revision the intake recipe and the Decision Index ranked; the v1.6 row's own revision record was not located, and bd4a7cbb and c6b360d4 differ only in README (per PINS). min_vram_gb 80 is from the rtxpro6000-a2 candidate meta.json; recommended 96 is the intake card. The recipe is \"READY\" per the intake VERDICT but the rtxpro6000-a2 variant is candidate, not accepted. Shard and tokenizer sha256 values are from the intake PINS.sha256; the HF tree API returned masked LFS oids for this gated repo, so they are not independently re-checked here. Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. The engine creates a separate converted cache at first launch: budget roughly a second model-sized copy (~52 GB) plus runtime installation, above the original disk_gb weight download estimate. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity.",
+      "notes": "Benchmarked revision bd4a7cbb is the revision the intake recipe and the Decision Index ranked; the v1.6 row's own revision record was not located, and bd4a7cbb and c6b360d4 differ only in README (per PINS). min_vram_gb 80 is from the rtxpro6000-a2 candidate meta.json; recommended 96 is the intake card. The recipe is \"READY\" per the intake VERDICT but the rtxpro6000-a2 variant is candidate, not accepted. Shard and tokenizer sha256 values are from the intake PINS.sha256; the HF tree API returned masked LFS oids for this gated repo, so they are not independently re-checked here. Host RAM provisioning estimate: pinned weight files sum to 51.612 GB; ×1.25 loader/runtime allowance rounded up to 4 GB gives 68 GB. This is not a measured peak; FP32 initialization or duplicate weight buffers may require more. The engine creates a separate converted cache at first launch: budget roughly a second model-sized copy (~52 GB) plus runtime installation, above the original disk_gb weight download estimate. Executable recipe provenance and runtime differences: catalog/TEXT-RECIPES-V2.md. Recipe verified.status is unverified; package resolution and command expansion do not establish inference parity. The engine converts the weights once per start into a ~28.7 GB .sinfer cache; the recipe keeps it inside the model directory ({weights}/.surogate-cache) so uninstall removes it, and disk_gb includes it (measured on RTX PRO 6000, 2026-10-10).",
       "install": {
         "runtime": "venv",
         "python": "3.12",
@@ -271,7 +271,7 @@
               "surogate/rune-26b-a4b-GGUF"
             ],
             "env": {
-              "SUROGATE_SERVE_CACHE": "{state}/surogate-cache",
+              "SUROGATE_SERVE_CACHE": "{weights}/.surogate-cache",
               "WANDB_DISABLED": "true",
               "WANDB_MODE": "disabled"
             },
