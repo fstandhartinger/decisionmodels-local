@@ -176,7 +176,8 @@ html,body { max-width:100%; overflow-x:clip; }
 .ranked-model-card h3 { overflow-wrap:anywhere; }
 .capability-score { color:var(--ink) !important; font-weight:600; }
 .hardware-chips { margin-top:auto; }
-.excluded-model-card { opacity:.58; background:var(--surface-soft); }
+.excluded-model-card { background:var(--surface-soft); }
+.excluded-model-card > * { color:var(--muted); }
 .excluded-reason { font-size:.84rem !important; }
 .hardware-class { border-top:1px solid var(--line); }
 .class-composition { margin-bottom:16px; }
@@ -244,3 +245,4 @@ html,body { max-width:100%; overflow-x:clip; }
 .sovereign-line { margin-top:16px; font-size:1.05rem; color:var(--ink); }
 @media(max-width:900px) { .licence-box,.hw-grid { grid-template-columns:minmax(0,1fr); } .cloud-grid { grid-template-columns:minmax(0,1fr); } }
 @media(max-width:620px) { .licence-box { padding:20px; } .sovereign-box { padding:22px; } }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }

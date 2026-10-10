@@ -30,7 +30,7 @@ export function SiteFooter() {
         <p>Run models where your work happens.</p>
         <nav aria-label="Footer navigation">
           <Link href="https://decisionmodels.io/impressum">Impressum</Link>
-          <Link href="https://decisionmodels.io/privacy">Privacy</Link>
+          <Link href="https://decisionmodels.io/legal/privacy">Privacy</Link>
           <Link href="https://benchmarkheaven.com">Benchmarks by Benchmark Heaven</Link>
         </nav>
       </div>
