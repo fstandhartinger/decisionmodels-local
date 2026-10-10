@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import ModelLocalPage, { generateStaticParams } from "../app/models/[slug]/local/page";
 import { loadHardwareAll } from "../lib/hardware-all";
-import { loadCatalog } from "../lib/catalog";
+import { isInstallerSupported, loadCatalog } from "../lib/catalog";
 
 async function render(slug: string) {
   return renderToStaticMarkup(await ModelLocalPage({ params: Promise.resolve({ slug }) }));
@@ -31,13 +31,35 @@ describe("model local pages", () => {
     }
   });
 
-  it("marks models without installer support as manual and offers a request link", async () => {
-    const manual = hardware.find((entry) => !loadCatalog().some((model) => model.slug === entry.slug));
-    if (!manual) return;
-    const html = await render(manual.slug);
-    expect(html).toContain("Manual, not covered by the one-command installer");
-    expect(html).toContain("One-command installer for this model: on request");
-    expect(html).toContain(`Installer%20request%20${manual.slug}`);
+  const COMMANDS = /dm-local (?:install|plan|uninstall|remote)|curl [^<]*install\.sh|vllm serve|pip install vllm|llama-server/;
+  const supported = loadCatalog().filter(isInstallerSupported);
+
+  it("shows Local install on request, and no commands, for models without installer support", async () => {
+    const catalogue = loadCatalog();
+    const unsupported = [
+      ...hardware.filter((entry) => !catalogue.some((model) => model.slug === entry.slug)).map((entry) => entry.slug),
+      ...catalogue.filter((model) => model.installer_policy?.status !== "excluded" && !isInstallerSupported(model)).map((model) => model.slug)
+    ];
+    expect(unsupported.length).toBeGreaterThan(0);
+    for (const slug of unsupported) {
+      const html = await render(slug);
+      expect(html, slug).toContain("Local install on request");
+      expect(html, slug).toContain(`mailto:info@decisionmodels.io?subject=Local%20install%20request%20${slug}`);
+      expect(html, slug).not.toMatch(COMMANDS);
+      expect(html, slug).not.toContain("Manual, not covered");
+      expect(html, slug).toContain("Run it on AWS, Azure or Google Cloud");
+      expect(html, slug).toContain("Free for individuals and companies");
+      expect(html, slug).toContain("your data never leaves your machines");
+    }
+  });
+
+  it("keeps the installer commands on supported models", async () => {
+    expect(supported.length).toBeGreaterThan(0);
+    for (const model of supported) {
+      const html = await render(model.slug);
+      expect(html, model.slug).toContain(`dm-local install ${model.slug}`);
+      expect(html, model.slug).not.toContain("Local install on request");
+    }
   });
 
   it("says hardware is on request when the data has no size", async () => {

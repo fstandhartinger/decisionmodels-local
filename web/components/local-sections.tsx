@@ -9,6 +9,19 @@ export function installerRequestHref(slug: string) {
   return `mailto:${REQUEST_EMAIL}?subject=${encodeURIComponent(`Installer request ${slug}`)}`;
 }
 
+export function localInstallRequestHref(slug: string) {
+  return `mailto:${REQUEST_EMAIL}?subject=${encodeURIComponent(`Local install request ${slug}`)}`;
+}
+
+export function OnRequestCard({ slug }: { slug: string }) {
+  return <section className="section-wrap section" id="install-on-request"><div className="callout">
+    <p className="section-kicker">Installer</p>
+    <h2>Local install on request</h2>
+    <p>This model is not in the one-command installer yet. Tell us you want it and we set it up for you, or add it to the installer.</p>
+    <a className="button button-primary space-top-sm" href={localInstallRequestHref(slug)}>Local install on request</a>
+  </div></section>;
+}
+
 export function LicenceBox() {
   return <section className="section-wrap" aria-labelledby="installer-licence-title"><div className="licence-box">
     <div>
@@ -64,25 +77,24 @@ export function CloudGuide({ slug, hw, installer }: { slug: string; hw?: Hardwar
   const install = installer ? `dm-local install ${slug}` : null;
   const known = hasKnownHardware(hw);
   return <section className="section-wrap section" id="cloud-guide">
-    <div className="section-heading"><div><p className="section-kicker">Your cloud account</p><h2>Run it on AWS, Azure or Google Cloud</h2></div><p>Launch a GPU machine in your own account, run the model there, and keep everything inside your cloud account and the region you pick.</p></div>
+    <div className="section-heading"><div><p className="section-kicker">Your cloud account</p><h2>Run it on AWS, Azure or Google Cloud</h2></div><p>{installer ? "Launch a GPU machine in your own account, run the model there, and keep everything inside your cloud account and the region you pick." : "The GPU instance you would need in your own cloud account, so everything stays inside your account and the region you pick."}</p></div>
     <div className="cloud-grid">{CLOUD_PROVIDERS.map((provider) => {
       const offer = known ? offerLine(hw?.cloud?.[provider.id]) : null;
       return <article className="panel cloud-card" key={provider.id}>
         <h3>{provider.name}</h3>
         {offer ? <p className="cloud-pick"><strong>{offer.instance}</strong><br />{offer.gpu}<br />{offer.price}{offer.regions ? <><br />EU regions: {offer.regions}</> : null}{offer.source ? <> · <a href={offer.source}>price source</a></> : null}</p> : <p className="cloud-pick">Instance for this model: on request. Pick a GPU with at least {known ? gb(hw?.min?.vram_gb) : "the memory shown above"} of memory.</p>}
-        <ol className="plain-steps">
+        {installer && <ol className="plain-steps">
           <li>Open the {provider.where} and launch a GPU instance in an EU region of your choice, using the {provider.image}.</li>
           <li>If the launch is refused, request GPU quota first: {provider.quota}.</li>
           <li>Attach {provider.private}. Do not open the model port to the internet.</li>
-          <li>Connect with SSH{installer ? " and run the one-line installer:" : ", then follow the manual steps above:"}{installer && <div className="command-line"><code>{POSIX_INSTALL_COMMAND}</code><CopyCommand value={POSIX_INSTALL_COMMAND} /></div>}</li>
+          <li>Connect with SSH and run the one-line installer:<div className="command-line"><code>{POSIX_INSTALL_COMMAND}</code><CopyCommand value={POSIX_INSTALL_COMMAND} /></div></li>
           {install && <li>Install the model: <div className="command-line"><code>{install}</code><CopyCommand value={install} /></div></li>}
           <li>Reach the endpoint through an SSH tunnel (<code>ssh -L 8484:127.0.0.1:8484 user@instance</code>) or from inside your private network, then call <code>http://127.0.0.1:8484/v1/systemone</code>.</li>
-        </ol>
+        </ol>}
         <p className="fine-print">Your data stays in your cloud account and region. Prices change; region, storage and traffic may add charges.</p>
       </article>;
     })}</div>
-    {!installer && <p className="fine-print">The one-line installer does not cover this model yet, so the steps above end at a machine ready for the manual setup. <a href={installerRequestHref(slug)}>Request the installer for this model</a>.</p>}
-    <p className="source-note">Other options: rent a GPU from RunPod or CoreWeave, or use any machine you control over SSH{installer ? <>: <code>dm-local remote user@host install {slug}</code></> : ""}.</p>
+    {installer && <p className="source-note">Other options: rent a GPU from RunPod or CoreWeave, or use any machine you control over SSH: <code>dm-local remote user@host install {slug}</code>.</p>}
   </section>;
 }
 
@@ -101,18 +113,4 @@ export function SovereigntyBox() {
     <ul className="contact-list">{contacts.map(([name, copy]) => <li key={name}><strong>{name}</strong> — {copy}</li>)}</ul>
     <p className="fine-print">Setup needs these connections once; the free tier never contacts decisionmodels.io for licensing. A bundled offline package for fully isolated (air-gapped) machines is not available yet — if you need one, <a href={`mailto:${REQUEST_EMAIL}?subject=Offline%20installer`}>ask us</a>. Runtimes written by model authors remain subject to their own network behaviour.</p>
   </div></section>;
-}
-
-export function ManualSetup({ slug, hw }: { slug: string; hw?: HardwareEntry }) {
-  const repo = hw?.hf_repo ?? "<huggingface-repo>";
-  const vllm = `pip install vllm\nvllm serve ${repo} --host 127.0.0.1 --port 8000`;
-  const llama = `# GGUF build of the weights, if the author or a community build provides one\nllama-server -m model-Q4_K_M.gguf --host 127.0.0.1 --port 8000`;
-  return <section className="section-wrap section" id="manual-setup">
-    <div className="section-heading"><div><p className="section-kicker">Manual setup</p><h2>Run it yourself</h2></div><p><strong>Manual, not covered by the one-command installer.</strong> Check the model card first: some models need author code or a custom runtime.</p></div>
-    <div className="panel-grid">
-      <article className="panel"><h3>vLLM (NVIDIA GPU)</h3><pre className="code-block">{vllm}</pre></article>
-      <article className="panel"><h3>llama.cpp (CPU, Apple Silicon, small GPUs)</h3><pre className="code-block">{llama}</pre></article>
-    </div>
-    <div className="callout"><strong>One-command installer for this model: on request</strong><p>We add models to the installer on demand, with pinned weights and a tested recipe.</p><a className="button button-secondary space-top-sm" href={installerRequestHref(slug)}>Request the installer for this model</a></div>
-  </section>;
 }

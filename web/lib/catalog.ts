@@ -60,6 +60,13 @@ export type Model = {
   [key: string]: unknown;
 };
 
+/** Installer support is data-driven: the catalogue policy allows install and an executable recipe exists. */
+export function isInstallerSupported(model: Model | undefined): boolean {
+  if (!model) return false;
+  const status = model.installer_policy?.status;
+  return (status === "supported" || status === "supported_noncommercial_only") && hasAnyExecutableInstallRecipe(model);
+}
+
 const modelDirectory = path.join(catalogRoot(), "models");
 
 function isModel(value: unknown): value is Model {

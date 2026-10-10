@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CopyCommand } from "@/components/copy-command";
-import { CloudGuide, HardwareCard, LicenceBox, ManualSetup, SovereigntyBox } from "@/components/local-sections";
+import { CloudGuide, HardwareCard, LicenceBox, OnRequestCard, SovereigntyBox } from "@/components/local-sections";
 import { QuickStart } from "@/components/quick-start";
-import { benchmarkRank, getModel, hasAnyExecutableInstallRecipe, installRecipeStatus, loadCatalog, sanitizePublicText, type Model, type ModelVariant } from "@/lib/catalog";
+import { benchmarkRank, getModel, hasAnyExecutableInstallRecipe, installRecipeStatus, isInstallerSupported, loadCatalog, sanitizePublicText, type Model, type ModelVariant } from "@/lib/catalog";
 import { getHardware, loadHardwareAll, type HardwareEntry } from "@/lib/hardware-all";
 import { cloudOptionsFor, cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, money, publicCloudInstanceName, publicCloudProviderName, sourcePublisher, sourceUrl, suggestedDeviceFor } from "@/lib/hardware-data";
 
@@ -160,7 +160,7 @@ function GenericModelPage({ hw }: { hw: HardwareEntry }) {
       <p className="eyebrow"><Link href="/local">Run locally</Link> / Model details</p>
       <div className="hero-grid">
         <div><h1>{hw.name}</h1><p className="lede">{size}{modality} model. Run it on hardware you control.</p><SovereignLine />
-          <div className="model-meta space-top"><span className="badge">Manual setup</span>{hw.modalities?.map((item) => <span className="badge" key={item}>{item}</span>)}</div></div>
+          <div className="model-meta space-top"><span className="badge">Local install on request</span>{hw.modalities?.map((item) => <span className="badge" key={item}>{item}</span>)}</div></div>
         <aside className="hero-note"><strong>Weights:</strong>{hw.hf_repo ? <span><a href={`https://huggingface.co/${hw.hf_repo}`}>{hw.hf_repo}</a></span> : <span>Model repository not listed</span>}</aside>
       </div>
     </section>
@@ -170,8 +170,8 @@ function GenericModelPage({ hw }: { hw: HardwareEntry }) {
         <p className="space-top-sm">{commercialCopy(commercial ?? undefined)}</p>
         {hw.hf_repo && <p className="source-note"><a href={`https://huggingface.co/${hw.hf_repo}`}>Model card</a></p>}
         <p className="variant-note">This is the licence of the model weights. The installer licence above is separate.</p></div></section>
+    <OnRequestCard slug={hw.slug} />
     <HardwareCard hw={hw} />
-    <ManualSetup slug={hw.slug} hw={hw} />
     <CloudGuide slug={hw.slug} hw={hw} installer={false} />
     <SovereigntyBox />
   </>;
@@ -186,6 +186,10 @@ export default async function ModelLocalPage({ params }: PageProps) {
   const status = model.installer_policy?.status ?? "excluded";
   const excluded = status === "excluded";
   if (excluded) return <section className="section-wrap narrow page-top"><p className="eyebrow"><Link href="/local">Run locally</Link></p><h1>Model not offered</h1><p className="lede space-top">This model is not offered in the installer while its licensing review is pending.</p></section>;
+  if (!isInstallerSupported(model)) {
+    const base = hardware ?? hardwareFromCatalog(model);
+    return <GenericModelPage hw={{ ...base, name: model.name, installer_supported: false, modalities: base.modalities?.length ? base.modalities : model.modalities, licence: base.licence ?? model.licence ?? null, hf_repo: base.hf_repo ?? model.weights?.repo ?? null, params_total_b: base.params_total_b ?? model.params?.total_b ?? null }} />;
+  }
   const commercialOnly = status === "supported_noncommercial_only";
   const hasRecipe = hasAnyExecutableInstallRecipe(model);
   const recipeTested = (model.variants ?? []).some((variant) => installRecipeStatus(variant) === "tested");
