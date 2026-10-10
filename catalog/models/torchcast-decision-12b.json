@@ -212,7 +212,7 @@
       },
       "cwd": "{weights}",
       "ready": {
-       "url": "http://127.0.0.1:{port:api}/health",
+       "url": "http://127.0.0.1:{port:api}/v1/models",
        "timeout_s": 120
       }
      }
@@ -235,7 +235,7 @@
     },
     "verified": {
      "status": "unverified",
-     "where": "Recipe source and dependency metadata checked on Sandy, 2026-10-09; no weights loaded or inference run",
+     "where": "Recipe fixed 2026-10-10 (shim has no /health; ready URL is /v1/models); test pending",
      "selftest": "not run"
     },
     "extra_index_urls": [
