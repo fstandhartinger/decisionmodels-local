@@ -164,7 +164,7 @@ function GenericModelPage({ hw }: { hw: HardwareEntry }) {
         <aside className="hero-note"><strong>Weights:</strong>{hw.hf_repo ? <span><a href={`https://huggingface.co/${hw.hf_repo}`}>{hw.hf_repo}</a></span> : <span>Model repository not listed</span>}</aside>
       </div>
     </section>
-    <LicenceBox />
+    <LicenceBox installable={false} />
     <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Model terms</p><h2>Model licence</h2></div></div>
       <div className="panel"><div className="model-meta"><span className="badge">{hw.licence?.spdx ?? "Licence not listed"}</span><span className="badge">Commercial use: {commercialLabel(commercial ?? undefined)}</span></div>
         <p className="space-top-sm">{commercialCopy(commercial ?? undefined)}</p>

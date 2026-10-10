@@ -22,7 +22,7 @@ export function OnRequestCard({ slug }: { slug: string }) {
   </div></section>;
 }
 
-export function LicenceBox() {
+export function LicenceBox({ installable = true }: { installable?: boolean }) {
   return <section className="section-wrap" aria-labelledby="installer-licence-title"><div className="licence-box">
     <div>
       <p className="section-kicker">Installer licence</p>
@@ -33,7 +33,7 @@ export function LicenceBox() {
     </div>
     <div className="licence-actions">
       <Link className="button button-primary" href="/local/licence#checkout">Buy company licence</Link>
-      <Link className="button button-secondary" href="#quick-start">Free tier: just install</Link>
+      {installable && <Link className="button button-secondary" href="#quick-start">Free tier: just install</Link>}
       <Link className="fine-print" href="/local/licence">Read the installer terms →</Link>
     </div>
   </div></section>;
