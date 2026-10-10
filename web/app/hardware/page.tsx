@@ -26,7 +26,6 @@ function HardwareQuoteCard({ device, definition, selected }: { device: Device; d
     <p className="variant-note">Memory: {typeof device.memory_gb === "number" && Number.isFinite(device.memory_gb) ? `${device.memory_gb} GB` : "Not listed"} {device.memory_kind ? `(${device.memory_kind})` : ""}</p>
     {quotes.map((item) => <div className="quote-card" key={item.currency}>
       <p className="price">{money(item.quote, item.currency)}<span> indicative</span></p>
-      <p>{definition.id === "gpu-workstation" ? "Sourced GPU price plus an estimated base system" : "Median sourced street price"}: {money(item.street, item.currency)} before the quote margin.</p>
       <details className="price-source-disclosure"><summary>Price sources ({item.sources.length})</summary><ul className="price-source-list">{item.sources.map((source, index) => <li key={`${source.source}-${index}`}>{sourceUrl(source.source) ? <a href={sourceUrl(source.source)}>{sourcePublisher(source.source)} · {dateText(source.date)}</a> : <span>Source URL not supplied · {dateText(source.date)}</span>}</li>)}</ul></details>
     </div>)}
     {!quotes.length && <p className="callout muted">No sourced price is available for this configuration. Ask us to confirm availability and pricing.</p>}
