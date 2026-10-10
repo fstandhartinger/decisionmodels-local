@@ -254,7 +254,9 @@ def _record_matches_process(data):
     if not expected: return False
     if sys.platform.startswith("linux"):
         try:
-            actual = [part.decode(errors="replace") for part in (Path("/proc") / str(pid) / "cmdline").read_bytes().split(b"\0") if part]
+            parts = (Path("/proc") / str(pid) / "cmdline").read_bytes().split(b"\0")
+            if parts and parts[-1] == b"": parts.pop()  # only the trailing NUL; empty arguments such as --cors-origins "" are real
+            actual = [part.decode(errors="replace") for part in parts]
             return actual[:len(expected)] == expected
         except OSError:
             return False

@@ -1,9 +1,11 @@
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from dmlocal import licence
+from dmlocal import licence, process
 from dmlocal.runtime_selection import recipe_errors, requires_errors
 from tests.helpers import model_with_variants, variant
 
@@ -50,6 +52,17 @@ class Top10PolicyTests(unittest.TestCase):
         self.assertFalse([e for e in recipe_errors(item) if "code" in e])
         item["install"]["code"][0]["asset"] = "../evil.tar.gz"
         self.assertTrue([e for e in recipe_errors(item) if "asset" in e])
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "uses /proc/<pid>/cmdline")
+    def test_process_record_matches_command_with_empty_argument(self):
+        command = [sys.executable, "-c", "import time; time.sleep(30)", "--cors-origins", ""]
+        child = subprocess.Popen(command)
+        try:
+            self.assertTrue(process._record_matches_process({"pid": child.pid, "command": command}))
+            self.assertFalse(process._record_matches_process({"pid": child.pid, "command": command[:-1] + ["x"]}))
+        finally:
+            child.kill()
+            child.wait()
 
 
 if __name__ == "__main__":
