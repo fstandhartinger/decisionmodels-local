@@ -74,7 +74,9 @@ class GatewayTests(unittest.TestCase):
         raw = {"answers": {"color": {"score": 2, "probabilities": probabilities}}, "usage": {"input_tokens": 4, "output_tokens": 0}}
         answer = normalize_jev(raw, CHOICE, "color", question)["answers"]["color"]
         self.assertEqual(answer["score"], 2)
-        raw["answers"]["color"]["score"] = 1
+        raw["answers"]["color"] = {"score": 1.97, "probabilities": {"0": 0.0, "1": 0.02, "2": 0.98}}
+        self.assertEqual(normalize_jev(raw, CHOICE, "color", question)["answers"]["color"]["score"], 1.97)
+        raw["answers"]["color"] = {"score": 1, "probabilities": probabilities}
         with self.assertRaisesRegex(ValueError, "disagrees"):
             normalize_jev(raw, CHOICE, "color", question)
 

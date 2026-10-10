@@ -242,7 +242,9 @@ def normalize_jev(result, request, qname, question):
         # Authors report either the probability-weighted level or the most likely level (their discrete "score");
         # both are kept exactly as reported. Anything else disagrees with the distribution.
         discrete_argmax = float(score).is_integer() and probs[str(int(score))] == max(probs.values())
-        if abs(score - expected_score) > 1e-3 * len(levels) and not discrete_argmax:
+        # Some authors round probabilities to two decimals (error up to ~0.01 per level), so the weighted level may differ slightly.
+        tolerance = max(1e-3 * len(levels), 0.02 * (len(levels) - 1))
+        if abs(score - expected_score) > tolerance and not discrete_argmax:
             raise ValueError("backend score is invalid or disagrees with its distribution")
         legend = {str(i): value for i, value in enumerate(levels)}
         out.update(score=score, legend=legend, probabilities=probs,
