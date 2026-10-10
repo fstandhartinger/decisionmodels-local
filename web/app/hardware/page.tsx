@@ -47,7 +47,7 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
 
   return <>
     <section className="section-wrap hero">
-      <div className="hero-grid"><div><p className="eyebrow">Pre-installed hardware</p><h1>A local system, ready for your models.</h1><p className="lede">Compare sourced configurations, see which published model variants fit, and ask us to prepare a quote.</p></div>
+      <div className="hero-grid"><div><p className="eyebrow">Pre-installed hardware</p><h1>A local system, ready for your models.</h1><p className="lede">Compare sourced configurations, see which published model variants fit, and ask us to prepare a quote. A machine of your own is the most sovereign option: your data never leaves it.</p></div>
         <aside className="hero-note"><strong>Local execution can keep inference data in your environment.</strong><span>Use your own network, access controls, retention policy, and deployment boundary. Downloads and other connected services still depend on your setup.</span></aside></div>
     </section>
 

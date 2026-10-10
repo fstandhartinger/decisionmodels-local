@@ -2,19 +2,29 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CopyCommand } from "@/components/copy-command";
+import { CloudGuide, HardwareCard, LicenceBox, ManualSetup, SovereigntyBox } from "@/components/local-sections";
 import { QuickStart } from "@/components/quick-start";
 import { benchmarkRank, getModel, hasAnyExecutableInstallRecipe, installRecipeStatus, loadCatalog, sanitizePublicText, type Model, type ModelVariant } from "@/lib/catalog";
+import { getHardware, loadHardwareAll, type HardwareEntry } from "@/lib/hardware-all";
 import { cloudOptionsFor, cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, money, publicCloudInstanceName, publicCloudProviderName, sourcePublisher, sourceUrl, suggestedDeviceFor } from "@/lib/hardware-data";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {
-  return loadCatalog().map((model) => ({ slug: model.slug }));
+  const slugs = new Set([...loadCatalog().map((model) => model.slug), ...loadHardwareAll().map((entry) => entry.slug)]);
+  return [...slugs].sort().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const model = getModel(slug);
+  const hardware = getHardware(slug);
+  if (!model && hardware) return {
+    title: `${hardware.name} hardware and cloud setup`,
+    description: `Minimum hardware, cloud instances and manual setup for ${hardware.name}, run on machines you control.`,
+    openGraph: { images: ["/local/static/brand/og.png"] },
+    alternates: { canonical: `/models/${hardware.slug}/local` }
+  };
   const excluded = model?.installer_policy?.status === "excluded";
   const hasRecipe = model ? hasAnyExecutableInstallRecipe(model) : false;
   return model ? {
@@ -123,9 +133,55 @@ function multimodalRequest() {
   return `curl http://127.0.0.1:8484/v1/multimodal -H 'Content-Type: application/json' -d '{"state":"Read the image and answer the question.","images":["data:image/png;base64,…"],"questions":{"object":{"type":"choice","instructions":"What is shown?","criteria":{"bicycle":null,"car":null}}}}'`;
 }
 
+function SovereignLine() {
+  return <p className="sovereign-line"><strong>Fully sovereign.</strong> Maximum data privacy: it runs on your hardware or in your own cloud account, and your data never leaves your machines.</p>;
+}
+
+function hardwareFromCatalog(model: Model): HardwareEntry {
+  const usable = (model.variants ?? []).filter((variant) => installRecipeStatus(variant) !== "documentation_only");
+  const gpu = usable.filter((variant) => variant.platforms?.includes("linux-nvidia") && Number(variant.min_vram_gb) > 0).sort((a, b) => Number(a.min_vram_gb) - Number(b.min_vram_gb))[0];
+  const cpu = usable.find((variant) => variant.platforms?.some((platform) => platform.endsWith("-cpu")));
+  const mac = usable.filter((variant) => variant.platforms?.includes("macos-arm64")).sort((a, b) => Number(a.min_ram_gb) - Number(b.min_ram_gb))[0];
+  return {
+    slug: model.slug, name: model.name, hf_repo: model.weights?.repo ?? null, params_total_b: model.params?.total_b ?? null, source: "installer-catalog", installer_supported: true,
+    min: gpu ? { precision: gpu.precision, vram_gb: gpu.min_vram_gb, ram_gb: gpu.min_ram_gb, disk_gb: gpu.disk_gb } : null,
+    recommended: gpu ? { precision: gpu.precision, vram_gb: gpu.recommended_vram_gb ?? gpu.min_vram_gb, ram_gb: gpu.min_ram_gb, disk_gb: gpu.disk_gb } : null,
+    cpu_only: { possible: Boolean(cpu), note: cpu ? `Needs ${cpu.min_ram_gb ?? "?"} GB of RAM and will be slow.` : "No CPU variant in the installer catalogue." },
+    apple_silicon: { possible: Boolean(mac), min_unified_memory_gb: mac?.min_ram_gb ?? null, note: mac ? undefined : "No Apple Silicon variant in the installer catalogue." }
+  };
+}
+
+function GenericModelPage({ hw }: { hw: HardwareEntry }) {
+  const size = hw.params_total_b ? `${hw.params_total_b}B ` : "";
+  const modality = hw.modalities?.length ? hw.modalities.join(" and ") : "open-weight";
+  const commercial = hw.licence?.commercial_use;
+  return <>
+    <section className="section-wrap hero">
+      <p className="eyebrow"><Link href="/local">Run locally</Link> / Model details</p>
+      <div className="hero-grid">
+        <div><h1>{hw.name}</h1><p className="lede">{size}{modality} model. Run it on hardware you control.</p><SovereignLine />
+          <div className="model-meta space-top"><span className="badge">Manual setup</span>{hw.modalities?.map((item) => <span className="badge" key={item}>{item}</span>)}</div></div>
+        <aside className="hero-note"><strong>Weights:</strong>{hw.hf_repo ? <span><a href={`https://huggingface.co/${hw.hf_repo}`}>{hw.hf_repo}</a></span> : <span>Model repository not listed</span>}</aside>
+      </div>
+    </section>
+    <LicenceBox />
+    <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Model terms</p><h2>Model licence</h2></div></div>
+      <div className="panel"><div className="model-meta"><span className="badge">{hw.licence?.spdx ?? "Licence not listed"}</span><span className="badge">Commercial use: {commercialLabel(commercial ?? undefined)}</span></div>
+        <p className="space-top-sm">{commercialCopy(commercial ?? undefined)}</p>
+        {hw.hf_repo && <p className="source-note"><a href={`https://huggingface.co/${hw.hf_repo}`}>Model card</a></p>}
+        <p className="variant-note">This is the licence of the model weights. The installer licence above is separate.</p></div></section>
+    <HardwareCard hw={hw} />
+    <ManualSetup slug={hw.slug} hw={hw} />
+    <CloudGuide slug={hw.slug} hw={hw} installer={false} />
+    <SovereigntyBox />
+  </>;
+}
+
 export default async function ModelLocalPage({ params }: PageProps) {
   const { slug } = await params;
   const model = getModel(slug);
+  const hardware = getHardware(slug);
+  if (!model && hardware) return <GenericModelPage hw={hardware} />;
   if (!model) notFound();
   const status = model.installer_policy?.status ?? "excluded";
   const excluded = status === "excluded";
@@ -171,7 +227,7 @@ export default async function ModelLocalPage({ params }: PageProps) {
     <section className="section-wrap hero">
       <p className="eyebrow"><Link href="/local">Run locally</Link> / Model details</p>
       <div className="hero-grid">
-        <div><h1>{model.name}</h1><p className="lede">{modelSummary(model)}</p>
+        <div><h1>{model.name}</h1><p className="lede">{modelSummary(model)}</p><SovereignLine />
           <div className="model-meta space-top">
             <span className={`badge ${hasRecipe && recipeTested ? "signal" : ""}`}>{!hasRecipe ? "Setup in preparation" : recipeTested ? "Install tested" : "Recipe ready · unverified"}</span>
             {commercialOnly && <span className="badge warn">Non-commercial only</span>}
@@ -190,10 +246,14 @@ export default async function ModelLocalPage({ params }: PageProps) {
       </div>
     </section>
 
+    <LicenceBox />
+
     {commercialOnly && <section className="section-wrap"><div className="callout"><strong>Personal and non-commercial use only.</strong><p>This installer entry is not cleared for commercial use. Read the model card before downloading or serving it.</p></div></section>}
 
+    <HardwareCard hw={hardware ?? hardwareFromCatalog(model)} />
+
     <section className="section-wrap section">
-      <div className="section-heading"><div><p className="section-kicker">Hardware</p><h2>Will it run on my machine?</h2></div><p>Requirements are recorded per variant. A dash means the catalogue does not provide that value.</p></div>
+      <div className="section-heading"><div><p className="section-kicker">Variants</p><h2>Will it run on my machine?</h2></div><p>Requirements are recorded per variant. A dash means the catalogue does not provide that value.</p></div>
       {(model.variants?.length ?? 0) ? <>
         <div className="variant-table table-wrap"><table><thead><tr><th>Variant</th><th>Precision</th><th>Runtime</th><th>Benchmarked</th><th>Install recipe</th><th>Minimum / recommended VRAM</th><th>RAM</th><th>Disk</th><th>Platforms</th><th>Expected speed</th></tr></thead><tbody>{model.variants?.map((variant) => <tr key={variant.id ?? `${variant.runtime}-${variant.precision}`}><td>{variant.id ?? "Variant"}</td><td>{value(variant.precision)}</td><td>{runtimeLabel(variant)}</td><td>{variant.benchmarked ? "Yes" : "No"}</td><td>{installStatusLabel(variant)}</td><td>{vramValue(variant, variant.min_vram_gb)} / {vramValue(variant, variant.recommended_vram_gb)}</td><td>{value(variant.min_ram_gb, " GB")}</td><td>{value(variant.disk_gb, " GB")}</td><td>{variant.platforms?.join(", ") || "—"}</td><td>{speedLabel(model, variant)}</td></tr>)}</tbody></table></div>
         <div className="variant-cards">{model.variants?.map((variant) => <article className="panel variant-card" key={variant.id ?? `${variant.runtime}-${variant.precision}`}>
@@ -204,10 +264,13 @@ export default async function ModelLocalPage({ params }: PageProps) {
       {hasRecipe && <div className="command-line"><code>dm-local plan {model.slug}</code><CopyCommand value={`dm-local plan ${model.slug}`} /><span className="fine-print">Checks memory, disk, platform, and runtime against the catalogue.</span></div>}
     </section>
 
-    <section className="section-wrap section">
+    <section className="section-wrap section" id="quick-start">
       <div className="section-heading"><div><p className="section-kicker">Quick start</p><h2>Choose where to run it</h2></div><p>Installer commands use the pinned model revision. Confirm the model terms before proceeding.</p></div>
       <QuickStart slug={model.slug} excluded={excluded} hasRecipe={hasRecipe} recipeTested={recipeTested} cloudLines={cloudLines} cloudMemoryGb={requiredVram ?? undefined} />
     </section>
+
+    <CloudGuide slug={model.slug} hw={hardware ?? hardwareFromCatalog(model)} installer={hasRecipe} />
+    <SovereigntyBox />
 
     {!excluded && hasRecipe && <section className="section-wrap section panel-grid">
       <article className="panel api-examples"><p className="section-kicker">Call your endpoint</p><h3>Use a local typed endpoint</h3><p>The API accepts typed questions and returns typed answers with probabilities.</p>

@@ -1,0 +1,252 @@
+{
+ "_method": "SAMPLE for development only; replaced by the real file.",
+ "h2o-lightning-4b": {
+  "name": "H2O-Lightning-4B v1.1",
+  "hf_repo": "h2oai/h2o-lightning-4b",
+  "params_total_b": 4.0,
+  "params_active_b": 4.0,
+  "architecture": "dense",
+  "modalities": [
+   "text"
+  ],
+  "installer_supported": true,
+  "source": "installer-catalog",
+  "licence": {
+   "spdx": "apache-2.0",
+   "commercial_use": "yes"
+  },
+  "precisions": [
+   {
+    "id": "bf16",
+    "weights_gb": 8.4,
+    "min_vram_gb": 24,
+    "min_ram_gb": 16,
+    "disk_gb": 8.43
+   }
+  ],
+  "min": {
+   "precision": "bf16",
+   "vram_gb": 24,
+   "gpu_examples": "RTX 4090, RTX 3090, L4",
+   "ram_gb": 16,
+   "disk_gb": 9
+  },
+  "recommended": {
+   "precision": "bf16",
+   "vram_gb": 24,
+   "gpu_examples": "RTX 4090, L4",
+   "ram_gb": 16,
+   "disk_gb": 9
+  },
+  "cpu_only": {
+   "possible": false,
+   "note": "Not offered for this model."
+  },
+  "apple_silicon": {
+   "possible": false,
+   "min_unified_memory_gb": null,
+   "note": "No Apple Silicon variant in the installer catalogue yet."
+  },
+  "cloud": {
+   "aws": {
+    "instance": "g6.xlarge",
+    "gpu": "1x L4 24 GB",
+    "usd_per_hour": 0.8048,
+    "source": "https://aws.amazon.com/ec2/pricing/on-demand/",
+    "eu_regions": "eu-central-1, eu-west-1"
+   },
+   "azure": {
+    "instance": "Standard_NC8as_T4_v3",
+    "gpu": "1x T4 16 GB (too small; use NC24ads_A100_v4)",
+    "usd_per_hour": null,
+    "source": "https://aws.amazon.com/ec2/pricing/on-demand/",
+    "eu_regions": "westeurope, northeurope"
+   },
+   "gcp": {
+    "instance": "g2-standard-8",
+    "gpu": "1x L4 24 GB",
+    "usd_per_hour": 0.85,
+    "source": "https://cloud.google.com/compute/gpus-pricing",
+    "eu_regions": "europe-west4, europe-west3"
+   }
+  },
+  "notes": "Sample."
+ },
+ "surogate-rune-26b-a4b-v3": {
+  "name": "Surogate Rune 26B-A4B v3",
+  "hf_repo": "surogate/rune-26b-a4b-v3",
+  "params_total_b": 26.0,
+  "params_active_b": 4.0,
+  "architecture": "moe",
+  "modalities": [
+   "text",
+   "image"
+  ],
+  "installer_supported": true,
+  "source": "installer-catalog",
+  "licence": {
+   "spdx": "apache-2.0",
+   "commercial_use": "yes"
+  },
+  "precisions": [
+   {
+    "id": "bf16",
+    "weights_gb": 52.0,
+    "min_vram_gb": 80,
+    "min_ram_gb": 64,
+    "disk_gb": 65
+   }
+  ],
+  "min": {
+   "precision": "bf16",
+   "vram_gb": 80,
+   "gpu_examples": "A100 80 GB, H100",
+   "ram_gb": 64,
+   "disk_gb": 65
+  },
+  "recommended": {
+   "precision": "bf16",
+   "vram_gb": 96,
+   "gpu_examples": "H100 NVL, RTX PRO 6000",
+   "ram_gb": 96,
+   "disk_gb": 65
+  },
+  "cpu_only": {
+   "possible": false,
+   "note": "Too large for CPU-only use."
+  },
+  "apple_silicon": {
+   "possible": false,
+   "min_unified_memory_gb": null,
+   "note": "Custom readout architecture; not yet supported."
+  },
+  "cloud": {
+   "aws": {
+    "instance": "p4de.24xlarge (1 of 8 GPUs used)",
+    "gpu": "8x A100 80 GB",
+    "usd_per_hour": 27.45,
+    "source": "https://aws.amazon.com/ec2/pricing/on-demand/",
+    "eu_regions": "eu-west-1, eu-central-1"
+   },
+   "azure": {
+    "instance": "Standard_NC24ads_A100_v4",
+    "gpu": "1x A100 80 GB",
+    "usd_per_hour": 3.67,
+    "source": "https://azure.microsoft.com/pricing/details/virtual-machines/linux/",
+    "eu_regions": "westeurope, northeurope"
+   },
+   "gcp": {
+    "instance": "a2-ultragpu-1g",
+    "gpu": "1x A100 80 GB",
+    "usd_per_hour": 5.0,
+    "source": "https://cloud.google.com/compute/gpus-pricing",
+    "eu_regions": "europe-west4"
+   }
+  },
+  "notes": "Sample."
+ },
+ "winnow-12b": {
+  "name": "Winnow-12B Q8",
+  "hf_repo": "EldanRing/Winnow-12B",
+  "params_total_b": 12.0,
+  "params_active_b": 12.0,
+  "architecture": "dense",
+  "modalities": [
+   "text"
+  ],
+  "installer_supported": false,
+  "source": "hf-safetensors",
+  "licence": {
+   "spdx": "Apache-2.0, including the applicable Gemma 4 base/derivative licence terms",
+   "commercial_use": "conditional"
+  },
+  "precisions": [
+   {
+    "id": "bf16",
+    "weights_gb": 24.0,
+    "min_vram_gb": 32,
+    "min_ram_gb": 29,
+    "disk_gb": 33
+   },
+   {
+    "id": "q4",
+    "weights_gb": 6.7,
+    "min_vram_gb": 12,
+    "min_ram_gb": 16,
+    "disk_gb": 13
+   }
+  ],
+  "min": {
+   "precision": "q4",
+   "vram_gb": 12,
+   "gpu_examples": "RTX 3060 12 GB, RTX 4070",
+   "ram_gb": 16,
+   "disk_gb": 13
+  },
+  "recommended": {
+   "precision": "bf16",
+   "vram_gb": 48,
+   "gpu_examples": "L40S, RTX 6000 Ada",
+   "ram_gb": 32,
+   "disk_gb": 33
+  },
+  "cpu_only": {
+   "possible": true,
+   "note": "Possible with Q4 weights; expect slow responses."
+  },
+  "apple_silicon": {
+   "possible": true,
+   "min_unified_memory_gb": 16,
+   "note": "M-series with 16 GB or more, Q4 GGUF via llama.cpp or MLX."
+  },
+  "cloud": {
+   "aws": {
+    "instance": "g6e.xlarge",
+    "gpu": "1x L40S 48 GB",
+    "usd_per_hour": 1.86,
+    "source": "https://aws.amazon.com/ec2/pricing/on-demand/",
+    "eu_regions": "eu-central-1, eu-west-1"
+   },
+   "azure": {
+    "instance": "Standard_NC24ads_A100_v4",
+    "gpu": "1x A100 80 GB",
+    "usd_per_hour": 3.67,
+    "source": "https://azure.microsoft.com/pricing/details/virtual-machines/linux/",
+    "eu_regions": "westeurope, northeurope"
+   },
+   "gcp": {
+    "instance": "g2-standard-8",
+    "gpu": "1x L4 24 GB",
+    "usd_per_hour": 0.85,
+    "source": "https://cloud.google.com/compute/gpus-pricing",
+    "eu_regions": "europe-west4, europe-west3"
+   }
+  },
+  "notes": "Sample."
+ },
+ "clef": {
+  "name": "Clef",
+  "hf_repo": "Cloudflare/clef",
+  "params_total_b": null,
+  "params_active_b": null,
+  "architecture": "unknown",
+  "modalities": [],
+  "installer_supported": false,
+  "source": "unknown",
+  "licence": {
+   "spdx": "apache-2.0",
+   "commercial_use": "yes"
+  },
+  "precisions": [],
+  "min": null,
+  "recommended": null,
+  "cpu_only": null,
+  "apple_silicon": null,
+  "cloud": {
+   "aws": null,
+   "azure": null,
+   "gcp": null
+  },
+  "notes": "Size not published."
+ }
+}

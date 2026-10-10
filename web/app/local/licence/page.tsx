@@ -13,7 +13,7 @@ export default function LicencePage() {
       <article className="price-card featured licence-card"><p className="section-kicker">Commercial</p><h2>For companies above either threshold</h2><p className="price licence-price">$1,000 <span>one-time setup</span></p><p className="price licence-price">$100/month</p><ul><li>Required when a company has more than 10 employees or more than USD 1 million in annual recurring revenue (ARR)</li><li>One-time setup fee and monthly subscription</li><li>Cancel any time through the customer portal</li></ul><p>Applicable taxes are calculated at checkout.</p></article>
       <p className="source-note full-width">Source: <a href="#terms">Decision Models local installer licence terms</a> · checked 9 October 2026.</p>
     </section>
-    <section className="section-wrap section detail-grid">
+    <section className="section-wrap section detail-grid" id="checkout">
       <div><p className="section-kicker">Commercial checkout</p><h2>Start the commercial licence</h2><p className="lede">We use your declaration to place the order. No company-size verification is performed during checkout.</p><div className="panel space-top"><LicenceCheckoutForm /></div></div>
       <aside className="stack"><div className="callout"><strong>Model licences are separate.</strong><p>The installer licence does not change the rights attached to model weights. Check the model&apos;s own licence before commercial use or redistribution.</p></div><div className="panel"><h3>What you get</h3><p>After checkout, we email a one-time licence key and provide an activation command. Keep the key in your company&apos;s approved secret storage.</p><div className="command-line"><code>dm-local licence activate &lt;key&gt;</code></div></div></aside>
     </section>
