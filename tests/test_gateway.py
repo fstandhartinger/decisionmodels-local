@@ -68,6 +68,16 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(answer["score"], 1.0)
         self.assertEqual(answer["probabilities"], probabilities)
 
+    def test_author_discrete_score_is_accepted_only_when_it_is_the_most_likely_level(self):
+        question = {"type": "score", "criteria": ["low", "medium", "high"]}
+        probabilities = {"0": 0.003, "1": 0.01, "2": 0.987}
+        raw = {"answers": {"color": {"score": 2, "probabilities": probabilities}}, "usage": {"input_tokens": 4, "output_tokens": 0}}
+        answer = normalize_jev(raw, CHOICE, "color", question)["answers"]["color"]
+        self.assertEqual(answer["score"], 2)
+        raw["answers"]["color"]["score"] = 1
+        with self.assertRaisesRegex(ValueError, "disagrees"):
+            normalize_jev(raw, CHOICE, "color", question)
+
     def test_letter_logprobs_choice_and_noul_score(self):
         bodies = [
             {"choices": [{"logprobs": {"top_logprobs": [{" A": -0.1, " B": -2.0}]}}],
