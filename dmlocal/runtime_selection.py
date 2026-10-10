@@ -133,9 +133,13 @@ def recipe_errors(variant):
     else:
         for index, item in enumerate(codes):
             label = f"install.code[{index}]"
-            if not isinstance(item, dict) or item.get("source") != "github":
-                errors.append(f"{label} must use source=github")
+            if not isinstance(item, dict) or item.get("source") not in ("github", "github-release"):
+                errors.append(f"{label} must use source=github or source=github-release")
                 continue
+            if item.get("source") == "github-release":
+                for field in ("tag", "asset"):
+                    if not isinstance(item.get(field), str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._+-]{0,127}", item.get(field, "")):
+                        errors.append(f"{label}.{field} must be a plain release tag / asset file name")
             if not _valid_repo(item.get("repo")):
                 errors.append(f"{label}.repo must be owner/name")
             if not isinstance(item.get("revision"), str) or not _REVISION.fullmatch(item.get("revision", "")):

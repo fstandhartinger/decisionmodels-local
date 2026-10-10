@@ -1,0 +1,192 @@
+{
+ "schema": "decisionmodels-local-catalog/1",
+ "slug": "winnow-12b",
+ "name": "Winnow-12B Q8",
+ "author": "EldanRing",
+ "lists": [
+  "jevbench-top10"
+ ],
+ "benchmarks": {
+  "jevbench": {
+   "version": "v1.7.43 board (2026-10-10)",
+   "key": "winnow-12b-q8",
+   "capability_rank": 14,
+   "capability": 71.2,
+   "composite_rank": 7,
+   "composite": 68.9,
+   "page": "https://benchmarkheaven.com/jev-models/winnow-12b"
+  }
+ },
+ "modalities": [
+  "text"
+ ],
+ "question_types": {
+  "choice": "native",
+  "noul": "native",
+  "score": "native"
+ },
+ "weights": {
+  "repo": "EldanRing/Winnow-12B",
+  "revision": "859a2cb24921d8b579badce6caa469f9290f3bc1",
+  "url": "https://huggingface.co/EldanRing/Winnow-12B/tree/859a2cb24921d8b579badce6caa469f9290f3bc1",
+  "gated": false
+ },
+ "code": {
+  "repo": "https://github.com/EldanRing/winnow-inference",
+  "revision": "fc8e21bb8475d7c9a618e380a76423b0dd0455a6",
+  "release": "v2026.10.06"
+ },
+ "base_model": {
+  "repo": "google/gemma-4-12B-it",
+  "licence": "apache-2.0",
+  "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "revision_note": "base revision from the Winnow card"
+ },
+ "params": {
+  "total_b": 12.0,
+  "active_b": 12.0
+ },
+ "licence": {
+  "spdx": "apache-2.0",
+  "commercial_use": "yes",
+  "redistribution": "yes",
+  "notes": "Apache-2.0 for the Winnow-12B weights (a merged LoRA fine-tune of Gemma 4 12B IT; the Gemma terms apply). The Winnow inference code is a patched llama.cpp (MIT, preserved).",
+  "evidence": [
+   "https://huggingface.co/EldanRing/Winnow-12B/raw/859a2cb24921d8b579badce6caa469f9290f3bc1/LICENSE",
+   "https://huggingface.co/EldanRing/Winnow-12B/raw/859a2cb24921d8b579badce6caa469f9290f3bc1/README.md"
+  ]
+ },
+ "jev_distillation": {
+  "status": "unclear",
+  "evidence": "Card: \"The training data and pipeline are private\"; labels are synthetic scenarios and teacher-supervised examples. No statement on Jev/TypeSafe outputs.",
+  "url": "https://huggingface.co/EldanRing/Winnow-12B/raw/859a2cb24921d8b579badce6caa469f9290f3bc1/README.md"
+ },
+ "installer_policy": {
+  "status": "supported",
+  "reason": "Open licence (apache-2.0). In the union of the open JevBench board's top 10 by Composite Score (#7). Runs only on NVIDIA Blackwell (sm_120) Linux with CUDA 13 runtime libraries, because the author's prebuilt server is built for sm_120 only.",
+  "decided_by": "Florian, DECISIONS 2026-10-10 18:45Z (board #17057)"
+ },
+ "readout": {
+  "type": "author_server",
+  "endpoint": "jev",
+  "backend_agnostic": false,
+  "notes": "Author's patched llama.cpp server (winnow-server) answers POST /v1/systemone natively, scoring the options without generating tokens.",
+  "portable_notes": "Needs the author's llama.cpp patches (classifier head, Gemma4 tied embedding); stock llama.cpp does not reproduce the readout. Only the author's Linux x86_64 CUDA 13 build for sm_120 is prebuilt; Apple Silicon needs a source build (not offered here)."
+ },
+ "variants": [
+  {
+   "id": "q8_0-winnow-server",
+   "precision": "gguf-q8_0",
+   "benchmarked": true,
+   "runtime": "winnow-server (author's patched llama.cpp, prebuilt CUDA 13 release)",
+   "runtime_version": "winnow-inference v2026.10.06 (llama.cpp 911f6cd + 8 patches)",
+   "image": null,
+   "platforms": [
+    "linux-nvidia"
+   ],
+   "gpu_arch_min": "sm_120",
+   "min_vram_gb": 16,
+   "recommended_vram_gb": 16,
+   "min_ram_gb": 16,
+   "disk_gb": 12.67,
+   "files": [
+    {
+     "path": "gguf/Winnow-12B-Q8_0.gguf",
+     "size": 12669646592,
+     "sha256": "b710efc4c0d048ee61eed92c5fef5ce323a4d17e7c51f9f0533cc72ae50818ea",
+     "git_blob_sha1": null
+    },
+    {
+     "path": "LICENSE",
+     "size": 11358,
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "git_blob_sha1": "d645695673349e3947e8e5ae42332d0ac3164cd7"
+    },
+    {
+     "path": "NOTICE",
+     "size": 1198,
+     "sha256": "adf3da78db8cfdc52adca7f60607a11259c6e38b16f833490432a81f3fbb8488",
+     "git_blob_sha1": "548b33fe1e0c3f8f41ce9f2495974c32ad94f340"
+    }
+   ],
+   "serve": {
+    "port": 8091,
+    "steps": [
+     "Extract the winnow-inference runtime release v2026.10.06 (sha256 8829a53e...). Host needs glibc 2.38+, CUDA 13 runtime libs (libcudart/libcublas 13, libnccl 2) and an sm_120 GPU.",
+     "python3 scripts/winnow.py serve --model q8 --text-only --model-dir <weights> --host 127.0.0.1 --port 8091 (starts bin/winnow-server; POST /v1/systemone)."
+    ]
+   },
+   "measured": {
+    "gpu": "RTX 5070 Ti 16 GB (author)",
+    "p50_ms": null,
+    "source": "author README (BH latency shown on the board page)"
+   },
+   "expected_speed": "Author measured about 0.15-0.2 s for a four-question request cold-cache on RTX 5070 Ti; board latency for Q8 is on the Winnow page.",
+   "notes": "Q8_0 GGUF 12.67 GB; author's memory guide 12.8-14.8 GiB at 8K context. Only the prebuilt sm_120 (Blackwell) Linux build is supported by this installer.",
+   "install": {
+    "runtime": "venv",
+    "python": "3.12",
+    "packages": [],
+    "code": [
+     {
+      "id": "winnow",
+      "source": "github-release",
+      "repo": "EldanRing/winnow-inference",
+      "revision": "fc8e21bb8475d7c9a618e380a76423b0dd0455a6",
+      "tag": "v2026.10.06",
+      "asset": "winnow-linux-x86_64-cuda-v2026.10.06.tar.gz",
+      "sha256": "8829a53e29136ad4ca93366d3853cb41c7396bd2972b9d18b6d798cecbe1d37b",
+      "dest": "code/winnow",
+      "pip_install": false
+     }
+    ],
+    "processes": [
+     {
+      "name": "api",
+      "command": [
+       "{python}",
+       "{code:code/winnow}/scripts/winnow.py",
+       "serve",
+       "--model",
+       "q8",
+       "--text-only",
+       "--model-dir",
+       "{weights}",
+       "--host",
+       "127.0.0.1",
+       "--port",
+       "{port:api}"
+      ],
+      "env": {},
+      "cwd": "{code:code/winnow}",
+      "ready": {
+       "url": "http://127.0.0.1:{port:api}/health",
+       "timeout_s": 600
+      }
+     }
+    ],
+    "api": {
+     "mode": "proxy_jev",
+     "port": "api",
+     "text_path": "/v1/systemone",
+     "image_path": null,
+     "model": "Winnow-12B",
+     "auth_header": null
+    },
+    "requires": {
+     "platforms": [
+      "linux-nvidia"
+     ],
+     "cuda_min": "13.0",
+     "gpu_arch_min": "sm_120"
+    },
+    "verified": {
+     "status": "unverified",
+     "where": "Recipe written 2026-10-10, test pending",
+     "selftest": "not run"
+    }
+   }
+  }
+ ],
+ "sources_checked_utc": "2026-10-10T19:40Z"
+}

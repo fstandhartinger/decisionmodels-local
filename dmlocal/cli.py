@@ -231,7 +231,8 @@ def _install(args):
                 url = __import__("dmlocal.storage", fromlist=["hf_url"]).hf_url(item["repo"], item["revision"], spec["path"])
                 print("Would download and verify: " + url + " sha256=" + spec["sha256"])
         for item in recipe.get("code", []):
-            url = f"https://codeload.github.com/{item['repo']}/tar.gz/{item['revision']}"
+            url = (f"https://github.com/{item['repo']}/releases/download/{item['tag']}/{item['asset']}" if item.get("source") == "github-release"
+                   else f"https://codeload.github.com/{item['repo']}/tar.gz/{item['revision']}")
             print("Would download, verify, and safely extract: " + url + " sha256=" + item["sha256"])
         if runtime_name == "docker-compose":
             compose = recipe["compose"]

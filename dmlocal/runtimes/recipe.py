@@ -326,7 +326,10 @@ class RecipeRuntime:
         destination.parent.mkdir(parents=True, exist_ok=True)
         archive = self.runtime_dir / ("code-" + re.sub(r"[^A-Za-z0-9_.-]", "-", repo) + ".tar.gz")
         archive.parent.mkdir(parents=True, exist_ok=True)
-        url = f"https://codeload.github.com/{repo}/tar.gz/{revision}"
+        if spec.get("source") == "github-release":
+            url = f"https://github.com/{repo}/releases/download/{spec['tag']}/{spec['asset']}"
+        else:
+            url = f"https://codeload.github.com/{repo}/tar.gz/{revision}"
         request = urllib.request.Request(url, headers={"User-Agent": "dm-local"})
         with urllib.request.urlopen(request, timeout=90) as response, archive.open("wb") as output:
             shutil.copyfileobj(response, output)
