@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { benchmarkRank, hasExecutableInstallRecipe, installRecipeStatus, loadCatalog, publicCatalog, sanitizePublicText, sortedByBenchmark } from "../lib/catalog";
+import { benchmarkRank, displayCopy, hasExecutableInstallRecipe, installRecipeStatus, loadCatalog, publicCatalog, sanitizePublicText, sortedByBenchmark } from "../lib/catalog";
 import { catalogRoot } from "../lib/catalog-root";
 
 let temporary: string | undefined;
@@ -72,5 +72,10 @@ describe("catalogue loader", () => {
     const models = [{ slug: "rank-alias", name: "Rank Alias", benchmarks: { imagejevbench: { rank: 3 } } }];
     expect(benchmarkRank(models[0].benchmarks.imagejevbench)).toBeNull();
     expect(sortedByBenchmark(models, "imagejevbench").map((model) => model.slug)).toEqual(["rank-alias"]);
+  });
+
+  it("tidies split units and spelling in visible catalogue copy", () => {
+    expect(displayCopy("About 59 ms p 50 on an H 100 with BF 16 weights from the installer catalog."))
+      .toBe("About 59 ms p50 on an H100 with BF16 weights from the installer catalogue.");
   });
 });

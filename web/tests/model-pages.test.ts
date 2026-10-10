@@ -72,4 +72,13 @@ describe("model local pages", () => {
     const html = await render(hardware[0].slug);
     expect(html).not.toMatch(/Helsinki|Finland|ISO 27001|SOC 2|certified/i);
   });
+
+  it("shows catalogue notes without echoed badges or split units", async () => {
+    for (const slug of slugs) {
+      const text = (await render(slug)).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+      expect(text, slug).not.toMatch(/\bNo No\b|\bNot yet Not yet\b/);
+      expect(text, slug).not.toMatch(/\bp 50\b|\bH 100\b/);
+      expect(text, slug).not.toMatch(/\bcatalog\b/);
+    }
+  });
 });

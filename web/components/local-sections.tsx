@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CopyCommand } from "@/components/copy-command";
+import { displayCopy } from "@/lib/catalog";
 import { CLOUD_PROVIDERS, hasKnownHardware, sourceLink, type HardwareEntry, type HwCloud } from "@/lib/hardware-all";
 import { POSIX_INSTALL_COMMAND } from "@/lib/install-commands";
 
@@ -43,6 +44,20 @@ function gb(value?: number | null) {
   return Number.isFinite(value) ? `${value} GB` : "—";
 }
 
+
+/** Catalogue notes often repeat the badge ("No No tested …", "Not yet Not yet: …"); keep the badge and reword the echo. */
+export function factNote(badge: string, note?: string | null): string | undefined {
+  if (!note) return undefined;
+  const text = displayCopy(note);
+  const lower = text.toLowerCase(), word = badge.toLowerCase();
+  if (lower.startsWith(`${word}:`)) {
+    const rest = text.slice(word.length + 1).trim();
+    return rest.charAt(0).toUpperCase() + rest.slice(1);
+  }
+  if (word === "no" && text.startsWith("No ")) return `There is no ${text.slice(3)}`;
+  return text;
+}
+
 export function HardwareCard({ hw }: { hw?: HardwareEntry }) {
   if (!hw || !hasKnownHardware(hw)) return <section className="section-wrap section" id="hardware-requirements"><div className="section-heading"><div><p className="section-kicker">Hardware</p><h2>Minimum and recommended hardware</h2></div></div>
     <div className="callout muted"><strong>Hardware requirements on request</strong><p>The model size is not published, so we cannot give a reliable figure yet. <a href={installerRequestHref(hw?.slug ?? "model")}>Ask us</a> and we will work it out.</p></div></section>;
@@ -55,13 +70,15 @@ export function HardwareCard({ hw }: { hw?: HardwareEntry }) {
   ];
   const cpu = hw.cpu_only;
   const apple = hw.apple_silicon;
+  const cpuBadge = cpu?.possible ? "Yes, slowly" : "No";
+  const appleBadge = apple?.possible ? `Yes, ${apple.min_unified_memory_gb ?? "—"} GB+ unified memory` : "Not yet";
   return <section className="section-wrap section" id="hardware-requirements">
     <div className="section-heading"><div><p className="section-kicker">Hardware</p><h2>Minimum and recommended hardware</h2></div><p>{hw.params_total_b ? `${hw.params_total_b}B parameters${hw.params_active_b && hw.params_active_b !== hw.params_total_b ? ` (${hw.params_active_b}B active)` : ""}. ` : ""}Sized for decision readouts with inputs up to about 8k tokens.</p></div>
     <div className="hw-grid">
       <article className="panel"><div className="table-wrap" tabIndex={0} role="region" aria-label="Minimum and recommended hardware"><table className="hw-table"><thead><tr><th><span className="sr-only">Requirement</span></th><th>Minimum</th><th>Recommended</th></tr></thead><tbody>{rows.map(([label, min, rec]) => <tr key={label}><th scope="row">{label}</th><td>{min || "—"}</td><td>{rec || "—"}</td></tr>)}</tbody></table></div></article>
       <article className="panel"><dl className="hw-facts">
-        <div><dt>CPU only</dt><dd><span className={`badge ${cpu?.possible ? "signal" : ""}`}>{cpu?.possible ? "Yes, slowly" : "No"}</span> {cpu?.note}</dd></div>
-        <div><dt>Apple Silicon</dt><dd><span className={`badge ${apple?.possible ? "signal" : ""}`}>{apple?.possible ? `Yes, ${apple.min_unified_memory_gb ?? "—"} GB+ unified memory` : "Not yet"}</span> {apple?.note}</dd></div>
+        <div><dt>CPU only</dt><dd><span className={`badge ${cpu?.possible ? "signal" : ""}`}>{cpuBadge}</span> {factNote(cpuBadge, cpu?.note)}</dd></div>
+        <div><dt>Apple Silicon</dt><dd><span className={`badge ${apple?.possible ? "signal" : ""}`}>{appleBadge}</span> {factNote(appleBadge, apple?.note)}</dd></div>
       </dl></article>
     </div>
     <p className="source-note">How we computed this: weights size × bytes per value for the precision, plus 10 % and room for the context. For mixture-of-experts models all parameters must be in memory. Rounded up to common GPU sizes.{hw.source === "installer-catalog" ? " Installer figures come from the reviewed catalogue." : " These are estimates for manual setups."}</p>
