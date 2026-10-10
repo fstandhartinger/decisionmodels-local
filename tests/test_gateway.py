@@ -68,6 +68,14 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(answer["score"], 1.0)
         self.assertEqual(answer["probabilities"], probabilities)
 
+    def test_usage_without_output_tokens_is_accepted_as_zero(self):
+        raw = {"answers": {"color": {"choice": "red", "probabilities": {"red": 0.7, "blue": 0.3}}}, "usage": {"input_tokens": 12}}
+        out = normalize_jev(raw, CHOICE, "color", CHOICE["questions"]["color"])
+        self.assertEqual(out["usage"]["output_tokens"], 0)
+        raw["usage"] = {"input_tokens": "x"}
+        with self.assertRaisesRegex(ValueError, "token usage"):
+            normalize_jev(raw, CHOICE, "color", CHOICE["questions"]["color"])
+
     def test_author_discrete_score_is_accepted_only_when_it_is_the_most_likely_level(self):
         question = {"type": "score", "criteria": ["low", "medium", "high"]}
         probabilities = {"0": 0.003, "1": 0.01, "2": 0.987}

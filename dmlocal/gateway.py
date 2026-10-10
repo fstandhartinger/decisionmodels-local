@@ -252,6 +252,8 @@ def normalize_jev(result, request, qname, question):
         if not _finite_probability(out["confidence"]):
             raise ValueError("backend confidence is invalid")
     usage = result.get("usage")
+    if isinstance(usage, dict) and "output_tokens" not in usage:
+        usage = dict(usage, output_tokens=0)  # one-pass readouts (e.g. Surogate) report input tokens only; they generate none
     if not isinstance(usage, dict) or not all(_nonnegative_int(usage.get(k)) == usage.get(k) for k in ("input_tokens", "output_tokens")):
         raise ValueError("backend did not provide valid token usage")
     return {"id": str(result.get("id") or "dec_" + uuid.uuid4().hex[:20]),
