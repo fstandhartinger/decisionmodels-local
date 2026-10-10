@@ -93,7 +93,7 @@ def assess_variant(variant, model, hw):
     if disk is not None and (hw.get("disk_free_gb") or 0) < float(disk) * 1.1:
         reasons.append(f"needs {disk:g} GB model storage plus 10% free-space margin")
     modalities = model.get("modalities", ["text"])
-    if "image" in modalities and not variant.get("supports_images", False):
+    if "image" in modalities and "text" not in modalities and not variant.get("supports_images", False):
         reasons.append("variant does not declare image support")
     if reasons:
         verdict = "tight" if len(reasons) == 1 and reasons[0].startswith("minimum memory fits") else "does_not_fit"

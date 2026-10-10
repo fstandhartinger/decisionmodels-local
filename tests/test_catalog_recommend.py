@@ -67,9 +67,13 @@ class CatalogAndRecommendationTests(unittest.TestCase):
         self.assertEqual(result["variants"][0]["verdict"], "needs_quantization")
         self.assertEqual(result["selected"], "q4")
 
-    def test_image_model_requires_image_capable_variant(self):
-        model = model_with_variants([variant(supports_images=False)], modalities=["text", "image"])
+    def test_image_only_model_requires_image_capable_variant(self):
+        model = model_with_variants([variant(supports_images=False)], modalities=["image"])
         self.assertEqual(plan_model(model, hardware())["variants"][0]["verdict"], "does_not_fit")
+
+    def test_text_and_image_model_accepts_text_only_variant(self):
+        model = model_with_variants([variant(supports_images=False)], modalities=["text", "image"])
+        self.assertNotEqual(plan_model(model, hardware())["variants"][0]["verdict"], "does_not_fit")
 
     def test_cpu_and_apple_preference(self):
         cpu_variants = [variant("venv", runtime="venv", min_vram=0, recommended=0, benchmarked=False,
