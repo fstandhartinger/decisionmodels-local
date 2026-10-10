@@ -150,7 +150,7 @@
     "steps": [
      "Use the pinned vLLM image (see image) and verify model.safetensors sha256 f8553c9e... and torchcast_shim.py sha256 1dff956e... / readout_config.json sha256 8a4de5ef....",
      "vllm serve <snapshot> --served-model-name torchcast-decision-12b --host 127.0.0.1 --port 8890 --max-model-len 16384 --gpu-memory-utilization 0.90",
-     "SHIM_VLLM=http://127.0.0.1:8890/v1/chat/completions SHIM_MODEL=torchcast-decision-12b SHIM_PORT=8011 python3 torchcast_shim.py (readout_config.json beside it).",
+     "SHIM_VLLM=http://127.0.0.1:8890/v1/chat/completions SHIM_MODEL=torchcast-decision-12b TORCHCAST_PORT=8011 python3 serving/decision_server.py (author repo @ d7f8446; the evaluation shim torchcast_shim.py accepts only a question named \"decision\", decision_server.py answers any question names with the same readout).",
      "Adapter: jevbench typesafe, endpoint http://127.0.0.1:8011, model torchcast-decision-12b, timeout 120 s."
     ]
    },
@@ -202,13 +202,13 @@
       "name": "api",
       "command": [
        "{python}",
-       "{weights}/torchcast_shim.py"
+       "{code:code/author}/serving/decision_server.py"
       ],
       "env": {
        "SHIM_VLLM": "http://127.0.0.1:{port:engine}/v1/chat/completions",
        "SHIM_MODEL": "torchcast-decision-12b",
-       "SHIM_PORT": "{port:api}",
-       "SHIM_HOST": "127.0.0.1"
+       "TORCHCAST_PORT": "{port:api}",
+       "TORCHCAST_HOST": "127.0.0.1"
       },
       "cwd": "{weights}",
       "ready": {
@@ -235,14 +235,25 @@
     },
     "verified": {
      "status": "unverified",
-     "where": "Recipe fixed 2026-10-10 (shim has no /health; ready URL is /v1/models); test pending",
+     "where": "Recipe changed 2026-10-10 to the author's decision_server.py (the shim only answers a question named 'decision'); test pending",
      "selftest": "not run"
     },
     "extra_index_urls": [
      "https://wheels.vllm.ai/0.30.0/cu129",
      "https://download.pytorch.org/whl/cu129"
     ],
-    "index_strategy": "unsafe-best-match"
+    "index_strategy": "unsafe-best-match",
+    "code": [
+     {
+      "id": "author",
+      "source": "github",
+      "repo": "Torchcast-AI/torchcast-decision-12b",
+      "revision": "d7f84468f7c4a21c8aeed52df845d98c59afae04",
+      "sha256": "921a8f69938a97c716403ea847bc559e12311f0856ffcb25df3980d8802e63de",
+      "dest": "code/author",
+      "pip_install": false
+     }
+    ]
    }
   }
  ],
