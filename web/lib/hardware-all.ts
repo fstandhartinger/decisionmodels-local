@@ -52,7 +52,7 @@ export function hasKnownHardware(entry?: HardwareEntry): boolean {
 
 export const CLOUD_PROVIDERS = [
   { id: "aws", name: "AWS", image: "AWS Deep Learning AMI (GPU, Ubuntu)", quota: "Service Quotas → EC2 → “Running On-Demand G and VT instances” (or P instances)", private: "a security group that allows inbound SSH (port 22) only from your IP", where: "EC2 console" },
-  { id: "azure", name: "Azure", image: "NVIDIA GPU-Optimized VM image (Marketplace) or the Ubuntu HPC image with NVIDIA drivers", quota: "Subscription → Usage + quotas → request the NC or ND vCPU family in your region", private: "a network security group that allows inbound SSH (port 22) only from your IP", where: "Virtual machines blade" },
+  { id: "azure", name: "Azure", image: "NVIDIA GPU-Optimized VM image (Marketplace) or the Ubuntu HPC image with NVIDIA drivers", quota: "Subscription → Usage + quotas → request vCPUs for the instance family in your region (NVadsA10v5 for A10, NCadsA100v4 for A100)", private: "a network security group that allows inbound SSH (port 22) only from your IP", where: "Virtual machines blade" },
   { id: "gcp", name: "Google Cloud", image: "Deep Learning VM (CUDA, Ubuntu)", quota: "IAM & Admin → Quotas → GPUs (all regions) and the specific GPU type in your region", private: "a firewall rule that allows inbound SSH (port 22) only from your IP", where: "Compute Engine console" }
 ] as const;
 

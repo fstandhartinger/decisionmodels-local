@@ -26,7 +26,7 @@ export function LicenceBox({ installable = true }: { installable?: boolean }) {
   return <section className="section-wrap" aria-labelledby="installer-licence-title"><div className="licence-box">
     <div>
       <p className="section-kicker">Installer licence</p>
-      <h2 id="installer-licence-title">Free for small teams. USD 1,000 for larger companies.</h2>
+      <h2 id="installer-licence-title">Free for small teams. USD 1,000 + USD 100/month for larger companies.</h2>
       <p className="licence-line"><strong>Free for individuals and companies with up to 10 employees and up to USD 1M ARR.</strong></p>
       <p className="licence-line"><strong>Larger companies: USD 1,000 one-time + USD 100/month (self-declared).</strong> That applies above either threshold: more than 10 employees or more than USD 1 million ARR.</p>
       <p className="fine-print">This is the licence for the Decision Models <em>installer</em>. The model&apos;s own weights licence is separate and shown further down.</p>
