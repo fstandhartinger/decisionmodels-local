@@ -27,7 +27,9 @@ export function hasExecutableInstallRecipe(variant: ModelVariant): boolean {
     && variant.install.processes.length > 0
     && variant.install.processes.every((process) => Array.isArray(process.command)
       && process.command.length > 0
-      && process.command.every((argument) => typeof argument === "string" && argument.trim().length > 0));
+      && typeof process.command[0] === "string" && process.command[0].trim().length > 0
+      // Later arguments may legitimately be empty strings (e.g. `--cors-origins ""`).
+      && process.command.every((argument) => typeof argument === "string"));
 }
 
 export function installRecipeStatus(variant: ModelVariant): "tested" | "ready_unverified" | "documentation_only" {
