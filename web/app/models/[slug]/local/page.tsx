@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { CopyCommand } from "@/components/copy-command";
 import { CloudGuide, HardwareCard, LicenceBox, OnRequestCard, SovereigntyBox } from "@/components/local-sections";
 import { QuickStart } from "@/components/quick-start";
-import { benchmarkRank, getModel, hasAnyExecutableInstallRecipe, installRecipeStatus, isInstallerSupported, loadCatalog, sanitizePublicText, type Model, type ModelVariant } from "@/lib/catalog";
+import { benchmarkRank, getModel, hasAnyExecutableInstallRecipe, installRecipeStatus, displayCopy, isInstallerSupported, loadCatalog, sanitizePublicText, type Model, type ModelVariant } from "@/lib/catalog";
 import { getHardware, loadHardwareAll, type HardwareEntry } from "@/lib/hardware-all";
 import { cloudOptionsFor, cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, money, publicCloudInstanceName, publicCloudProviderName, sourcePublisher, sourceUrl, suggestedDeviceFor } from "@/lib/hardware-data";
 
@@ -85,7 +85,7 @@ function speedLabel(model: Model, variant: ModelVariant) {
     const time = seconds < 0.1 ? `${Math.round(seconds * 1000)} ms` : `${seconds.toFixed(1)} s`;
     return `~${time} per decision on a GPU (measured by Benchmark Heaven on ${gpu}).`;
   }
-  if (variant.expected_speed) return sanitizePublicText(variant.expected_speed);
+  if (variant.expected_speed) return displayCopy(sanitizePublicText(variant.expected_speed));
   return "Timing is not reported for this variant.";
 }
 
@@ -146,8 +146,8 @@ function hardwareFromCatalog(model: Model): HardwareEntry {
     slug: model.slug, name: model.name, hf_repo: model.weights?.repo ?? null, params_total_b: model.params?.total_b ?? null, source: "installer-catalog", installer_supported: true,
     min: gpu ? { precision: gpu.precision, vram_gb: gpu.min_vram_gb, ram_gb: gpu.min_ram_gb, disk_gb: gpu.disk_gb } : null,
     recommended: gpu ? { precision: gpu.precision, vram_gb: gpu.recommended_vram_gb ?? gpu.min_vram_gb, ram_gb: gpu.min_ram_gb, disk_gb: gpu.disk_gb } : null,
-    cpu_only: { possible: Boolean(cpu), note: cpu ? `Needs ${cpu.min_ram_gb ?? "?"} GB of RAM and will be slow.` : "No CPU variant in the installer catalogue." },
-    apple_silicon: { possible: Boolean(mac), min_unified_memory_gb: mac?.min_ram_gb ?? null, note: mac ? undefined : "No Apple Silicon variant in the installer catalogue." }
+    cpu_only: { possible: Boolean(cpu), note: cpu ? `Needs ${cpu.min_ram_gb ?? "?"} GB of RAM and will be slow.` : "The installer catalogue has no CPU variant." },
+    apple_silicon: { possible: Boolean(mac), min_unified_memory_gb: mac?.min_ram_gb ?? null, note: mac ? undefined : "The installer catalogue has no Apple Silicon variant." }
   };
 }
 

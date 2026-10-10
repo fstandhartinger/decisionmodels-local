@@ -119,6 +119,15 @@ export function sanitizePublicText(value: string): string {
     .replace(/\s{2,}/g, " ").trim();
 }
 
+/** Visible-copy tidy-up for catalogue text: joins split units ("p 50", "H 100", "BF 16") and uses the site's British "catalogue". */
+export function displayCopy(value: string): string {
+  return value
+    .replace(/\bp (50|90|95|99)\b/g, "p$1")
+    .replace(/\b([HAB]) (100|200)\b/g, "$1$2")
+    .replace(/\b(BF|FP|bf|fp) (8|16|32)\b/g, "$1$2")
+    .replace(/\bcatalog\b/g, "catalogue");
+}
+
 export function publicCatalog(models = loadCatalog()): Model[] {
   const internalKeys = new Set(["recipe_source", "notes", "note", "evidence", "expected_speed", "portable_notes", "worker_proposal", "decided_by", "gpu_arch_min", "runtime_version", "image", "serve", "source"]);
   const stripInternalCopy = (value: unknown, parentKey = ""): unknown => {
