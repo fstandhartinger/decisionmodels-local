@@ -3,6 +3,7 @@ import { POSIX_INSTALL_COMMAND, VERIFY_RELEASE_COMMAND } from "@/lib/install-com
 import Link from "next/link";
 import { CopyCommand } from "@/components/copy-command";
 import { benchmarkRank, hasAnyExecutableInstallRecipe, installRecipeStatus, loadCatalog, sortedByBenchmark, type Model } from "@/lib/catalog";
+import { decisionIndexText, loadDecisionIndex, type DecisionIndexSnapshot } from "@/lib/decision-index";
 import { loadHardwarePrices, suggestedDeviceFor } from "@/lib/hardware-data";
 
 export const metadata: Metadata = { alternates: { canonical: "/local" } };
@@ -50,7 +51,7 @@ function modelSummary(model: Model) {
   return `${size}${modality} model.`;
 }
 
-function ModelCard({ model, field, excluded = false }: { model: Model; field: BenchmarkField; excluded?: boolean }) {
+function ModelCard({ model, field, snapshot, excluded = false }: { model: Model; field: BenchmarkField; snapshot: DecisionIndexSnapshot; excluded?: boolean }) {
   const benchmark = model.benchmarks?.[field];
   const rank = benchmarkRank(benchmark);
   const score = benchmark?.capability;
@@ -62,20 +63,22 @@ function ModelCard({ model, field, excluded = false }: { model: Model; field: Be
     <div className="model-meta"><a className={`badge ${rank !== null ? "signal" : ""}`} href={benchmarkPage}>{rank !== null ? `#${rank}` : "Rank not listed"}</a><span className="badge">{size}</span><span className={`badge ${badge.tone}`}>{badge.label}</span></div>
     <h3><Link href={`/models/${model.slug}/local`}>{model.name}</Link></h3>
     <p className="capability-score">{Number.isFinite(score) ? `Capability score ${Number(score).toFixed(2)}` : "Capability score not listed"}</p>
+    <p className="fine-print decision-index-line"><a href={snapshot.source}>{decisionIndexText(model.slug, snapshot)}</a></p>
     <div className="model-meta hardware-chips">{smallestHardware(model).map((chip) => <span className="badge" key={chip}>{chip}</span>)}</div>
     <Link className="fine-print" href={`/models/${model.slug}/local`}>View hardware and model terms →</Link>
   </article>;
 }
 
-function RankingSection({ title, models, field, excludedModel }: { title: string; models: Model[]; field: BenchmarkField; excludedModel?: Model }) {
+function RankingSection({ title, models, field, snapshot, excludedModel }: { title: string; models: Model[]; field: BenchmarkField; snapshot: DecisionIndexSnapshot; excludedModel?: Model }) {
   const ordered = models.filter((model) => model.slug !== excludedModel?.slug);
-  return <section className="section-wrap section ranking-section"><div className="section-heading"><div><p className="section-kicker">Published benchmark</p><h2>{title}</h2></div><p>Capability rank and score are read from the current catalogue. Model licences and local hardware requirements still apply.</p></div>
-    <div className="model-grid ranked-model-grid">{ordered.map((model) => <ModelCard key={model.slug} model={model} field={field} />)}{excludedModel && <ModelCard key={excludedModel.slug} model={excludedModel} field={field} excluded />}</div>
+  return <section className="section-wrap section ranking-section"><div className="section-heading"><div><p className="section-kicker">Published benchmark</p><h2>{title}</h2></div><p>JevBench or ImageJevBench capability rank and score, with the Decision Index result of each model next to it, are read from the current catalogue. Model licences and local hardware requirements still apply.</p></div>
+    <div className="model-grid ranked-model-grid">{ordered.map((model) => <ModelCard key={model.slug} model={model} field={field} snapshot={snapshot} />)}{excludedModel && <ModelCard key={excludedModel.slug} model={excludedModel} field={field} snapshot={snapshot} excluded />}</div>
   </section>;
 }
 
 export default function LocalOverviewPage() {
   const models = loadCatalog();
+  const snapshot = loadDecisionIndex();
   const prices = loadHardwarePrices();
   const textTop = sortedByBenchmark(models, "jevbench").filter((model) => model.lists?.includes("jevbench-top10"));
   const imageTop = sortedByBenchmark(models, "imagejevbench").filter((model) => model.lists?.includes("imagejevbench-top10"));
@@ -93,8 +96,8 @@ export default function LocalOverviewPage() {
       {["Your data stays on your machine", "No network round trip to the model", "One endpoint shape across local runtimes", "No telemetry; loopback by default"].map((benefit, index) => <article className="benefit" key={benefit}><span className="index">0{index + 1}</span><h2>{benefit}</h2><p>{["Prompts and decisions stay within the environment you choose.", "Measure response time on the device and network you plan to use.", "Call the same typed /v1/systemone shape used by hosted systems.", "The local service binds to 127.0.0.1 unless you change it."][index]}</p></article>)}
     </div></section>
 
-    <RankingSection title="JevBench top 10 (text)" models={textTop} field="jevbench" />
-    <RankingSection title="ImageJevBench top 10 (image)" models={imageTop} field="imagejevbench" excludedModel={excludedVision} />
+    <RankingSection title="JevBench top 10 (text)" models={textTop} field="jevbench" snapshot={snapshot} />
+    <RankingSection title="ImageJevBench top 10 (image)" models={imageTop} field="imagejevbench" snapshot={snapshot} excludedModel={excludedVision} />
 
     <section className="section-wrap section" id="models"><div className="section-heading"><div><p className="section-kicker">Local model catalogue</p><h2>Choose a local model</h2></div><p>{installable.filter(hasAnyExecutableInstallRecipe).length} models have an executable install recipe. Others are marked setup in preparation. Model pages show runtime, memory, and licence details.</p></div>
       {!installable.length ? <div className="callout muted"><strong>Local install recipes are being reviewed.</strong><p>Each entry will be shown as installable when its serving path and hardware requirements are recorded.</p></div> : <div className="model-grid">{installable.map((model) => {

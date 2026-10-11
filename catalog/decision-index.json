@@ -1,0 +1,70 @@
+{
+ "schema": "decisionmodels-local-decision-index/1",
+ "version": "0.3.1",
+ "label": "Decision Index 0.3.1",
+ "panel_id": "decision-index-0.3",
+ "generated_utc": "2026-10-10T07:54:16Z",
+ "metric": "balanced_skill",
+ "source": "https://multimodalart-jev-decision-index.static.hf.space/index.html",
+ "data_source": "https://multimodalart-jev-decision-index.static.hf.space/data/index.json",
+ "data_sha256": "e36e31af5a0dc246b259705107f430b9a2b48af625b6b85ecffba9bca980ee48",
+ "entries": 116,
+ "models": {
+  "deck31b": {
+   "engine": "deck31b",
+   "name": "deck31b (Gemma 4 31B)",
+   "rank": 5,
+   "score": 59.03,
+   "matched_by": "JevBench key = engine key"
+  },
+  "jev-omni": {
+   "engine": "jev-omni",
+   "name": "Jev-Omni",
+   "rank": 46,
+   "score": 42.35,
+   "matched_by": "weights repository"
+  },
+  "jpt-4b": {
+   "engine": "jpt-4b",
+   "name": "JPT-4B",
+   "rank": 48,
+   "score": 41.63,
+   "matched_by": "weights repository"
+  },
+  "neohorse-jev-4b": {
+   "engine": "neohorse-jev-4b",
+   "name": "NeoHorse-Jev-4B",
+   "rank": 61,
+   "score": 37.97,
+   "matched_by": "weights repository"
+  },
+  "quyet-1-0-large": {
+   "engine": "quyet-1.0-large",
+   "name": "Quyet-1.0-Large",
+   "rank": 7,
+   "score": 58.71,
+   "matched_by": "weights repository"
+  },
+  "surogate-rune-26b-a4b-v3": {
+   "engine": "rune-26b-a4b-v3",
+   "name": "Surogate Rune 26B-A4B v3",
+   "rank": 10,
+   "score": 57.43,
+   "matched_by": "weights repository"
+  },
+  "winnow-12b": {
+   "engine": "winnow-12b-q8",
+   "name": "Winnow-12B",
+   "rank": 28,
+   "score": 49.27,
+   "matched_by": "weights repository"
+  },
+  "xor-26b-a4b": {
+   "engine": "xor-26b-a4b",
+   "name": "Xor 26B-A4B",
+   "rank": 12,
+   "score": 55.95,
+   "matched_by": "weights repository"
+  }
+ }
+}
