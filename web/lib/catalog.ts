@@ -125,7 +125,7 @@ export function displayCopy(value: string): string {
     .replace(/\bp (50|90|95|99)\b/g, "p$1")
     .replace(/\b([HAB]) (100|200)\b/g, "$1$2")
     .replace(/\b(BF|FP|bf|fp) (8|16|32)\b/g, "$1$2")
-    .replace(/\bcatalog\b/g, "catalogue");
+    .replace(/(?<![/\w.-])catalog(?![/\w-]|\.\w)/g, "catalogue");
 }
 
 export function publicCatalog(models = loadCatalog()): Model[] {
