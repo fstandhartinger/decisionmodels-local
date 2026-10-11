@@ -82,3 +82,23 @@ describe("model local pages", () => {
     }
   });
 });
+
+describe("local sitemap", () => {
+  it("lists /local, /hardware and every indexable model page, and none of the excluded or private routes", async () => {
+    const { GET } = await import("../app/local/sitemap.xml/route");
+    const response = await GET();
+    expect(response.headers.get("content-type")).toContain("application/xml");
+    const xml = await response.text();
+    expect(xml).toContain("<loc>https://decisionmodels.io/local</loc>");
+    expect(xml).toContain("<loc>https://decisionmodels.io/hardware</loc>");
+    for (const model of loadCatalog()) {
+      const listed = xml.includes(`<loc>https://decisionmodels.io/models/${model.slug}/local</loc>`);
+      expect(listed, model.slug).toBe(model.installer_policy?.status !== "excluded");
+    }
+    for (const entry of loadHardwareAll()) {
+      const model = loadCatalog().find((item) => item.slug === entry.slug);
+      expect(xml.includes(`/models/${entry.slug}/local<`), entry.slug).toBe(model?.installer_policy?.status !== "excluded");
+    }
+    expect(xml).not.toMatch(/\/local\/(licence|api|install)/);
+  });
+});
