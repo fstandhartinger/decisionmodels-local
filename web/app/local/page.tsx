@@ -90,7 +90,7 @@ export default function LocalOverviewPage() {
     </section>
 
     <section className="section-wrap section"><div className="benefit-grid">
-      {["Your data stays on your machine", "No network round trip to the model", "One endpoint shape across local runtimes", "No telemetry; loopback by default"].map((benefit, index) => <article className="benefit" key={benefit}><span className="index">0{index + 1}</span><h3>{benefit}</h3><p>{["Prompts and decisions stay within the environment you choose.", "Measure response time on the device and network you plan to use.", "Call the same typed /v1/systemone shape used by hosted systems.", "The local service binds to 127.0.0.1 unless you change it."][index]}</p></article>)}
+      {["Your data stays on your machine", "No network round trip to the model", "One endpoint shape across local runtimes", "No telemetry; loopback by default"].map((benefit, index) => <article className="benefit" key={benefit}><span className="index">0{index + 1}</span><h2>{benefit}</h2><p>{["Prompts and decisions stay within the environment you choose.", "Measure response time on the device and network you plan to use.", "Call the same typed /v1/systemone shape used by hosted systems.", "The local service binds to 127.0.0.1 unless you change it."][index]}</p></article>)}
     </div></section>
 
     <RankingSection title="JevBench top 10 (text)" models={textTop} field="jevbench" />
