@@ -1,7 +1,7 @@
 // Device tiers for /hardware. Every number here is sourced (see `sources`) or marked as an estimate.
 // Research notes and the full device table: ~/jobs/dm-hardware-page-20261012 (RESULT.md, research/*.md), 12 Oct 2026.
 
-export type Offer = "preinstall" | "byo" | "not-yet";
+export type Offer = "preinstall" | "planned" | "byo" | "not-yet";
 
 export type Fit = { level: "measured" | "fits" | "estimate" | "no"; text: string };
 
@@ -25,7 +25,7 @@ export const MODEL_COLUMNS = [
   { key: "s1pro", title: "s1-pro class", detail: "26B dense: Perplexity Decider v1.1, vLLM-SR d3" },
   { key: "moe", title: "26B-A4B MoE", detail: "Blink v0.3 (s1-fast), Surogate Rune" },
   { key: "quyet", title: "Quyet-1.0-Large", detail: "31B dense" },
-  { key: "small", title: "4B models", detail: "e.g. H2O-Lightning-4B, NeoHorse Jev 4B" }
+  { key: "small", title: "4B models", detail: "e.g. H2O-Lightning-4B, Plumb-4B" }
 ] as const;
 
 const NOT_SUPPORTED_S1PRO: Fit = { level: "no", text: "Not yet: needs the REAX Engine (NVIDIA CUDA)" };
@@ -45,7 +45,7 @@ export const TIERS: Tier[] = [
           s1pro: { level: "no", text: "Does not fit" },
           moe: { level: "no", text: "Does not fit" },
           quyet: { level: "no", text: "Does not fit" },
-          small: { level: "estimate", text: "4-bit / 8-bit · ≈1–3 dec/s (estimate)" }
+          small: { level: "fits", text: "4-bit / 8-bit fits · speed not estimated" }
         },
         power: "7–25 W",
         noise: "Small fan; no dB figure published",
@@ -57,10 +57,10 @@ export const TIERS: Tier[] = [
       {
         id: "jetson-agx-thor",
         name: "NVIDIA Jetson AGX Thor Developer Kit",
-        examples: "Jetson AGX Orin 64 GB ($3,499) is the smaller option for 4B and 8-bit MoE models.",
+        examples: "The Jetson AGX Orin 64 GB is the smaller option for 4B and 8-bit MoE models.",
         memory: "128 GB unified",
         fits: {
-          s1pro: NOT_SUPPORTED_S1PRO,
+          s1pro: { level: "no", text: "Not yet: REAX Engine builds are x86 NVIDIA only today" },
           moe: { level: "estimate", text: "BF16 · ≈7–13 dec/s (estimate)" },
           quyet: { level: "fits", text: "BF16 fits in memory · speed not estimated" },
           small: { level: "estimate", text: "BF16 · ≈15–25 dec/s (estimate)" }
@@ -86,7 +86,7 @@ export const TIERS: Tier[] = [
         examples: "ASUS Ascent GX10, Gigabyte AI TOP ATOM, Dell Pro Max with GB10, Lenovo ThinkStation PGX, HP ZGX Nano, NVIDIA DGX Spark",
         memory: "128 GB unified",
         fits: {
-          s1pro: { level: "estimate", text: "FP8 on REAX Engine · ≈2–4 dec/s (estimate, untested on GB10)" },
+          s1pro: { level: "estimate", text: "FP8 on REAX Engine · ≈2–4 dec/s (estimate; needs an Arm build, not yet tested)" },
           moe: { level: "estimate", text: "BF16 / NVFP4 · ≈15–25 dec/s (estimate)" },
           quyet: { level: "estimate", text: "NVFP4 · ≈5–10 dec/s (estimate)" },
           small: { level: "estimate", text: "BF16 · ≈30–50 dec/s (estimate)" }
@@ -94,8 +94,8 @@ export const TIERS: Tier[] = [
         power: "240 W power supply",
         noise: "Quiet desktop box (NVIDIA lists about 29 dB under load)",
         price: "€6,468–6,491 in stock (Alternate, 12 Oct) · DGX Spark $6,950",
-        offer: "preinstall",
-        offerNote: "Pre-installed by us on request, on the partner-brand boxes (ASUS, Gigabyte, Dell, Lenovo, HP).",
+        offer: "planned",
+        offerNote: "Pre-install planned on the OEM-branded boxes (ASUS, Gigabyte, Dell, Lenovo, HP) once our Arm (aarch64) builds pass testing. Until then: bring your own.",
         sources: ["gb10-alternate", "spark-price", "spark-specs", "lmsys-spark", "spark-thor-bench"]
       },
       {
@@ -104,16 +104,16 @@ export const TIERS: Tier[] = [
         memory: "64 GB unified",
         fits: {
           s1pro: NOT_SUPPORTED_S1PRO,
-          moe: { level: "estimate", text: "8-bit · ≈5–8 dec/s (estimate)" },
-          quyet: { level: "fits", text: "8-bit fits in memory · speed not estimated" },
-          small: { level: "fits", text: "BF16 fits · speed not estimated" }
+          moe: { level: "fits", text: "8-bit fits in memory · Apple Silicon build not tested yet" },
+          quyet: { level: "fits", text: "8-bit fits in memory · Apple Silicon build not tested yet" },
+          small: { level: "fits", text: "BF16 fits · Apple Silicon build not tested yet" }
         },
         power: "6 W idle · 145 W max",
-        noise: "Near silent at idle; no dB figure published",
+        noise: "No dB figure published",
         price: "from €3,099 · $2,699 (Apple list price at launch)",
-        offer: "preinstall",
-        offerNote: "Set up by us on request: macOS stays untouched, our software is added as separate apps.",
-        sources: ["apple-mini-price", "apple-mini-specs", "apple-power-mini", "llamacpp-apple"]
+        offer: "planned",
+        offerNote: "Pre-install planned once our Apple Silicon builds pass testing (macOS stays untouched; our software is added as separate apps).",
+        sources: ["apple-mini-price", "apple-mini-specs", "apple-power-mini"]
       },
       {
         id: "strix-halo",
@@ -128,7 +128,7 @@ export const TIERS: Tier[] = [
         },
         power: "About 120–145 W under AI load (reviews of similar boxes)",
         noise: "About 43–45 dBA under load (reviews of similar boxes)",
-        price: "€3,889 (Framework, DE) – €6,084 (HP at Bechtle)",
+        price: "€3,889 (Framework DE configurator) – €6,084 incl. VAT (HP at Bechtle)",
         offer: "not-yet",
         offerNote: "Listed for comparison. We will add it once our installer supports AMD GPUs.",
         sources: ["framework-de", "hp-z2-bechtle", "sth-strix", "hh-strix"]
@@ -139,7 +139,7 @@ export const TIERS: Tier[] = [
     id: "workstation",
     title: "Workstation",
     kicker: "Tier 3",
-    summary: "A tower under the desk or a large Mac. This is where we have our own measurements: the RTX PRO 6000 runs every model in the lineup on one card.",
+    summary: "A tower under the desk or a large Mac. This is where we have our own measurements: the RTX PRO 6000 runs each model in the lineup on a single card.",
     devices: [
       {
         id: "rtx-pro-6000",
@@ -148,14 +148,14 @@ export const TIERS: Tier[] = [
         fits: {
           s1pro: { level: "measured", text: "FP8 on REAX Engine · 15.7 dec/s (measured)" },
           moe: { level: "measured", text: "Blink NVFP4 · 97 dec/s · Rune BF16 · 76 dec/s (measured)" },
-          quyet: { level: "measured", text: "NVFP4 · 36.7 dec/s (measured)" },
-          small: { level: "measured", text: "Plumb-4B BF16 · about 200 dec/s (measured, short prompts)" }
+          quyet: { level: "measured", text: "NVFP4 · 36.7, FP8 · 28.7 dec/s (measured)" },
+          small: { level: "measured", text: "Plumb-4B BF16 · about 200 dec/s (measured, short single-question prompts)" }
         },
         power: "GPU 600 W (300 W Max-Q edition)",
         noise: "Workstation fan noise under load",
         price: "GPU card €17,850–20,091 (Alternate, 12 Oct) plus the base system",
         offer: "preinstall",
-        offerNote: "Pre-installed by us on request, as a complete workstation from an established system builder.",
+        offerNote: "Pre-installed by us on request, as a complete workstation from a system builder.",
         sources: ["own-reax", "own-lineup", "pro6000-alternate"]
       },
       {
@@ -163,16 +163,16 @@ export const TIERS: Tier[] = [
         name: "Workstation with NVIDIA GeForce RTX 5090",
         memory: "32 GB GPU memory",
         fits: {
-          s1pro: { level: "measured", text: "FP8 on REAX Engine · 10.3 dec/s (measured)" },
-          moe: { level: "estimate", text: "Blink NVFP4 · ≈60–80 dec/s (estimate); Rune BF16 does not fit" },
+          s1pro: { level: "measured", text: "FP8 on REAX Engine · 10.3 dec/s (measured, offline throughput)" },
+          moe: { level: "estimate", text: "Blink NVFP4 · ≈60–80 dec/s (estimate; tight fit, shorter context); Rune BF16 does not fit" },
           quyet: { level: "estimate", text: "NVFP4 · ≈25–30 dec/s (estimate)" },
           small: { level: "estimate", text: "BF16 · ≈140–170 dec/s (estimate)" }
         },
         power: "GPU 575 W",
         noise: "Gaming-PC class; louder than a Mac Studio",
-        price: "GPU card €4,850–7,300 (Germany, Sep–Oct) plus the base system",
+        price: "GPU card about €6,700–8,900 (Alternate, 12 Oct) plus the base system",
         offer: "preinstall",
-        offerNote: "Pre-installed by us on request, as a complete workstation from an established system builder.",
+        offerNote: "Pre-installed by us on request, as a complete workstation from a system builder.",
         sources: ["own-hwsweep", "rtx5090-pcgh", "rtx5090-alternate", "lmsys-spark"]
       },
       {
@@ -182,16 +182,16 @@ export const TIERS: Tier[] = [
         memory: "96–256 GB unified (M5 Ultra)",
         fits: {
           s1pro: NOT_SUPPORTED_S1PRO,
-          moe: { level: "estimate", text: "BF16 · M5 Ultra ≈15–25, M5 Max ≈10–16 dec/s (estimate)" },
-          quyet: { level: "fits", text: "BF16 fits (96 GB and up) · speed not estimated" },
-          small: { level: "fits", text: "BF16 fits · speed not estimated" }
+          moe: { level: "fits", text: "BF16 fits in memory · Apple Silicon build not tested yet" },
+          quyet: { level: "fits", text: "BF16 fits (96 GB and up) · Apple Silicon build not tested yet" },
+          small: { level: "fits", text: "BF16 fits · Apple Silicon build not tested yet" }
         },
         power: "M5 Max 7 W idle · 200 W max; M5 Ultra 9 W idle · 385 W max",
         noise: "Very quiet; fan audible only under sustained load (reviews)",
         price: "M5 Ultra from €6,599 · $5,499 (Apple list price at launch)",
-        offer: "preinstall",
-        offerNote: "Set up by us on request: macOS stays untouched, our software is added as separate apps.",
-        sources: ["apple-studio-price", "apple-studio-specs", "apple-power-studio", "macstories-m5ultra", "llamacpp-apple"]
+        offer: "planned",
+        offerNote: "Pre-install planned once our Apple Silicon builds pass testing (macOS stays untouched; our software is added as separate apps).",
+        sources: ["apple-studio-price", "apple-studio-specs", "apple-power-studio", "macstories-m5ultra"]
       }
     ]
   },
@@ -244,7 +244,6 @@ export const SOURCES: Record<string, { label: string; url: string; date: string 
   "apple-studio-specs": { label: "Apple: Mac Studio technical specifications", url: "https://www.apple.com/de/mac-studio/specs/", date: "12 Oct 2026" },
   "apple-power-studio": { label: "Apple: Mac Studio power consumption and thermal output", url: "https://support.apple.com/en-asia/102027", date: "12 Oct 2026" },
   "macstories-m5ultra": { label: "MacStories: M5 Ultra Mac Studio review (prompt processing)", url: "https://www.macstories.net/stories/m5-ultra-mac-studio-review-the-dream-mac-for-local-ai-agents/", date: "Sep 2026" },
-  "llamacpp-apple": { label: "llama.cpp: Apple Silicon performance table", url: "https://github.com/ggml-org/llama.cpp/discussions/4167", date: "12 Oct 2026" },
   "framework-de": { label: "Framework Desktop configurator (DE)", url: "https://frame.work/de/en/products/desktop-diy-amd-aimax300/configuration/new", date: "12 Oct 2026" },
   "hp-z2-bechtle": { label: "Bechtle: HP Z2 Mini G1a", url: "https://www.bechtle.com/de-en/shop/product-family/hp-z2-mini-g1a-workstation--6634--f", date: "12 Oct 2026" },
   "sth-strix": { label: "ServeTheHome: Minisforum MS-S1 Max review (power, noise)", url: "https://www.servethehome.com/minisforum-ms-s1-max-review-the-best-ryzen-ai-max-mini-pc-yet/4/", date: "14 Jan 2026" },
@@ -258,6 +257,7 @@ export const SOURCES: Record<string, { label: string; url: string; date: string 
 
 export const OFFER_LABEL: Record<Offer, string> = {
   preinstall: "Pre-installed by us, on request",
+  planned: "Pre-install planned · bring your own today",
   byo: "Bring your own device",
   "not-yet": "Not supported yet"
 };
