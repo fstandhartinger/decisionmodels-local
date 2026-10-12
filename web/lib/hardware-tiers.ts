@@ -148,7 +148,7 @@ export const TIERS: Tier[] = [
         fits: {
           s1pro: { level: "measured", text: "FP8 on REAX Engine · 15.7 dec/s (measured)" },
           moe: { level: "measured", text: "Blink NVFP4 · 97 dec/s · Rune BF16 · 76 dec/s (measured)" },
-          quyet: { level: "measured", text: "NVFP4 · 36.7, FP8 · 28.7 dec/s (measured)" },
+          quyet: { level: "measured", text: "FP8 · 28.7 dec/s (measured); NVFP4 · 36.7 (measured, still in quality review)" },
           small: { level: "measured", text: "Plumb-4B BF16 · about 200 dec/s (measured, short single-question prompts)" }
         },
         power: "GPU 600 W (300 W Max-Q edition)",
