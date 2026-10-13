@@ -22,7 +22,7 @@ export type TierDevice = {
 export type Tier = { id: string; title: string; kicker: string; summary: string; devices: TierDevice[] };
 
 export const MODEL_COLUMNS = [
-  { key: "s1pro", title: "s1-pro class", detail: "26B dense: Perplexity Decider v1.1, vLLM-SR d3" },
+  { key: "s1pro", title: "s1-pro class", detail: "26–27B dense: Perplexity Decider v1.1 (27B), vLLM-SR d3 (26B)" },
   { key: "moe", title: "26B-A4B MoE", detail: "Blink v0.3 (s1-fast), Surogate Rune" },
   { key: "quyet", title: "Quyet-1.0-Large", detail: "31B dense" },
   { key: "small", title: "4B models", detail: "e.g. H2O-Lightning-4B, Plumb-4B" }
