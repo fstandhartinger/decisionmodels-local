@@ -285,7 +285,7 @@ export default async function ModelLocalPage({ params }: PageProps) {
         <h4>Example output</h4><pre className="code-block">{apiOutput(model.slug)}</pre>
         <h4>Python</h4><pre className="code-block">{pythonExample()}</pre>
         {model.modalities?.includes("image") && <><h4>Image input</h4><pre className="code-block">{multimodalRequest()}</pre></>}
-        <Link href="https://decisionmodels.io/api" className="fine-print">Read the hosted API reference →</Link>
+        <Link href="https://decisionmodels.io/docs/api" className="fine-print">Read the hosted API reference →</Link>
       </article>
       <article className="panel"><p className="section-kicker">Uninstall</p><h3>Remove the local files</h3><p>Use the installer to stop the service and remove this model&apos;s downloaded files.</p><div className="command-line"><code>dm-local uninstall {model.slug}</code><CopyCommand value={`dm-local uninstall ${model.slug}`} /></div></article>
     </section>}
