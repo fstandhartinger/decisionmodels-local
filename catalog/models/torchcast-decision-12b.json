@@ -8,9 +8,9 @@
  ],
  "benchmarks": {
   "jevbench": {
-   "version": "v1.6.1",
+   "version": "v1.6.37",
    "key": "torchcast-decision-12b",
-   "capability_rank": 11,
+   "capability_rank": 18,
    "capability": 71.74,
    "p50_s_raw": 0.037151537369936705,
    "page": "https://benchmarkheaven.com/jev-models/torchcast-decision-12b"

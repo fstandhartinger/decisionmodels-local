@@ -8,13 +8,12 @@
  ],
  "benchmarks": {
   "jevbench": {
-   "version": "v1.7.43 board (2026-10-10)",
+   "version": "v1.6.37",
    "key": "cygnet",
-   "capability_rank": 15,
+   "capability_rank": 21,
    "capability": 70.9,
-   "composite_rank": 10,
-   "composite": 68.6,
-   "page": "https://benchmarkheaven.com/jev-models/cygnet"
+   "page": "https://benchmarkheaven.com/jev-models/cygnet",
+   "p50_s_raw": 0.03681807057000697
   }
  },
  "modalities": [

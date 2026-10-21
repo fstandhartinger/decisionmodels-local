@@ -10,7 +10,7 @@
   "imagejevbench": {
    "version": "v0.3.0",
    "key": "vjev_vision",
-   "capability_rank": 6,
+   "capability_rank": 12,
    "capability": 55.66,
    "p50_s_raw": 0.0681,
    "p50_s_adjusted": 0.2863,

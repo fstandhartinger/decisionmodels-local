@@ -8,13 +8,12 @@
  ],
  "benchmarks": {
   "jevbench": {
-   "version": "v1.7.43 board (2026-10-10)",
-   "key": "winnow-12b-q8",
-   "capability_rank": 14,
-   "capability": 71.2,
-   "composite_rank": 7,
-   "composite": 68.9,
-   "page": "https://benchmarkheaven.com/jev-models/winnow-12b"
+   "version": "v1.6.37",
+   "key": "winnow-12b",
+   "capability_rank": 20,
+   "capability": 71.25,
+   "page": "https://benchmarkheaven.com/jev-models/winnow-12b",
+   "p50_s_raw": 0.1168902744539082
   }
  },
  "modalities": [

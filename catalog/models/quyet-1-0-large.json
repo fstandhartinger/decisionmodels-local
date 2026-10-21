@@ -8,9 +8,9 @@
  ],
  "benchmarks": {
   "jevbench": {
-   "version": "v1.6.1",
+   "version": "v1.6.37",
    "key": "quyet-1-0-large",
-   "capability_rank": 1,
+   "capability_rank": 3,
    "capability": 81.69,
    "p50_s_raw": 0.11577823059633374,
    "page": "https://benchmarkheaven.com/jev-models/quyet-1-0-large"

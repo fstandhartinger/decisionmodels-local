@@ -8,13 +8,12 @@
  ],
  "benchmarks": {
   "jevbench": {
-   "version": "v1.6.4 draw, board v1.7.43 (2026-10-10)",
+   "version": "v1.6.37",
    "key": "jeff_1_0_large",
-   "capability_rank": 2,
+   "capability_rank": 4,
    "capability": 81.5,
-   "composite_rank": 9,
-   "composite": 68.6,
-   "page": "https://benchmarkheaven.com/jev-models"
+   "page": "https://benchmarkheaven.com/jev-models/jeff_1_0_large",
+   "p50_s_raw": 0.08006057143211365
   }
  },
  "modalities": [
