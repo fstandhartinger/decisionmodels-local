@@ -10,7 +10,7 @@
   "imagejevbench": {
    "version": "v0.3.0",
    "key": "reflex_4b",
-   "capability_rank": 9,
+   "capability_rank": 15,
    "capability": 53.34,
    "p50_s_raw": 0.1666,
    "p50_s_adjusted": 0.4832,
@@ -18,7 +18,7 @@
    "page": "https://benchmarkheaven.com/image-jev-bench"
   },
   "jevbench": {
-   "version": "v1.6.1",
+   "version": "v1.6.37",
    "key": "reflex-4b",
    "capability_rank": null,
    "capability": 58.96,

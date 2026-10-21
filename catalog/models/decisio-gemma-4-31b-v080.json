@@ -8,9 +8,9 @@
  ],
  "benchmarks": {
   "jevbench": {
-   "version": "v1.6.1",
+   "version": "v1.6.37",
    "key": "decisio-gemma-4-31b-v080",
-   "capability_rank": 2,
+   "capability_rank": 6,
    "capability": 79.57,
    "p50_s_raw": 0.047096215188503265,
    "page": "https://benchmarkheaven.com/jev-models/decisio-gemma-4-31b-v080"

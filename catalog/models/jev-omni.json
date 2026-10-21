@@ -10,7 +10,7 @@
   "imagejevbench": {
    "version": "v0.3.0",
    "key": "jev_omni",
-   "capability_rank": 8,
+   "capability_rank": 14,
    "capability": 54.25,
    "p50_s_raw": 0.0874,
    "p50_s_adjusted": 0.3248,
@@ -18,9 +18,9 @@
    "page": "https://benchmarkheaven.com/image-jev-bench"
   },
   "jevbench": {
-   "version": "v1.6.1",
+   "version": "v1.6.37",
    "key": "jev-omni",
-   "capability_rank": 12,
+   "capability_rank": 19,
    "capability": 71.29,
    "within_caps": true,
    "not_eligible_reasons": null,

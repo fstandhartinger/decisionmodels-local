@@ -10,7 +10,7 @@
   "imagejevbench": {
    "version": "v0.3.0",
    "key": "shisa_de_1",
-   "capability_rank": 10,
+   "capability_rank": 18,
    "capability": 51.46,
    "p50_s_raw": 0.1696,
    "p50_s_adjusted": 0.4893,

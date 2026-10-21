@@ -8,9 +8,9 @@
  ],
  "benchmarks": {
   "jevbench": {
-   "version": "v1.6.1",
+   "version": "v1.6.37",
    "key": "decider-12b",
-   "capability_rank": 8,
+   "capability_rank": 15,
    "capability": 72.5,
    "p50_s_raw": 0.054131726268678904,
    "page": "https://benchmarkheaven.com/jev-models/decider-12b"

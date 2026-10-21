@@ -8,9 +8,9 @@
  ],
  "benchmarks": {
   "jevbench": {
-   "version": "v1.6.1",
+   "version": "v1.6.37",
    "key": "xor-26b-a4b",
-   "capability_rank": 9,
+   "capability_rank": 16,
    "capability": 72.41,
    "p50_s_raw": 0.058566353749483824,
    "page": "https://benchmarkheaven.com/jev-models/xor-26b-a4b"

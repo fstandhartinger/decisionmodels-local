@@ -8,9 +8,9 @@
  ],
  "benchmarks": {
   "jevbench": {
-   "version": "v1.6.1",
+   "version": "v1.6.37",
    "key": "rene-1-31b-fp8",
-   "capability_rank": 4,
+   "capability_rank": 10,
    "capability": 75.95,
    "p50_s_raw": 0.10970725817605853,
    "page": "https://benchmarkheaven.com/jev-models/rene-1-31b-fp8"

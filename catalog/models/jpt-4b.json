@@ -10,7 +10,7 @@
   "imagejevbench": {
    "version": "v0.3.0",
    "key": "jpt_4b",
-   "capability_rank": 7,
+   "capability_rank": 13,
    "capability": 55.62,
    "p50_s_raw": 0.1759,
    "p50_s_adjusted": 0.5018,

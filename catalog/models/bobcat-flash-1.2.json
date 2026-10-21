@@ -8,9 +8,9 @@
  ],
  "benchmarks": {
   "jevbench": {
-   "version": "v1.6.1",
+   "version": "v1.6.37",
    "key": "bobcat-flash-1.2",
-   "capability_rank": 6,
+   "capability_rank": 12,
    "capability": 73.49,
    "p50_s_raw": 0.060955737018957734,
    "page": "https://benchmarkheaven.com/jev-models/bobcat-flash-1.2"
