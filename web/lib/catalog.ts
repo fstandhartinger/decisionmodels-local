@@ -49,8 +49,8 @@ export type Model = {
   description?: string;
   lists?: string[];
   benchmarks?: {
-    jevbench?: { version?: string; capability_rank?: number; rank?: number; capability?: number; p50_s_raw?: number; page?: string };
-    imagejevbench?: { version?: string; capability_rank?: number; rank?: number; capability?: number; p50_s_raw?: number; page?: string };
+    jevbench?: { version?: string; key?: string; capability_rank?: number; rank?: number; capability?: number; p50_s_raw?: number; page?: string };
+    imagejevbench?: { version?: string; key?: string; capability_rank?: number; rank?: number; capability?: number; p50_s_raw?: number; page?: string };
   };
   modalities?: string[];
   weights?: { repo?: string; revision?: string; url?: string; gated?: boolean };

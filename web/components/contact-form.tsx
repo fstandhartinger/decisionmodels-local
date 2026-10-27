@@ -1,8 +1,10 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { isRequestedModelSlug } from "@/lib/contact-validation";
 
 export function ContactForm({ models, selectedModel }: { models: Array<{ slug: string; name: string }>; selectedModel?: string }) {
+  const requestedModel = isRequestedModelSlug(selectedModel) && !models.some((model) => model.slug === selectedModel) ? selectedModel : undefined;
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -31,7 +33,8 @@ export function ContactForm({ models, selectedModel }: { models: Array<{ slug: s
       <label>Company <span className="optional">Optional</span><input name="company" autoComplete="organization" maxLength={160} /></label>
       <fieldset className="form-field full-width"><legend>Models</legend><div className="checkbox-list">
         {models.map((model) => <label key={model.slug}><input type="checkbox" name="models" value={model.slug} defaultChecked={model.slug === selectedModel} />{model.name}</label>)}
-        {!models.length && <span className="fine-print">Tell us which model you have in mind in the message.</span>}
+        {requestedModel && <label><input type="checkbox" name="models" value={requestedModel} defaultChecked />Requested model: {requestedModel}</label>}
+        {!models.length && !requestedModel && <span className="fine-print">Tell us which model you have in mind in the message.</span>}
       </div></fieldset>
       <label>Quantity<input name="quantity" type="number" min="1" max="1000" defaultValue="1" required /></label>
       <label>Where will it run?<select name="location" required defaultValue="office"><option value="office">Office</option><option value="edge">Edge device</option><option value="factory">Factory</option><option value="other">Other</option></select></label>

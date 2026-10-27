@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { CopyCommand } from "@/components/copy-command";
 import { CloudGuide, HardwareCard, LicenceBox, OnRequestCard, SovereigntyBox } from "@/components/local-sections";
 import { QuickStart } from "@/components/quick-start";
-import { benchmarkRank, getModel, hasAnyExecutableInstallRecipe, installRecipeStatus, displayCopy, isInstallerSupported, loadCatalog, sanitizePublicText, type Model, type ModelVariant } from "@/lib/catalog";
+import { getModel, hasAnyExecutableInstallRecipe, installRecipeStatus, displayCopy, isInstallerSupported, loadCatalog, sanitizePublicText, type Model, type ModelVariant } from "@/lib/catalog";
 import { decisionIndexText, loadDecisionIndex } from "@/lib/decision-index";
 import { getHardware, loadHardwareAll, type HardwareEntry } from "@/lib/hardware-all";
 import { cloudOptionsFor, cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, money, publicCloudInstanceName, publicCloudProviderName, sourcePublisher, sourceUrl, suggestedDeviceFor } from "@/lib/hardware-data";
@@ -239,9 +239,8 @@ export default async function ModelLocalPage({ params }: PageProps) {
             {commercialOnly && <span className="badge warn">Non-commercial only</span>}
             {model.modalities?.map((modality) => <span className="badge" key={modality}>{modality}</span>)}
             {benchmarkBadges.map(({ label, data }) => {
-              const rank = benchmarkRank(data);
-              const page = data.page ?? (label === "JevBench" ? "https://benchmarkheaven.com/jev-models" : "https://benchmarkheaven.com/image-jev-bench");
-              return <a className={`badge ${rank !== null ? "signal" : ""}`} href={page} key={label}>{rank !== null ? `#${rank} on ${label} (Capability, ${data.version ?? "version not listed"})` : `${label} Capability score · ${data.version ?? "version not listed"}`}</a>;
+              const page = data.page ?? `https://benchmarkheaven.com/${label === "JevBench" ? "jev-models" : "image-jev-bench"}/${data.key ?? model.slug}`;
+              return <a className="badge" href={page} key={label}>See the current rank on Benchmark Heaven · {label}</a>;
             })}
             {benchmarkBadges.length > 0 && <a className="badge" href={decisionIndex.source}>{decisionIndexText(model.slug, decisionIndex)}</a>}
           </div>

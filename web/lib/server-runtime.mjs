@@ -98,7 +98,7 @@ export async function retryHardwareInquiryMail() {
         if (contactSent) await poolRef.query("UPDATE hardware_inquiries SET contact_mail_sent_at = now() WHERE id = $1", [row.id]);
       }
       if (!requesterSent) {
-        requesterSent = await sendPlainEmail({ to: row.email, subject: "We received your hardware request", text: "Thank you for contacting Decision Models. We have received your hardware request and will reply after checking the configuration." });
+        requesterSent = await sendPlainEmail({ to: row.email, subject: "We received your hardware request", text: "Thank you for contacting Decision Models. We have received your hardware request and will reply after checking the configuration.\n\n" + details });
         if (requesterSent) await poolRef.query("UPDATE hardware_inquiries SET requester_mail_sent_at = now() WHERE id = $1", [row.id]);
       }
       if (contactSent && requesterSent) {

@@ -24,13 +24,13 @@ describe("Decision Index next to every JevBench rank", () => {
     expect(decisionIndexText("no-such-model", snapshot)).toBe(DECISION_INDEX_NOT_MEASURED);
   });
 
-  it("never renders a JevBench or ImageJevBench rank on a model page without a Decision Index mention", async () => {
+  it("keeps a Decision Index mention beside every current-ranking link on model pages", async () => {
     const ranked = loadCatalog().filter((model) => model.installer_policy?.status !== "excluded" && [model.benchmarks?.jevbench, model.benchmarks?.imagejevbench].some((item) => benchmarkRank(item) !== null));
     expect(ranked.length).toBeGreaterThan(0);
     let checked = 0;
     for (const model of ranked) {
       const html = renderToStaticMarkup(await ModelLocalPage({ params: Promise.resolve({ slug: model.slug }) }));
-      if (!/#\d+ on (?:Image)?JevBench/.test(html)) continue;
+      if (!html.includes("See the current rank on Benchmark Heaven")) continue;
       checked += 1;
       expect(html, model.slug).toMatch(decisionIndexMention);
     }
