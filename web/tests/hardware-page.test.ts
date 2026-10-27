@@ -28,6 +28,8 @@ describe("hardware requested model", () => {
     expect(html).toMatch(/name="models"[^>]*checked=""[^>]*value="quyet-1-0-large"/);
     expect(html).toContain("Register pilot interest");
     expect(html).not.toContain("RTX 5090, today");
+    expect(html).not.toContain("Pre-installed by us on request, as a complete workstation");
+    expect(html).toContain("subject to feasibility and availability");
   });
   it("does not accept arbitrary hardware selections from the URL", async () => {
     const html = await render(undefined, "not-a-real-machine");

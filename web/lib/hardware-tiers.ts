@@ -155,7 +155,7 @@ export const TIERS: Tier[] = [
         noise: "Workstation fan noise under load",
         price: "GPU card €17,850–20,091 (Alternate, 12 Oct) plus the base system",
         offer: "preinstall",
-        offerNote: "Pre-installed by us on request, as a complete workstation from a system builder.",
+        offerNote: "Planned pilot candidate: a complete pre-installed workstation from a system builder, subject to feasibility and availability.",
         sources: ["own-reax", "own-lineup", "pro6000-alternate"]
       },
       {
@@ -172,7 +172,7 @@ export const TIERS: Tier[] = [
         noise: "Gaming-PC class; louder than a Mac Studio",
         price: "GPU card about €6,700–8,900 (Alternate, 12 Oct) plus the base system",
         offer: "preinstall",
-        offerNote: "Pre-installed by us on request, as a complete workstation from a system builder.",
+        offerNote: "Planned pilot candidate: a complete pre-installed workstation from a system builder, subject to feasibility and availability.",
         sources: ["own-hwsweep", "rtx5090-pcgh", "rtx5090-alternate", "lmsys-spark"]
       },
       {
