@@ -8,7 +8,7 @@ vi.mock("@/lib/server-runtime.mjs", () => ({
 vi.mock("@/lib/server/rate-limit", () => ({ requestIp: () => "127.0.0.1", checkContactRateLimit: () => ({ allowed: true }) }));
 import { POST } from "@/app/local/api/contact/route";
 
-const payload = { name: "Taylor Smith", email: "taylor@example.com", models: ["pplx-decider-v1-1-27b"], quantity: 1, location: "office", timeline: "researching", consent: true };
+const payload = { name: "Taylor Smith", email: "taylor@example.com", models: ["pplx-decider-v1-1-27b"], hardware_id: "jetson-orin-nano-super", quantity: 1, location: "office", timeline: "researching", consent: true };
 function submit(body: object) {
   return POST(new Request("http://localhost/local/api/contact", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }));
 }
@@ -25,9 +25,11 @@ describe("hardware contact POST", () => {
     expect(await response.json()).toEqual({ ok: true, mail: "queued" });
     expect(mocks.query.mock.calls[0][0]).toContain("INSERT INTO hardware_inquiries");
     expect(mocks.query.mock.calls[0][1][3]).toEqual(payload.models);
+    expect(mocks.query.mock.calls[0][1][8]).toBe(payload.hardware_id);
+    expect(mocks.query.mock.calls[0][1][9]).toBe("NVIDIA Jetson Orin Nano Super Developer Kit");
     expect(mocks.retryMail).toHaveBeenCalledOnce();
   });
-  it.each([{ models: ["../model"] }, { models: Array(21).fill("valid-slug") }, { consent: false }])("rejects invalid inquiries before storage: %j", async (invalid) => {
+  it.each([{ hardware_id: "not-a-known-device" }, { hardware_id: 42 }, { models: ["../model"] }, { models: Array(21).fill("valid-slug") }, { consent: false }])("rejects invalid inquiries before storage: %j", async (invalid) => {
     expect((await submit({ ...payload, ...invalid })).status).toBe(400);
     expect(mocks.query).not.toHaveBeenCalled();
     expect(mocks.retryMail).not.toHaveBeenCalled();

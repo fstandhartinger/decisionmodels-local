@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { isRequestedModelSlug } from "@/lib/contact-validation";
 
-export function ContactForm({ models, selectedModel }: { models: Array<{ slug: string; name: string }>; selectedModel?: string }) {
+export function ContactForm({ models, selectedModel, hardware = [], selectedHardware }: { models: Array<{ slug: string; name: string }>; selectedModel?: string; hardware?: Array<{ id: string; name: string }>; selectedHardware?: string }) {
   const requestedModel = isRequestedModelSlug(selectedModel) && !models.some((model) => model.slug === selectedModel) ? selectedModel : undefined;
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -18,8 +18,10 @@ export function ContactForm({ models, selectedModel }: { models: Array<{ slug: s
       const response = await fetch("/local/api/contact", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? "Please check the form and try again.");
+      const machine = hardware.find((device) => device.id === data.hardware_id)?.name;
+      const interest = machine ? `Your pilot interest in ${machine}` : "Your pilot interest";
       form.reset();
-      setMessage(result.mail === "queued" ? "Your request is saved. We will follow up by email." : "Your request has been sent. A copy is on its way to your inbox.");
+      setMessage(result.mail === "queued" ? `${interest} is saved. We will follow up by email.` : `${interest} has been sent. A copy is on its way to your inbox.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "The request could not be sent.");
     } finally {
@@ -36,13 +38,14 @@ export function ContactForm({ models, selectedModel }: { models: Array<{ slug: s
         {requestedModel && <label><input type="checkbox" name="models" value={requestedModel} defaultChecked />Requested model: {requestedModel}</label>}
         {!models.length && !requestedModel && <span className="fine-print">Tell us which model you have in mind in the message.</span>}
       </div></fieldset>
+      <label className="full-width">Machine of interest<select name="hardware_id" defaultValue={selectedHardware ?? ""}><option value="">Help me choose a machine</option>{hardware.map((device) => <option key={device.id} value={device.id}>{device.name}</option>)}</select></label>
       <label>Quantity<input name="quantity" type="number" min="1" max="1000" defaultValue="1" required /></label>
       <label>Where will it run?<select name="location" required defaultValue="office"><option value="office">Office</option><option value="edge">Edge device</option><option value="factory">Factory</option><option value="other">Other</option></select></label>
       <label>Timeline<select name="timeline" required defaultValue="researching"><option value="researching">Researching</option><option value="this-month">This month</option><option value="this-quarter">This quarter</option><option value="later">Later</option></select></label>
       <label className="full-width">Message<textarea name="message" rows={4} maxLength={4000} placeholder="What should the setup handle?" /></label>
       <label className="checkbox-line full-width"><input name="consent" type="checkbox" value="yes" required /><span>I agree that Decision Models can use these details to respond. See the <a className="consent-link" href="https://decisionmodels.io/legal/privacy">privacy notice</a>.</span></label>
       <div className="trap" aria-hidden="true"><label>Leave this field empty<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
-      <button className="button button-primary" type="submit" disabled={busy}>{busy ? "Sending…" : "Request a hardware quote"}</button>
+      <button className="button button-primary" type="submit" disabled={busy}>{busy ? "Sending…" : "Register pilot interest"}</button>
       {message && <p className="form-status" role="status">{message}</p>}
     </form>
   );

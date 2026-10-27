@@ -4,11 +4,11 @@ import { ContactForm } from "@/components/contact-form";
 import { isRequestedModelSlug } from "@/lib/contact-validation";
 import { loadCatalog } from "@/lib/catalog";
 import { cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, publicCloudGpuName, publicCloudInstanceName, publicCloudProviderName, sourceUrl, cheapestCloudOptionFor } from "@/lib/hardware-data";
-import { MODEL_COLUMNS, OFFER_LABEL, SOURCES, TIERS, type Fit, type TierDevice } from "@/lib/hardware-tiers";
+import { MODEL_COLUMNS, SOURCES, TIERS, type Fit, type TierDevice } from "@/lib/hardware-tiers";
 
 export const metadata: Metadata = { title: "Run decision models on your own hardware", description: "Device tiers from edge boards to rack servers: which decision models fit, measured and estimated speed, power, noise and price, and what we can pre-install for you.", alternates: { canonical: "/hardware" } };
 
-type HardwareProps = { searchParams: Promise<{ model?: string }> };
+type HardwareProps = { searchParams: Promise<{ model?: string; device?: string }> };
 
 const fitBadge: Record<Fit["level"], { label: string; className: string }> = {
   measured: { label: "Measured", className: "badge signal" },
@@ -30,9 +30,11 @@ function SourceLinks({ ids }: { ids: string[] }) {
   })}</ul>;
 }
 
-function DeviceCard({ device }: { device: TierDevice }) {
+function DeviceCard({ device, selectedModel }: { device: TierDevice; selectedModel?: string }) {
+  const query = new URLSearchParams({ device: device.id });
+  if (selectedModel) query.set("model", selectedModel);
   return <article className={`price-card ${device.offer === "preinstall" ? "featured" : ""}`} id={device.id}>
-    <span className={device.offer === "preinstall" ? "badge signal" : device.offer === "not-yet" ? "badge warn" : "badge"}>{OFFER_LABEL[device.offer]}</span>
+    <span className={device.offer === "preinstall" ? "badge signal" : device.offer === "not-yet" ? "badge warn" : "badge"}>Coming soon · Pilot interest</span>
     <h3 className="space-top-sm">{device.name}</h3>
     {device.examples && <p className="fine-print">{device.examples}</p>}
     <dl className="hw-facts space-top-sm">
@@ -43,21 +45,23 @@ function DeviceCard({ device }: { device: TierDevice }) {
     </dl>
     <p className="variant-note">{device.offerNote}</p>
     <details className="price-source-disclosure"><summary>Sources ({device.sources.length})</summary><SourceLinks ids={device.sources} /></details>
+    <a className="button button-secondary space-top-sm" href={`/hardware?${query.toString()}#request`}>Interested in becoming a pilot customer</a>
   </article>;
 }
 
 export default async function HardwarePage({ searchParams }: HardwareProps) {
-  const { model: requestedSlug } = await searchParams;
+  const { model: requestedSlug, device: requestedDevice } = await searchParams;
   const selectedSlug = isRequestedModelSlug(requestedSlug) ? requestedSlug : undefined;
   const models = loadCatalog();
   const selectedModel = selectedSlug ? models.find((item) => item.slug === selectedSlug) : undefined;
   const prices = loadHardwarePrices();
   const cloudModels = models.map((model) => ({ model, requirement: cloudRequirement(model), offer: cheapestCloudOptionFor(model, prices) })).filter((item) => item.requirement !== null);
   const allDevices = TIERS.flatMap((tier) => tier.devices.map((device) => ({ tier, device })));
+  const selectedHardware = allDevices.find(({ device }) => device.id === requestedDevice)?.device.id;
 
   return <>
     <section className="section-wrap hero">
-      <div className="hero-grid"><div><p className="eyebrow">Pre-installed hardware</p><h1>Run decision models on your own hardware.</h1><p className="lede">From a small edge board to a rack of GPUs: see which models fit, how many decisions per second to expect, and what each machine costs. On request we deliver an NVIDIA workstation set up for you, or you use your own device with our installer.</p><div className="hero-actions"><a className="button button-primary" href="#tiers">Compare devices</a><a className="button button-secondary" href="#request">Ask for a setup</a></div></div>
+      <div className="hero-grid"><div><p className="eyebrow">Pre-installed hardware · Coming soon</p><h1>Run decision models on your own hardware.</h1><p className="lede">From a small edge board to a rack of GPUs: see which models fit, how many decisions per second to expect, and what each machine costs. We are preparing a pilot program for pre-installed machines. Register interest in a device below; we will confirm feasibility and availability before offering a quote. You can already use your own device with our installer.</p><div className="hero-actions"><a className="button button-primary" href="#tiers">Compare devices</a><a className="button button-secondary" href="#request">Become a pilot customer</a></div></div>
         <aside className="hero-note"><strong>Speeds marked “measured” come from our own runs.</strong><span>Everything else is labelled as an estimate. A decision is one question answered with a probability for each option.</span></aside></div>
     </section>
 
@@ -81,7 +85,7 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
       <div className="section-heading"><div><p className="section-kicker">Device tiers</p><h2>Edge, desk, workstation, rack</h2></div><p>Prices are device street or list prices in Germany (incl. VAT) and the US, with the date we checked them. Setup, shipping and support are quoted separately on request.</p></div>
       {TIERS.map((tier) => <div className="section hardware-class" key={tier.id} id={`tier-${tier.id}`}>
         <div className="section-heading"><div><p className="section-kicker">{tier.kicker}</p><h3>{tier.title}</h3></div><p>{tier.summary}</p></div>
-        <div className="model-grid">{tier.devices.map((device) => <DeviceCard key={device.id} device={device} />)}</div>
+        <div className="model-grid">{tier.devices.map((device) => <DeviceCard key={device.id} device={device} selectedModel={selectedSlug} />)}</div>
       </div>)}
     </section>
 
@@ -101,7 +105,7 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
     <section className="section-wrap section" id="offer">
       <div className="section-heading"><div><p className="section-kicker">How we can deliver</p><h2>Pre-installed, or bring your own</h2></div></div>
       <div className="split">
-        <div className="panel"><span className="badge signal">Pre-installed by us, on request</span><h3 className="space-top-sm">A ready machine</h3><p>We buy a new workstation through regular retail or distribution channels in the EU, install the runtime, the model and a Jev-compatible endpoint, run a burn-in test and ship it to you.</p><ul className="plain-steps"><li>Workstations with RTX PRO 6000 or RTX 5090, today</li><li>GB10 systems (ASUS, Gigabyte, Dell, Lenovo, HP), once our Arm builds pass testing</li><li>Mac mini and Mac Studio, once our Apple Silicon builds pass testing; macOS stays untouched and our software is added as separate apps</li></ul></div>
+        <div className="panel"><span className="badge signal">Coming soon · Pilot program</span><h3 className="space-top-sm">A ready machine</h3><p>For pilot customers, we plan to source a new workstation through regular retail or distribution channels in the EU, install the runtime, model and a Jev-compatible endpoint, and run a burn-in test before shipping. Registering interest is not an order or a delivery commitment.</p><ul className="plain-steps"><li>Pilot candidates: workstations with RTX PRO 6000 or RTX 5090</li><li>GB10 systems (ASUS, Gigabyte, Dell, Lenovo, HP), once our Arm builds pass testing</li><li>Mac mini and Mac Studio, once our Apple Silicon builds pass testing; macOS stays untouched and our software is added as separate apps</li></ul></div>
         <div className="panel"><span className="badge">Bring your own device</span><h3 className="space-top-sm">Your machine, our installer</h3><p>Use hardware you already own or buy directly from the maker. Our <Link href="/local">installer and setup guide</Link> detects the device, downloads pinned model files and starts a local endpoint. We can also install remotely over SSH.</p><ul className="plain-steps"><li>NVIDIA Jetson boards and GB10 systems</li><li>tiny corp tinybox (sold directly by tiny corp)</li><li>Any Linux machine with a recent NVIDIA GPU</li></ul></div>
       </div>
       <p className="source-note space-top-sm">We are an independent integrator. We are not an authorised reseller or partner of Apple, NVIDIA, AMD, tiny corp or any system maker, and product names are used only to identify the hardware. The manufacturer’s warranty follows the manufacturer’s own terms; as the seller we provide the statutory warranty. Quotes are confirmed by email.</p>
@@ -115,8 +119,8 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
       <p className="mobile-scroll-hint">Swipe horizontally to see all cloud price and source details.</p>
     </section>
 
-    <section className="section-wrap section" id="request"><div className="section-heading"><div><p className="section-kicker">Request a setup</p><h2>Tell us what you need</h2></div><p>Tell us the model, the expected volume and where the machine will run. We reply with a device recommendation and a quote. Final pricing depends on availability, shipping and VAT.</p></div>
-      <div className="panel"><ContactForm models={models.filter((item) => item.installer_policy?.status !== "excluded").map((item) => ({ slug: item.slug, name: item.name }))} selectedModel={selectedSlug} /></div>
+    <section className="section-wrap section" id="request"><div className="section-heading"><div><p className="section-kicker">Coming soon · Pilot interest</p><h2>Interested in becoming a pilot customer?</h2></div><p>Tell us the model, the expected volume and where the machine will run. We will check your chosen device and model, then reply about pilot availability. No payment or order is taken here; pricing and delivery would be agreed separately.</p></div>
+      <div className="panel"><ContactForm models={models.filter((item) => item.installer_policy?.status !== "excluded").map((item) => ({ slug: item.slug, name: item.name }))} selectedModel={selectedSlug} hardware={allDevices.map(({ device }) => ({ id: device.id, name: device.name }))} selectedHardware={selectedHardware} /></div>
     </section>
   </>;
 }

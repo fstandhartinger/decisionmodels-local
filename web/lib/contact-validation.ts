@@ -6,6 +6,7 @@ export type HardwareInquiryInput = {
   email: string;
   company: string | null;
   models: string[];
+  hardwareId: string | null;
   quantity: number;
   location: string;
   timeline: string;
@@ -18,7 +19,7 @@ export function isRequestedModelSlug(value: unknown): value is string {
   return typeof value === "string" && /^[a-z0-9][a-z0-9.-]{0,80}$/.test(value);
 }
 
-export function validateHardwareInquiry(input: Record<string, unknown>) {
+export function validateHardwareInquiry(input: Record<string, unknown>, allowedHardwareIds: readonly string[] = []) {
   if (typeof input.website === "string" && input.website.trim()) return { ok: true as const, honeypot: true as const };
   const name = typeof input.name === "string" ? input.name.trim() : "";
   const email = typeof input.email === "string" ? input.email.trim() : "";
@@ -27,6 +28,9 @@ export function validateHardwareInquiry(input: Record<string, unknown>) {
   if (modelsRaw.length > MAX_REQUESTED_MODELS) return { ok: false as const, error: `Choose at most ${MAX_REQUESTED_MODELS} models.` };
   if (modelsRaw.some((value) => typeof value !== "string")) return { ok: false as const, error: "Enter valid model slugs." };
   const models = [...new Set((modelsRaw as string[]).map((value) => value.trim()).filter(Boolean))];
+  const hardwareId = typeof input.hardware_id === "string" && input.hardware_id.trim() ? input.hardware_id.trim() : null;
+  if (input.hardware_id != null && typeof input.hardware_id !== "string") return { ok: false as const, error: "Choose a valid machine." };
+  if (hardwareId && !allowedHardwareIds.includes(hardwareId)) return { ok: false as const, error: "Choose a machine from the list." };
   const quantity = Number(input.quantity);
   const location = typeof input.location === "string" ? input.location : "";
   const timeline = typeof input.timeline === "string" ? input.timeline : "";
@@ -40,5 +44,5 @@ export function validateHardwareInquiry(input: Record<string, unknown>) {
   if (message.length > 4000) return { ok: false as const, error: "Message must be 4,000 characters or fewer." };
   if (models.some((slug) => !isRequestedModelSlug(slug))) return { ok: false as const, error: "Enter valid model slugs (up to 81 lowercase letters, digits, dots or hyphens)." };
   if (input.consent !== true && input.consent !== "yes") return { ok: false as const, error: "Consent is required to send this request." };
-  return { ok: true as const, honeypot: false as const, value: { name, email, company, models, quantity, location, timeline, message } satisfies HardwareInquiryInput };
+  return { ok: true as const, honeypot: false as const, value: { name, email, company, models, hardwareId, quantity, location, timeline, message } satisfies HardwareInquiryInput };
 }
