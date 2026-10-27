@@ -27,6 +27,14 @@ describe("hardware inquiry validation", () => {
     expect(validateHardwareInquiry({ ...valid, models: ["a".repeat(81)] })).toMatchObject({ ok: true });
     expect(validateHardwareInquiry({ ...valid, models: Array.from({ length: 20 }, (_, i) => `model-${i}`) })).toMatchObject({ ok: true });
   });
+  it("keeps a known hardware choice and rejects unknown or non-string choices", () => {
+    const allowed = ["jetson-orin-nano-super"];
+    expect(validateHardwareInquiry({ ...valid, hardware_id: allowed[0] }, allowed)).toMatchObject({ ok: true, value: { hardwareId: allowed[0], models: ["qwen3-4b-instruct-2507"] } });
+    for (const hardware_id of ["not-in-the-device-list", "../escape", [allowed[0]], 42]) {
+      expect(validateHardwareInquiry({ ...valid, hardware_id }, allowed)).toMatchObject({ ok: false });
+    }
+    expect(validateHardwareInquiry({ ...valid, hardware_id: "" }, allowed)).toMatchObject({ ok: true, value: { hardwareId: null } });
+  });
   it("silently accepts the honeypot without recording a request", () => {
     expect(validateHardwareInquiry({ website: "bot-filled" })).toEqual({ ok: true, honeypot: true });
   });
