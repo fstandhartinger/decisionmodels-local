@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactForm } from "@/components/contact-form";
+import { isRequestedModelSlug } from "@/lib/contact-validation";
 import { loadCatalog } from "@/lib/catalog";
 import { cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, publicCloudGpuName, publicCloudInstanceName, publicCloudProviderName, sourceUrl, cheapestCloudOptionFor } from "@/lib/hardware-data";
 import { MODEL_COLUMNS, OFFER_LABEL, SOURCES, TIERS, type Fit, type TierDevice } from "@/lib/hardware-tiers";
@@ -46,7 +47,8 @@ function DeviceCard({ device }: { device: TierDevice }) {
 }
 
 export default async function HardwarePage({ searchParams }: HardwareProps) {
-  const { model: selectedSlug } = await searchParams;
+  const { model: requestedSlug } = await searchParams;
+  const selectedSlug = isRequestedModelSlug(requestedSlug) ? requestedSlug : undefined;
   const models = loadCatalog();
   const selectedModel = selectedSlug ? models.find((item) => item.slug === selectedSlug) : undefined;
   const prices = loadHardwarePrices();

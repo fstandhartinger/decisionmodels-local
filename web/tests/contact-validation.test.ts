@@ -1,23 +1,33 @@
 import { describe, expect, it } from "vitest";
 import { validateHardwareInquiry } from "../lib/contact-validation";
 
-const allowed = new Set(["qwen3-4b-instruct-2507"]);
 const valid = { name: "Taylor Smith", email: "taylor@example.com", company: "Example Ltd", models: "qwen3-4b-instruct-2507", quantity: "2", location: "office", timeline: "this-quarter", message: "Two local systems", consent: "yes" };
 
 describe("hardware inquiry validation", () => {
   it("accepts a valid inquiry and normalizes its values", () => {
-    const result = validateHardwareInquiry(valid, allowed);
+    const result = validateHardwareInquiry(valid);
     expect(result.ok && !result.honeypot && result.value).toMatchObject({ email: "taylor@example.com", quantity: 2, models: ["qwen3-4b-instruct-2507"] });
   });
   it("accepts catalog model slugs containing version dots", () => {
-    const result = validateHardwareInquiry({ ...valid, models: ["bobcat-flash-1.2"] }, new Set(["bobcat-flash-1.2"]));
+    const result = validateHardwareInquiry({ ...valid, models: ["bobcat-flash-1.2"] });
     expect(result.ok && !result.honeypot && result.value?.models).toEqual(["bobcat-flash-1.2"]);
   });
   it("rejects invalid model names and missing consent", () => {
-    expect(validateHardwareInquiry({ ...valid, models: "unknown-model" }, allowed)).toMatchObject({ ok: false });
-    expect(validateHardwareInquiry({ ...valid, consent: false }, allowed)).toMatchObject({ ok: false });
+    expect(validateHardwareInquiry({ ...valid, models: "../unknown-model" })).toMatchObject({ ok: false });
+    expect(validateHardwareInquiry({ ...valid, consent: false })).toMatchObject({ ok: false });
+  });
+  it("accepts unknown slugs and keeps them alongside catalog models", () => {
+    const models = ["qwen3-4b-instruct-2507", "pplx-decider-v1-1-27b", "jpt-9b", "vllm-sr-d3", "h2o-lightning-31b"];
+    expect(validateHardwareInquiry({ ...valid, models })).toMatchObject({ ok: true, value: { models } });
+  });
+  it("enforces slug shape, length, type and count", () => {
+    for (const models of [["Uppercase"], ["a/b"], ["<script>"], ["a".repeat(82)], [42], Array.from({ length: 21 }, (_, i) => `model-${i}`)]) {
+      expect(validateHardwareInquiry({ ...valid, models })).toMatchObject({ ok: false });
+    }
+    expect(validateHardwareInquiry({ ...valid, models: ["a".repeat(81)] })).toMatchObject({ ok: true });
+    expect(validateHardwareInquiry({ ...valid, models: Array.from({ length: 20 }, (_, i) => `model-${i}`) })).toMatchObject({ ok: true });
   });
   it("silently accepts the honeypot without recording a request", () => {
-    expect(validateHardwareInquiry({ website: "bot-filled" }, allowed)).toEqual({ ok: true, honeypot: true });
+    expect(validateHardwareInquiry({ website: "bot-filled" })).toEqual({ ok: true, honeypot: true });
   });
 });

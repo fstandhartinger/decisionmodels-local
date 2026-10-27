@@ -1,4 +1,3 @@
-import { loadCatalog } from "@/lib/catalog";
 import { validateHardwareInquiry } from "@/lib/contact-validation";
 import { json, readJson } from "@/lib/server/http";
 import { requestIp, checkContactRateLimit } from "@/lib/server/rate-limit";
@@ -11,8 +10,7 @@ export async function POST(request: Request) {
   const ip = requestIp(request);
   const body = await readJson(request, 12_000);
   if (!body) return json({ error: "The request must be valid JSON under 12 KB." }, 400);
-  const models = new Set(loadCatalog().map((model) => model.slug));
-  const result = validateHardwareInquiry(body, models);
+  const result = validateHardwareInquiry(body);
   if (!result.ok) return json({ error: result.error }, 400);
   if (result.honeypot) return json({ ok: true, mail: "queued" });
   const limit = checkContactRateLimit(ip, result.value.email);

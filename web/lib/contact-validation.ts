@@ -12,13 +12,21 @@ export type HardwareInquiryInput = {
   message: string;
 };
 
-export function validateHardwareInquiry(input: Record<string, unknown>, allowedModels: Set<string>) {
+export const MAX_REQUESTED_MODELS = 20;
+
+export function isRequestedModelSlug(value: unknown): value is string {
+  return typeof value === "string" && /^[a-z0-9][a-z0-9.-]{0,80}$/.test(value);
+}
+
+export function validateHardwareInquiry(input: Record<string, unknown>) {
   if (typeof input.website === "string" && input.website.trim()) return { ok: true as const, honeypot: true as const };
   const name = typeof input.name === "string" ? input.name.trim() : "";
   const email = typeof input.email === "string" ? input.email.trim() : "";
   const company = typeof input.company === "string" && input.company.trim() ? input.company.trim() : null;
-  const modelsRaw = Array.isArray(input.models) ? input.models.map(String) : typeof input.models === "string" ? input.models.split(",") : [];
-  const models = [...new Set(modelsRaw.map((value) => value.trim()).filter(Boolean))];
+  const modelsRaw = Array.isArray(input.models) ? input.models : typeof input.models === "string" ? input.models.split(",") : [];
+  if (modelsRaw.length > MAX_REQUESTED_MODELS) return { ok: false as const, error: `Choose at most ${MAX_REQUESTED_MODELS} models.` };
+  if (modelsRaw.some((value) => typeof value !== "string")) return { ok: false as const, error: "Enter valid model slugs." };
+  const models = [...new Set((modelsRaw as string[]).map((value) => value.trim()).filter(Boolean))];
   const quantity = Number(input.quantity);
   const location = typeof input.location === "string" ? input.location : "";
   const timeline = typeof input.timeline === "string" ? input.timeline : "";
@@ -30,7 +38,7 @@ export function validateHardwareInquiry(input: Record<string, unknown>, allowedM
   if (!locations.has(location)) return { ok: false as const, error: "Choose where the hardware will run." };
   if (!timelines.has(timeline)) return { ok: false as const, error: "Choose a timeline." };
   if (message.length > 4000) return { ok: false as const, error: "Message must be 4,000 characters or fewer." };
-  if (models.some((slug) => !/^[a-z0-9](?:[a-z0-9.-]{0,118}[a-z0-9])?$/.test(slug) || !allowedModels.has(slug))) return { ok: false as const, error: "Choose models from the catalogue." };
+  if (models.some((slug) => !isRequestedModelSlug(slug))) return { ok: false as const, error: "Enter valid model slugs (up to 81 lowercase letters, digits, dots or hyphens)." };
   if (input.consent !== true && input.consent !== "yes") return { ok: false as const, error: "Consent is required to send this request." };
   return { ok: true as const, honeypot: false as const, value: { name, email, company, models, quantity, location, timeline, message } satisfies HardwareInquiryInput };
 }

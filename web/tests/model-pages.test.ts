@@ -62,6 +62,18 @@ describe("model local pages", () => {
     }
   });
 
+  it("links benchmark badges to current model ranks without stale rank numbers", async () => {
+    for (const model of supported) {
+      const html = await render(model.slug);
+      for (const [key, benchmark] of Object.entries(model.benchmarks ?? {})) {
+        const route = key === "jevbench" ? "jev-models" : "image-jev-bench";
+        expect(html).toContain(`href="${benchmark.page ?? `https://benchmarkheaven.com/${route}/${benchmark.key ?? model.slug}`}"`);
+        expect(html).toContain("See the current rank on Benchmark Heaven");
+      }
+      expect(html).not.toMatch(/#\d+ on (?:JevBench|ImageJevBench)/);
+    }
+  });
+
   it("says hardware is on request when the data has no size", async () => {
     const unknown = hardware.find((entry) => !entry.min && !loadCatalog().some((model) => model.slug === entry.slug));
     if (!unknown) return;
