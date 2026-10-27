@@ -18,10 +18,10 @@ describe("model local pages", () => {
     for (const model of loadCatalog()) expect(slugs).toContain(model.slug);
   });
 
-  it("renders every page with the installer licence box and the hyperscaler guide", async () => {
+  it("keeps supported installer pages with the licence box and hyperscaler guide", async () => {
     for (const slug of slugs) {
       const model = loadCatalog().find((item) => item.slug === slug);
-      if (model?.installer_policy?.status === "excluded") continue;
+      if (!isInstallerSupported(model)) continue;
       const html = await render(slug);
       expect(html, slug).toContain("Free for individuals and companies with up to 10 employees and up to USD 1M ARR.");
       expect(html, slug).toContain("USD 1,000 one-time + USD 100/month");
@@ -44,12 +44,12 @@ describe("model local pages", () => {
     for (const slug of unsupported) {
       const html = await render(slug);
       expect(html, slug).toContain("Local install on request");
-      expect(html, slug).toContain(`mailto:info@decisionmodels.io?subject=Local%20install%20request%20${slug}`);
+      expect(html, slug).toContain('name="request_kind" value="local"');
+      expect(html, slug).toContain('type="hidden" name="models"');
+      expect(html, slug).not.toContain("Buy company licence");
       expect(html, slug).not.toMatch(COMMANDS);
       expect(html, slug).not.toContain("Manual, not covered");
-      expect(html, slug).toContain("Run it on AWS, Azure or Google Cloud");
-      expect(html, slug).toContain("Free for individuals and companies");
-      expect(html, slug).toContain("your data never leaves your machines");
+      expect(html, slug).toContain("Buying an installer licence does not add support for this model.");
     }
   });
 
@@ -77,7 +77,7 @@ describe("model local pages", () => {
   it("says hardware is on request when the data has no size", async () => {
     const unknown = hardware.find((entry) => !entry.min && !loadCatalog().some((model) => model.slug === entry.slug));
     if (!unknown) return;
-    expect(await render(unknown.slug)).toContain("Hardware requirements on request");
+    expect(await render(unknown.slug)).toContain("We first check the model reference, access to weights, model licence and your hardware.");
   });
 
   it("does not claim anything about hosting location or certifications", async () => {

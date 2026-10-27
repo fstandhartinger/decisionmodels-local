@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LocalSetupRequest } from "@/components/local-setup-request";
+import { localRequestModels } from "@/lib/local-request-models";
+import { isRequestedModelSlug } from "@/lib/contact-validation";
 import { CopyCommand } from "@/components/copy-command";
-import { CloudGuide, HardwareCard, LicenceBox, OnRequestCard, SovereigntyBox } from "@/components/local-sections";
+import { CloudGuide, HardwareCard, LicenceBox, SovereigntyBox } from "@/components/local-sections";
 import { QuickStart } from "@/components/quick-start";
 import { getModel, hasAnyExecutableInstallRecipe, installRecipeStatus, displayCopy, isInstallerSupported, loadCatalog, sanitizePublicText, type Model, type ModelVariant } from "@/lib/catalog";
 import { decisionIndexText, loadDecisionIndex } from "@/lib/decision-index";
@@ -12,7 +15,7 @@ import { cloudOptionsFor, cloudRequirement, dateText, hourlyMoney, loadHardwareP
 type PageProps = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {
-  const slugs = new Set([...loadCatalog().map((model) => model.slug), ...loadHardwareAll().map((entry) => entry.slug)]);
+  const slugs = new Set([...loadCatalog().map((model) => model.slug), ...loadHardwareAll().map((entry) => entry.slug), ...Object.keys(localRequestModels())]);
   return [...slugs].sort().map((slug) => ({ slug }));
 }
 
@@ -20,12 +23,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const model = getModel(slug);
   const hardware = getHardware(slug);
-  if (!model && hardware) return {
-    title: `${hardware.name} hardware and cloud setup`,
-    description: `Minimum hardware, cloud instances and manual setup for ${hardware.name}, run on machines you control.`,
-    openGraph: { images: ["/local/static/brand/og.png"] },
-    alternates: { canonical: `/models/${hardware.slug}/local` }
-  };
+  if (!model || (model.installer_policy?.status !== "excluded" && !isInstallerSupported(model))) {
+    const name = localRequestModels()[slug] ?? model?.name ?? hardware?.name;
+    return { title: `Local setup request: ${name ?? slug}`, description: "Request a feasibility review for local model setup; installer support is not yet available.", robots: { index: Boolean(name), follow: true }, alternates: { canonical: `/models/${slug}/local` } };
+  }
   const excluded = model?.installer_policy?.status === "excluded";
   const hasRecipe = model ? hasAnyExecutableInstallRecipe(model) : false;
   return model ? {
@@ -152,44 +153,17 @@ function hardwareFromCatalog(model: Model): HardwareEntry {
   };
 }
 
-function GenericModelPage({ hw }: { hw: HardwareEntry }) {
-  const size = hw.params_total_b ? `${hw.params_total_b}B ` : "";
-  const modality = hw.modalities?.length ? hw.modalities.join(" and ") : "open-weight";
-  const commercial = hw.licence?.commercial_use;
-  return <>
-    <section className="section-wrap hero">
-      <p className="eyebrow"><Link href="/local">Run locally</Link> / Model details</p>
-      <div className="hero-grid">
-        <div><h1>{hw.name}</h1><p className="lede">{size}{modality} model. Run it on hardware you control.</p><SovereignLine />
-          <div className="model-meta space-top"><span className="badge">Local install on request</span>{hw.modalities?.map((item) => <span className="badge" key={item}>{item}</span>)}</div></div>
-        <aside className="hero-note"><strong>Weights:</strong>{hw.hf_repo ? <span><a href={`https://huggingface.co/${hw.hf_repo}`}>{hw.hf_repo}</a></span> : <span>Model repository not listed</span>}</aside>
-      </div>
-    </section>
-    <LicenceBox installable={false} />
-    <section className="section-wrap section"><div className="section-heading"><div><p className="section-kicker">Model terms</p><h2>Model licence</h2></div></div>
-      <div className="panel"><div className="model-meta"><span className="badge">{hw.licence?.spdx ?? "Licence not listed"}</span><span className="badge">Commercial use: {commercialLabel(commercial ?? undefined)}</span></div>
-        <p className="space-top-sm">{commercialCopy(commercial ?? undefined)}</p>
-        {hw.hf_repo && <p className="source-note"><a href={`https://huggingface.co/${hw.hf_repo}`}>Model card</a></p>}
-        <p className="variant-note">This is the licence of the model weights. The installer licence above is separate.</p></div></section>
-    <OnRequestCard slug={hw.slug} />
-    <HardwareCard hw={hw} />
-    <CloudGuide slug={hw.slug} hw={hw} installer={false} />
-    <SovereigntyBox />
-  </>;
-}
-
 export default async function ModelLocalPage({ params }: PageProps) {
   const { slug } = await params;
   const model = getModel(slug);
   const hardware = getHardware(slug);
-  if (!model && hardware) return <GenericModelPage hw={hardware} />;
-  if (!model) notFound();
-  const status = model.installer_policy?.status ?? "excluded";
+  if (!isRequestedModelSlug(slug)) notFound();
+  const status = model?.installer_policy?.status ?? "on_request";
   const excluded = status === "excluded";
   if (excluded) return <section className="section-wrap narrow page-top"><p className="eyebrow"><Link href="/local">Run locally</Link></p><h1>Model not offered</h1><p className="lede space-top">This model is not offered in the installer while its licensing review is pending.</p></section>;
-  if (!isInstallerSupported(model)) {
-    const base = hardware ?? hardwareFromCatalog(model);
-    return <GenericModelPage hw={{ ...base, name: model.name, installer_supported: false, modalities: base.modalities?.length ? base.modalities : model.modalities, licence: base.licence ?? model.licence ?? null, hf_repo: base.hf_repo ?? model.weights?.repo ?? null, params_total_b: base.params_total_b ?? model.params?.total_b ?? null }} />;
+  if (!model || !isInstallerSupported(model)) {
+    const name = localRequestModels()[slug] ?? model?.name ?? hardware?.name;
+    return <LocalSetupRequest slug={slug} name={name ?? slug} known={Boolean(name)} />;
   }
   const commercialOnly = status === "supported_noncommercial_only";
   const hasRecipe = hasAnyExecutableInstallRecipe(model);

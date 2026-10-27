@@ -21,8 +21,8 @@ export async function POST(request: Request) {
     const inquiry = result.value;
     const device = hardware.find((item) => item.id === inquiry.hardwareId);
     const inserted = await getPool().query(
-      "INSERT INTO hardware_inquiries (name, email, company, models, quantity, location, timeline, message, hardware_id, hardware_name, consent) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,true) RETURNING id",
-      [inquiry.name, inquiry.email, inquiry.company, inquiry.models, inquiry.quantity, inquiry.location, inquiry.timeline, inquiry.message, device?.id ?? null, device?.name ?? null]
+      "INSERT INTO hardware_inquiries (name, email, company, models, quantity, location, timeline, message, hardware_id, hardware_name, request_kind, consent) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,true) RETURNING id",
+      [inquiry.name, inquiry.email, inquiry.company, inquiry.models, inquiry.quantity, inquiry.location, inquiry.timeline, inquiry.message, device?.id ?? null, device?.name ?? null, inquiry.requestKind]
     );
     await retryHardwareInquiryMail();
     const status = await getPool().query("SELECT mail_sent_at FROM hardware_inquiries WHERE id = $1", [inserted.rows[0].id]);
