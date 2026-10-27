@@ -35,6 +35,13 @@ describe("hardware inquiry validation", () => {
     }
     expect(validateHardwareInquiry({ ...valid, hardware_id: "" }, allowed)).toMatchObject({ ok: true, value: { hardwareId: null } });
   });
+  it("allowlists local/hardware kinds and keeps a local request to one selected model", () => {
+    expect(validateHardwareInquiry({ ...valid, request_kind: "local", models: ["h2o-lightning-31b"] })).toMatchObject({ ok: true, value: { requestKind: "local", models: ["h2o-lightning-31b"], hardwareId: null, location: "other", quantity: 1 } });
+    expect(validateHardwareInquiry(valid)).toMatchObject({ ok: true, value: { requestKind: "hardware" } });
+    for (const request_kind of ["api", "LOCAL", null, 42]) expect(validateHardwareInquiry({ ...valid, request_kind })).toMatchObject({ ok: false });
+    expect(validateHardwareInquiry({ ...valid, request_kind: "local", models: [] })).toMatchObject({ ok: false });
+    expect(validateHardwareInquiry({ ...valid, request_kind: "local", hardware_id: "jetson-orin-nano-super" }, ["jetson-orin-nano-super"])).toMatchObject({ ok: false });
+  });
   it("silently accepts the honeypot without recording a request", () => {
     expect(validateHardwareInquiry({ website: "bot-filled" })).toEqual({ ok: true, honeypot: true });
   });

@@ -86,16 +86,17 @@ export async function retryQueuedMail() {
 export async function retryHardwareInquiryMail() {
   if (!process.env.DATABASE_URL) return { skipped: true };
   const poolRef = getPool();
-  const pending = await poolRef.query("SELECT id, name, email, company, models, hardware_id, hardware_name, quantity, location, timeline, message, contact_mail_sent_at, requester_mail_sent_at FROM hardware_inquiries WHERE mail_sent_at IS NULL ORDER BY created_at LIMIT 25");
+  const pending = await poolRef.query("SELECT id, name, email, company, models, hardware_id, hardware_name, request_kind, quantity, location, timeline, message, contact_mail_sent_at, requester_mail_sent_at FROM hardware_inquiries WHERE mail_sent_at IS NULL ORDER BY created_at LIMIT 25");
   let sent = 0;
   for (const row of pending.rows) {
     try {
-      const details = `Name: ${row.name}
+      const local = row.request_kind === "local";
+      const details = `Request type: ${local ? "Local setup" : "Hardware pilot interest"}
+Name: ${row.name}
 Email: ${row.email}
 Company: ${row.company ?? "—"}
 Models: ${(row.models ?? []).join(", ")}
-Machine: ${row.hardware_name ? `${row.hardware_name} (${row.hardware_id})` : row.hardware_id ?? "Help me choose"}
-Quantity: ${row.quantity}
+${local ? "" : `Machine: ${row.hardware_name ? `${row.hardware_name} (${row.hardware_id})` : row.hardware_id ?? "Help me choose"}\nQuantity: ${row.quantity}\n`}
 Where: ${row.location}
 Timeline: ${row.timeline}
 
@@ -103,11 +104,11 @@ ${row.message}`;
       let contactSent = Boolean(row.contact_mail_sent_at);
       let requesterSent = Boolean(row.requester_mail_sent_at);
       if (!contactSent) {
-        contactSent = await sendPlainEmail({ to: process.env.CONTACT_TO || "info@decisionmodels.io", subject: "New pre-installed hardware pilot interest", text: details, replyTo: row.email });
+        contactSent = await sendPlainEmail({ to: process.env.CONTACT_TO || "info@decisionmodels.io", subject: local ? "New local model setup request" : "New pre-installed hardware pilot interest", text: details, replyTo: row.email });
         if (contactSent) await poolRef.query("UPDATE hardware_inquiries SET contact_mail_sent_at = now() WHERE id = $1", [row.id]);
       }
       if (!requesterSent) {
-        requesterSent = await sendPlainEmail({ to: row.email, subject: "We received your hardware pilot interest", text: "Thank you for contacting Decision Models. We have received your pilot interest and will reply after checking the configuration and pilot availability. This is not an order or a delivery commitment.\n\n" + details });
+        requesterSent = await sendPlainEmail({ to: row.email, subject: local ? "We received your local setup request" : "We received your hardware pilot interest", text: (local ? "Thank you for contacting Decision Models. We received your local setup request and will review model access, licence terms and technical feasibility before replying. This is not an order or a promise of installer support.\n\n" : "Thank you for contacting Decision Models. We have received your pilot interest and will reply after checking the configuration and pilot availability. This is not an order or a delivery commitment.\n\n") + details });
         if (requesterSent) await poolRef.query("UPDATE hardware_inquiries SET requester_mail_sent_at = now() WHERE id = $1", [row.id]);
       }
       if (contactSent && requesterSent) {

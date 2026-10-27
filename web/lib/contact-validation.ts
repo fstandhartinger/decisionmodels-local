@@ -7,6 +7,7 @@ export type HardwareInquiryInput = {
   company: string | null;
   models: string[];
   hardwareId: string | null;
+  requestKind: "hardware" | "local";
   quantity: number;
   location: string;
   timeline: string;
@@ -21,6 +22,8 @@ export function isRequestedModelSlug(value: unknown): value is string {
 
 export function validateHardwareInquiry(input: Record<string, unknown>, allowedHardwareIds: readonly string[] = []) {
   if (typeof input.website === "string" && input.website.trim()) return { ok: true as const, honeypot: true as const };
+  const requestKind = input.request_kind === undefined ? "hardware" : input.request_kind;
+  if (requestKind !== "hardware" && requestKind !== "local") return { ok: false as const, error: "Choose a valid request type." };
   const name = typeof input.name === "string" ? input.name.trim() : "";
   const email = typeof input.email === "string" ? input.email.trim() : "";
   const company = typeof input.company === "string" && input.company.trim() ? input.company.trim() : null;
@@ -31,8 +34,10 @@ export function validateHardwareInquiry(input: Record<string, unknown>, allowedH
   const hardwareId = typeof input.hardware_id === "string" && input.hardware_id.trim() ? input.hardware_id.trim() : null;
   if (input.hardware_id != null && typeof input.hardware_id !== "string") return { ok: false as const, error: "Choose a valid machine." };
   if (hardwareId && !allowedHardwareIds.includes(hardwareId)) return { ok: false as const, error: "Choose a machine from the list." };
-  const quantity = Number(input.quantity);
-  const location = typeof input.location === "string" ? input.location : "";
+  if (requestKind === "local" && hardwareId) return { ok: false as const, error: "Local setup requests do not select a hardware order." };
+  if (requestKind === "local" && models.length !== 1) return { ok: false as const, error: "Choose one model for a local setup request." };
+  const quantity = requestKind === "local" ? 1 : Number(input.quantity);
+  const location = requestKind === "local" ? "other" : typeof input.location === "string" ? input.location : "";
   const timeline = typeof input.timeline === "string" ? input.timeline : "";
   const message = typeof input.message === "string" ? input.message.trim() : "";
   if (name.length < 2 || name.length > 120) return { ok: false as const, error: "Enter a name between 2 and 120 characters." };
@@ -44,5 +49,5 @@ export function validateHardwareInquiry(input: Record<string, unknown>, allowedH
   if (message.length > 4000) return { ok: false as const, error: "Message must be 4,000 characters or fewer." };
   if (models.some((slug) => !isRequestedModelSlug(slug))) return { ok: false as const, error: "Enter valid model slugs (up to 81 lowercase letters, digits, dots or hyphens)." };
   if (input.consent !== true && input.consent !== "yes") return { ok: false as const, error: "Consent is required to send this request." };
-  return { ok: true as const, honeypot: false as const, value: { name, email, company, models, hardwareId, quantity, location, timeline, message } satisfies HardwareInquiryInput };
+  return { ok: true as const, honeypot: false as const, value: { name, email, company, models, hardwareId, requestKind, quantity, location, timeline, message } satisfies HardwareInquiryInput };
 }

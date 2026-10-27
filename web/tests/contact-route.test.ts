@@ -29,7 +29,14 @@ describe("hardware contact POST", () => {
     expect(mocks.query.mock.calls[0][1][9]).toBe("NVIDIA Jetson Orin Nano Super Developer Kit");
     expect(mocks.retryMail).toHaveBeenCalledOnce();
   });
-  it.each([{ hardware_id: "not-a-known-device" }, { hardware_id: 42 }, { models: ["../model"] }, { models: Array(21).fill("valid-slug") }, { consent: false }])("rejects invalid inquiries before storage: %j", async (invalid) => {
+  it("persists a local setup request kind with its model and no machine", async () => {
+    const response = await submit({ ...payload, request_kind: "local", hardware_id: undefined, models: ["h2o-lightning-31b"] });
+    expect(response.status).toBe(200);
+    expect(mocks.query.mock.calls[0][0]).toContain("request_kind");
+    expect(mocks.query.mock.calls[0][1][3]).toEqual(["h2o-lightning-31b"]);
+    expect(mocks.query.mock.calls[0][1].slice(8)).toEqual([null, null, "local"]);
+  });
+  it.each([{ request_kind: "api" }, { request_kind: null }, { hardware_id: "not-a-known-device" }, { hardware_id: 42 }, { models: ["../model"] }, { models: Array(21).fill("valid-slug") }, { consent: false }])("rejects invalid inquiries before storage: %j", async (invalid) => {
     expect((await submit({ ...payload, ...invalid })).status).toBe(400);
     expect(mocks.query).not.toHaveBeenCalled();
     expect(mocks.retryMail).not.toHaveBeenCalled();
