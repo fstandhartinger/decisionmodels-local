@@ -147,7 +147,9 @@ class TextPatchTests(unittest.TestCase):
 
     def test_headerless_new_file_and_mismatched_headers(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
+            # macOS temporary paths may traverse a system alias such as /var.
+            # Runtime roots are canonicalized before the path guard is called.
+            root = Path(tmp).resolve()
             headerless = NEW.replace(b'--- /dev/null\n+++ b/new.txt\n', b'')
             apply_text_patch(root, headerless, _contained_path)
             self.assertEqual((root/'new.txt').read_bytes(), b'added\n')
