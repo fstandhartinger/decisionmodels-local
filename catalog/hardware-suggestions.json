@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-10-12T20:11:36.713Z",
+  "generated_utc": "2026-11-02T11:25:10.817Z",
   "suggestions": {
     "autojev-27b": {
       "id": "rtx-pro-6000-blackwell-96",
@@ -11,6 +11,32 @@
       "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia"
+      ],
+      "price_usd": 29109,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 19499.99
+      },
+      "source": [
+        {
+          "source": "https://www.bhphotovideo.com/c/product/1895402-REG/nvidia_900_5g144_2200_000_rtx_pro_6000_blackwell.html",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 17999.99
+        }
+      ]
+    },
+    "basal-omni-1.0-ultra": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
+      "variant_id": "bf16-basal-eager",
+      "install_status": "ready_unverified",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
       ],
       "price_usd": 29109,
       "price_eur": null,
@@ -144,6 +170,32 @@
       "memory_kind": "vram",
       "variant_id": "bf16-torchao-fp8-dynamic",
       "install_status": "tested",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 29109,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 19499.99
+      },
+      "source": [
+        {
+          "source": "https://www.bhphotovideo.com/c/product/1895402-REG/nvidia_900_5g144_2200_000_rtx_pro_6000_blackwell.html",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 17999.99
+        }
+      ]
+    },
+    "fastino-glide-1.2-open": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
+      "variant_id": "bf16-glide-server",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia",
         "wsl2-nvidia"
@@ -328,6 +380,32 @@
         }
       ]
     },
+    "knowline-31b-gen1": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
+      "variant_id": "bf16-knowline-hf",
+      "install_status": "ready_unverified",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 29109,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 19499.99
+      },
+      "source": [
+        {
+          "source": "https://www.bhphotovideo.com/c/product/1895402-REG/nvidia_900_5g144_2200_000_rtx_pro_6000_blackwell.html",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 17999.99
+        }
+      ]
+    },
     "neohorse-jev-4b": {
       "id": "mac-mini-m5pro-24-512",
       "name": "Apple Mac mini M5 Pro (15-core CPU, 16-core GPU, 24 GB, 512 GB)",
@@ -357,6 +435,32 @@
           "date": "2026-10-09",
           "currency": "EUR",
           "value": 1999
+        }
+      ]
+    },
+    "pplx-decider-v1-1-27b": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
+      "variant_id": "bf16-autojev-server",
+      "install_status": "ready_unverified",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 29109,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 19499.99
+      },
+      "source": [
+        {
+          "source": "https://www.bhphotovideo.com/c/product/1895402-REG/nvidia_900_5g144_2200_000_rtx_pro_6000_blackwell.html",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 17999.99
         }
       ]
     },
@@ -481,8 +585,8 @@
       "class": "gpu-workstation",
       "memory_gb": 96,
       "memory_kind": "vram",
-      "variant_id": "bf16-surogate-engine",
-      "install_status": "tested",
+      "variant_id": "bf16-transformers-image",
+      "install_status": "ready_unverified",
       "platforms": [
         "linux-nvidia"
       ],
@@ -527,6 +631,58 @@
       ]
     },
     "vjev-vision": null,
+    "vllm-sr-d3-turbo": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
+      "variant_id": "bf16-d3-server",
+      "install_status": "ready_unverified",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 29109,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 19499.99
+      },
+      "source": [
+        {
+          "source": "https://www.bhphotovideo.com/c/product/1895402-REG/nvidia_900_5g144_2200_000_rtx_pro_6000_blackwell.html",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 17999.99
+        }
+      ]
+    },
+    "vllm-sr-d3": {
+      "id": "rtx-pro-6000-blackwell-96",
+      "name": "NVIDIA RTX PRO 6000 Blackwell (96 GB) workstation",
+      "class": "gpu-workstation",
+      "memory_gb": 96,
+      "memory_kind": "vram",
+      "variant_id": "bf16-d3-server",
+      "install_status": "ready_unverified",
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "price_usd": 29109,
+      "price_eur": null,
+      "street_prices": {
+        "USD": 19499.99
+      },
+      "source": [
+        {
+          "source": "https://www.bhphotovideo.com/c/product/1895402-REG/nvidia_900_5g144_2200_000_rtx_pro_6000_blackwell.html",
+          "date": "2026-10-09",
+          "currency": "USD",
+          "value": 17999.99
+        }
+      ]
+    },
     "winnow-12b": null,
     "xor-26b-a4b": {
       "id": "rtx-pro-6000-blackwell-96",

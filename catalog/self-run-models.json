@@ -2,7 +2,7 @@
   "source": "fstandhartinger/decisionmodels-hosting",
   "sha256": {
     "model-map.json": "a40925af75e17bee168852d56370de5f2bf1be268ae67276a4aa0dbe07e4d3ed",
-    "model-overrides.json": "efc6c9a14951c5bfa87c69b6c6aa56e9825b87f2f4ab7e45e44f510ad4b499fe",
+    "model-overrides.json": "a2e35ba16c0e61986b34d254a58aa4b592aa5245f6caf1775e96ee9bda4aa183",
     "model-facts.json": "6ed87e45a637641ec137f9b0b0d132a00eacf0da898f00ec88b4c66205cd5b15"
   },
   "models": {
@@ -121,7 +121,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "startlux-decision-v1.1-27b-instant": {
       "name": "StartLux-Decision v1.1 27B Instant",
@@ -570,7 +570,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "vjev-vision": {
       "name": "vjev-vision",
@@ -687,7 +687,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "clef-flash": {
       "name": "Clef-Flash",
@@ -768,7 +768,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "shisa-de-1": {
       "name": "shisa-de-1",
@@ -1098,7 +1098,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jev-27b-autotrust": {
       "name": "JEV-27B",
@@ -1275,7 +1275,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "visual-jev-4b": {
       "name": "Visual-Jev 4B Answer-SFT",
@@ -1454,7 +1454,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "djev-spark-nvfp4": {
       "name": "djev-spark NVFP4",
@@ -1469,7 +1469,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jevision": {
       "name": "JEVision",
@@ -1552,7 +1552,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "decisio-gemma-4-12b-v080": {
       "name": "decisio v0.8.0 on gemma-4-12B-it",
@@ -1567,7 +1567,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jpt-35b-a3b": {
       "name": "JPT-35B-A3B",
@@ -1599,7 +1599,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "elephant-1": {
       "name": "baselabs elephant-1",
@@ -1680,7 +1680,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "blink-v0-3-26b-a4b-nvfp4": {
       "name": "Blink v0.3 26B-A4B",
@@ -1712,7 +1712,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "respan-span-02": {
       "name": "Respan Span-02",
@@ -1908,7 +1908,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "aplomb-1": {
       "name": "Aplomb 1",
@@ -2072,7 +2072,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "seb-9b-v2": {
       "name": "Seb-9B-v2",
@@ -2138,7 +2138,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jebadiah-9b-v2-1": {
       "name": "Jebadiah 9B v2.1",
@@ -2219,7 +2219,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "messier-one-v0.4": {
       "name": "Messier One v0.4",
@@ -2251,7 +2251,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jqv": {
       "name": "jqv",
@@ -2266,7 +2266,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "metask-jev-4b": {
       "name": "metask-jev-4b",
@@ -2281,7 +2281,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "kahn1": {
       "name": "Kahn1 4B",
@@ -2379,7 +2379,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "blink-4b": {
       "name": "blink-4b",
@@ -2411,7 +2411,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "qwen35-9b-jev-data-mix-v2": {
       "name": "Qwen3.5-9B Jev-like data-mix v2",
@@ -2441,7 +2441,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jiwo-4b": {
       "name": "jiwo 4b",
@@ -2554,7 +2554,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "messier-one-v0.2": {
       "name": "Messier One v0.2",
@@ -2603,7 +2603,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "decision-4b-v11": {
       "name": "Decision 4B v1.1",
@@ -2618,7 +2618,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jev-qwen3.5-9b-base-nvfp4": {
       "name": "JEV Qwen3.5-9B Base NVFP4",
@@ -2667,7 +2667,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jebadiah-9b-v2": {
       "name": "Jebadiah 9B v2",
@@ -2746,7 +2746,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "nimble-9b": {
       "name": "Bespoke Nimble 9B",
@@ -2761,7 +2761,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "pjev-2b": {
       "name": "pjev-2b",
@@ -2810,7 +2810,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "compass-0.2.0": {
       "name": "Compass 0.2.0",
@@ -2874,7 +2874,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "arsenelupin-v1.1": {
       "name": "ArseneLupin v1.1",
@@ -2906,7 +2906,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "decision-2b": {
       "name": "Decision 2B",
@@ -2968,7 +2968,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "ryotide-qwen9": {
       "name": "RYOTIDE-Qwen9",
@@ -2983,7 +2983,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "goddragon-arbiter-4b": {
       "name": "Arbiter-4B",
@@ -3062,7 +3062,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "zerank-2": {
       "name": "ZeroEntropy zerank-2",
@@ -3109,7 +3109,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "opensourcejev-qwen35-4b-q4km": {
       "name": "OpenSourceJev",
@@ -3124,7 +3124,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "open-jev-zefan-2b": {
       "name": "Open-Jev 2B",
@@ -3139,7 +3139,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "exaone-4.0-1.2b-jev-v0.3": {
       "name": "EXAONE-4.0-1.2B-JEV v0.3",
@@ -3171,7 +3171,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "decisionnode-edge-mini-0.9.2": {
       "name": "DecisionNode Edge Mini 0.9.2",
@@ -3203,7 +3203,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jiwo-0.8b": {
       "name": "jiwo 0.8b",
@@ -3318,7 +3318,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "mxbai-rerank-base-v2": {
       "name": "Mixedbread mxbai-rerank-base-v2",
@@ -3350,7 +3350,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jez-small-1.0.0": {
       "name": "Jez-small-1.0.0",
@@ -3429,7 +3429,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "vega-u-qwen3.5-4b": {
       "name": "Vega-U",
@@ -3621,7 +3621,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "verdict-small": {
       "name": "verdict-small",
@@ -3636,7 +3636,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "kev-0.6b": {
       "name": "kev 0.6B",
@@ -3651,7 +3651,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "vegaml-4b": {
       "name": "Vega 4B",
@@ -3747,7 +3747,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "quyet-1-0-small": {
       "name": "Quyet-1.0-Small",
@@ -3792,7 +3792,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "phocinae-largha-150m-v1": {
       "name": "Phocinae-Largha-150M-v1",
@@ -3841,7 +3841,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "openjev-verdict": {
       "name": "openJev Verdict",
@@ -3856,7 +3856,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "tacet-sonata": {
       "name": "Tacet Sonata",
@@ -3886,7 +3886,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "classone-qwen3.5-2b": {
       "name": "ClassOne Qwen 3.5 2B",
@@ -4033,7 +4033,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "allec-oavg": {
       "name": "allec-oavg",
@@ -4114,7 +4114,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "bev-bonsai-27b": {
       "name": "Bev / Bonsai 27B",
@@ -4161,7 +4161,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "bosun-v31-0.6b": {
       "name": "Bosun v3.1 0.6B",
@@ -4308,7 +4308,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "gliner2-large": {
       "name": "GLiNER2 large",
@@ -4455,7 +4455,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jeff-1-1-large": {
       "name": "Jeff-1.1-Large",
@@ -4504,7 +4504,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jevany-27b-sft": {
       "name": "JevAny-27B SFT",
@@ -4519,7 +4519,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "jevora-9b-v1": {
       "name": "jevora-9b-v1",
@@ -4615,7 +4615,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "metask-jev-rain-12b": {
       "name": "metask-jev-rain-12B",
@@ -4664,7 +4664,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "modernbert-jev-v2": {
       "name": "modernbert-jev v2",
@@ -4711,7 +4711,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "needle-3-tools": {
       "name": "Needle 3, options as tools",
@@ -4726,7 +4726,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "nemotron-deciffusion-8b-v2": {
       "name": "Nemotron Deciffusion 8B v2",
@@ -4741,7 +4741,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "nev-2b": {
       "name": "Nev-2B",
@@ -4771,7 +4771,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "oenogarum": {
       "name": "oenogarum",
@@ -4803,7 +4803,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "open-jev-zefan-27b-v1.1": {
       "name": "Open-Jev 27B v1.1",
@@ -4833,7 +4833,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "openjev-4b-nli": {
       "name": "OpenJev 4B NLI v2",
@@ -4848,7 +4848,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "openjev-4b-v5": {
       "name": "OpenJev 4B NLI v5",
@@ -4878,7 +4878,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "piccolo-27b": {
       "name": "Piccolo 27B",
@@ -4961,7 +4961,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "reflex-instinct-0.6b": {
       "name": "Reflex Instinct 0.6B",
@@ -4991,7 +4991,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "saif-4b": {
       "name": "Saif 4B",
@@ -5023,7 +5023,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "simplejev-qwen3.8-27b-selfhost": {
       "name": "SimpleJev Qwen3.8-27B",
@@ -5038,7 +5038,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "sors-2b": {
       "name": "Sors-2B",
@@ -5119,7 +5119,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "tde-general-large": {
       "name": "TDE general large v0.1",
@@ -5215,7 +5215,7 @@
       "runtime": "vllm",
       "architectures": [],
       "command": null,
-      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
+      "missing": "A public checkpoint has not been verified for this model."
     },
     "wemm-jev": {
       "name": "WeMM-JEV",

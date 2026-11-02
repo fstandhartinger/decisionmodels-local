@@ -18,7 +18,7 @@ describe("hardware requested model", () => {
     expect(await render(undefined, undefined, "1")).not.toContain("Request received");
     for (const name of ["edge", "desk", "workstation", "rack"]) expect(html).toContain(`/hardware/${name}.svg`);
   });
-  it.each(["pplx-decider-v1-1-27b", "jpt-9b", "vllm-sr-d3", "h2o-lightning-31b"])("keeps %s selected without inventing model requirements", async (slug) => {
+  it.each(["mammoth-1", "jpt-9b", "dopest-1.0-31b", "h2o-lightning-31b"])("keeps %s selected without inventing model requirements", async (slug) => {
     const html = await render(slug);
     expect(html).toContain(`Requested model: ${slug}`);
     expect(html).toMatch(new RegExp(`name="models"[^>]*checked=""[^>]*value="${slug}"`));
