@@ -382,7 +382,7 @@
           "port": "api",
           "text_path": "/v1/systemone",
           "image_path": null,
-          "model": "perplexity-ai/pplx-decider-v1.1-27b",
+          "model": "jev-latest",
           "auth_header": null
         },
         "requires": {
