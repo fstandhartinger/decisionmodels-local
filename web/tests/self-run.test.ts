@@ -4,6 +4,7 @@ import Page from "../app/models/[slug]/local/page";
 import CloudPage from "../app/local/cloud/page";
 import { licenceCopy, localRequestCurl, publicRepoId, selfRunModels } from "../lib/self-run";
 import { cloudInstanceFor, cloudServeCommand } from "../lib/cloud-instances";
+import { getModel, isInstallerSupported } from "../lib/catalog";
 
 const render = async (slug: string) => renderToStaticMarkup(await Page({ params: Promise.resolve({ slug }) }));
 describe("self-service guides", () => {
@@ -20,11 +21,19 @@ describe("self-service guides", () => {
     expect(html).toMatch(/<details[^>]*><summary>Need help setting it up\?/);
     expect(html).toContain("Running the public weights yourself with vLLM needs no Decision Models licence");
   });
-  it("shows unverified top-10 recipes as in verification, never as installable", async () => {
-    for (const slug of ["vllm-sr-d3", "knowline-31b-gen1"]) {
+  it("keeps author-server models off the stock vLLM path, with honest pending-recipe status", async () => {
+    for (const slug of ["vllm-sr-d3", "vllm-sr-d3-turbo", "pplx-decider-v1-1-27b", "fastino-glide-1.2-open", "basal-omni-1.0-ultra", "knowline-31b-gen1"]) {
       const html = await render(slug);
-      expect(html).toContain("Installer recipe in verification");
-      expect(html).not.toContain(`dm-local install ${slug}`);
+      if (!isInstallerSupported(getModel(slug))) {
+        expect(html).toContain("Installer recipe in verification");
+        expect(html).not.toContain(`dm-local install ${slug}`);
+      }
+      expect(html).not.toContain("vllm serve ");
+      expect(html).not.toContain("/v1/chat/completions");
+      const cloud = renderToStaticMarkup(await CloudPage({ searchParams: Promise.resolve({ model: slug }) }));
+      expect(cloud).not.toContain("vllm serve");
+      expect(cloud).not.toContain("pip install vllm");
+      expect(cloud).toContain("author’s serving runtime");
       expect(html).not.toContain("Local install on request");
     }
     expect(await render("mammoth-1")).not.toContain("Installer recipe in verification");

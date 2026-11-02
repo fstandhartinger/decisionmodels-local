@@ -4,9 +4,12 @@ import { CopyCommand } from "./copy-command";
 import { CloudGuide, LicenceBox } from "./local-sections";
 import { selfRunModel, licenceCopy, publicRepoId, localRequestCurl } from "@/lib/self-run";
 import type { HardwareEntry } from "@/lib/hardware-all";
+import { getModel } from "@/lib/catalog";
 
 export function SelfRunGuide({ slug, name, known, hw, recipePending = false }: { slug: string; name: string; known: boolean; hw?: HardwareEntry; recipePending?: boolean }) {
   const facts = selfRunModel(slug);
+  const authorServer = getModel(slug)?.readout?.type === "author_server";
+  const command = authorServer ? null : facts?.command;
   const repo = facts?.hf_repo ?? hw?.hf_repo;
   const url = repo ? `https://huggingface.co/${repo}` : undefined;
   const memory = facts?.vram_gb; // Use served precision, never a smaller hypothetical quantisation.
@@ -17,7 +20,7 @@ export function SelfRunGuide({ slug, name, known, hw, recipePending = false }: {
       <h1>Run {name} yourself</h1>
       <p className="lede space-top-sm">{licenceCopy(facts?.licence)}</p>
       <p>This model has no supported dm-local installer recipe. Use the public weights directly where the runtime supports them.</p>
-      {recipePending && <div className="callout"><strong>Installer recipe in verification</strong><p>We have written a dm-local recipe for this model that includes the author’s own server. It is being tested on a GPU. Until that test passes, the installer will not install it. Stock vLLM below serves the raw weights only. The typed decisions measured in the benchmark need the author’s server.</p></div>}
+      {recipePending && <div className="callout"><strong>Installer recipe in verification</strong><p>We have written a dm-local recipe for this model that includes the author’s own server. It has not passed GPU verification yet. Until that test passes, the installer will not install it. The typed decisions measured in the benchmark need the author’s server.</p></div>}
       {!known && <div className="callout"><strong>Unverified model reference</strong><p>This page does not confirm that the model or its weights are available. Check the spelling and the original model card.</p></div>}
       <dl className="hw-facts space-top">
         <div><dt>Weights</dt><dd>{url ? <a href={url}>{repo}</a> : "Repository not listed"}</dd></div>
@@ -31,11 +34,11 @@ export function SelfRunGuide({ slug, name, known, hw, recipePending = false }: {
     </section>
     <section className="section-wrap section" id="run-weights"><div className="panel">
       <p className="section-kicker">Your machine</p><h2>Serve the weights</h2>
-      {facts?.command ? <><p>Use Linux with an NVIDIA GPU and a compatible CUDA driver. These commands have not been run by us end-to-end. Check the model card for runtime versions and any custom readout code.</p>
-        <pre className="code-block">{`python3 -m venv .venv\n. .venv/bin/activate\npython -m pip install vllm\n${facts.command}`}</pre><CopyCommand value={`python3 -m venv .venv\n. .venv/bin/activate\npython -m pip install vllm\n${facts.command}`} />
+      {command ? <><p>Use Linux with an NVIDIA GPU and a compatible CUDA driver. These commands have not been run by us end-to-end. Check the model card for runtime versions and any custom readout code.</p>
+        <pre className="code-block">{`python3 -m venv .venv\n. .venv/bin/activate\npython -m pip install vllm\n${command}`}</pre><CopyCommand value={`python3 -m venv .venv\n. .venv/bin/activate\npython -m pip install vllm\n${command}`} />
         <p className="fine-print">The server listens on localhost port 8000. This is the stock vLLM API; a Jev-compatible endpoint may need the model author’s readout code. No runtime compatibility or performance test is implied.</p>
         {repo && <><h3 className="space-top">Send a request to your local server</h3><p>With the server running, this OpenAI-compatible chat completion request goes to localhost:8000. We have not tested this request.</p>
-          <pre className="code-block">{localRequestCurl(repo)}</pre><CopyCommand value={localRequestCurl(repo)} /></>}</> : <p>{facts?.missing ?? "A verified full checkpoint, pinned revision and compatible runtime are not recorded yet. Check the model card before choosing a serving command."}{facts?.gated && " Request access on Hugging Face first and accept the author’s terms."}{facts?.adapter_base && (publicRepoId(facts.adapter_base) ? ` This is an adapter; obtain the base model (${publicRepoId(facts.adapter_base)}) and follow the author’s adapter instructions.` : " This is an adapter; obtain its base model from the model card and follow the author’s adapter instructions.")}</p>}
+          <pre className="code-block">{localRequestCurl(repo)}</pre><CopyCommand value={localRequestCurl(repo)} /></>}</> : <p>{authorServer ? "Use the author’s serving runtime for Jev-compatible typed decisions. Follow the model card; a stock vLLM command is not offered for this setup." : facts?.missing ?? "A verified full checkpoint, pinned revision and compatible runtime are not recorded yet. Check the model card before choosing a serving command."}{facts?.gated && " Request access on Hugging Face first and accept the author’s terms."}{facts?.adapter_base && (publicRepoId(facts.adapter_base) ? ` This is an adapter; obtain the base model (${publicRepoId(facts.adapter_base)}) and follow the author’s adapter instructions.` : " This is an adapter; obtain its base model from the model card and follow the author’s adapter instructions.")}</p>}
       {url && <p><a href={url}>Read the model card →</a></p>}
     </div></section>
     <CloudGuide slug={slug} hw={cloudHw} installer={false} />
