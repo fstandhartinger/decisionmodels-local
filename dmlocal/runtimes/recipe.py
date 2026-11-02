@@ -311,7 +311,80 @@ class RecipeRuntime:
                 keys.add(key)
         return sorted(keys)
 
+    def _download_patched_code(self, spec):
+        from .textpatch import apply_text_patch, tree_hashes
+        if spec.get("pip_install"):
+            raise ValueError("patched checkout cannot use pip_install")
+        patch_spec = spec["patch"]
+        if not isinstance(patch_spec, dict) or set(patch_spec) != {"path", "sha256", "tree_sha256"}:
+            raise ValueError("code.patch requires path, sha256 and tree_sha256")
+        if any(not re.fullmatch(r"[0-9a-f]{64}", str(patch_spec[key])) for key in ("sha256", "tree_sha256")):
+            raise ValueError("code.patch requires pinned patch and result tree SHA-256 hashes")
+        patch_path = _contained_path(self.weights, patch_spec["path"])
+        if patch_path.stat().st_size > 4 * 1024 * 1024:
+            raise ValueError("author text patch exceeds 4 MiB")
+        data = patch_path.read_bytes()
+        if hashlib.sha256(data).hexdigest() != patch_spec["sha256"]:
+            raise RuntimeError("author patch failed SHA-256 verification")
+        destination = _contained_path(self.weights, spec["dest"])
+        marker_value = {key: spec[key] for key in ("repo", "revision", "sha256")}
+        marker_value["patch"] = patch_spec
+        marker = _contained_path(destination, ".dm-local-source.json")
+        if destination.exists():
+            try:
+                saved = json.loads(marker.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                raise RuntimeError("patched checkout is missing its verification marker") from exc
+            if saved.get("source") != marker_value:
+                raise RuntimeError("patched checkout source or patch marker mismatch")
+            # Exclude only our marker; every other file must still match exactly.
+            expected = saved.get("files")
+            actual = {}
+            for path in destination.rglob("*"):
+                relative = path.relative_to(destination).as_posix()
+                _contained_path(destination, relative)
+                if path == marker:
+                    continue
+                if path.is_dir():
+                    continue
+                if not stat.S_ISREG(path.lstat().st_mode):
+                    raise RuntimeError("patched checkout contains a special file")
+                actual[relative] = sha256_file(path)
+            tree_digest = hashlib.sha256(json.dumps(actual, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+            if actual != expected or tree_digest != patch_spec["tree_sha256"]:
+                raise RuntimeError("patched checkout content was tampered with")
+            return destination
+        if spec.get("source") != "github":
+            raise ValueError("patched code requires an immutable GitHub archive")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        # Stage on the same filesystem; no incomplete checkout is ever published.
+        with tempfile.TemporaryDirectory(prefix=".dm-patch-", dir=destination.parent) as temporary:
+            stage_root = Path(temporary)
+            archive = stage_root / "source.tar.gz"
+            url = f"https://codeload.github.com/{spec['repo']}/tar.gz/{spec['revision']}"
+            request = urllib.request.Request(url, headers={"User-Agent": "dm-local"})
+            with urllib.request.urlopen(request, timeout=90) as response, archive.open("wb") as output:
+                shutil.copyfileobj(response, output)
+            if sha256_file(archive) != spec["sha256"]:
+                raise RuntimeError("GitHub source archive failed SHA-256 verification")
+            stage = stage_root / "checkout"
+            _safe_extract_tar(archive, stage, strip_common_root=True)
+            tree_hashes(stage, _contained_path, sha256_file)
+            apply_text_patch(stage, data, _contained_path)
+            inventory = tree_hashes(stage, _contained_path, sha256_file)
+            tree_digest = hashlib.sha256(json.dumps(inventory, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+            if tree_digest != patch_spec["tree_sha256"]:
+                raise RuntimeError("patched checkout result tree failed SHA-256 verification")
+            _atomic_json(stage / ".dm-local-source.json", {"source": marker_value, "files": inventory})
+            _contained_path(self.weights, spec["dest"])
+            if destination.exists():
+                raise RuntimeError("checkout appeared during patch staging")
+            os.rename(stage, destination)
+        return destination
+
     def _download_code(self, spec):
+        if "patch" in spec:
+            return self._download_patched_code(spec)
         repo = spec["repo"]
         revision = spec["revision"]
         dest_rel = _safe_relpath(spec["dest"])

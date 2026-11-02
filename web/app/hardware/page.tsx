@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ContactForm } from "@/components/contact-form";
 import { isRequestedModelSlug } from "@/lib/contact-validation";
+import { localRequestModels } from "@/lib/local-request-models";
 import { loadCatalog } from "@/lib/catalog";
+import { selfRunModel } from "@/lib/self-run";
+import { GPU_MEMORY_UTILISATION } from "@/lib/cloud-instances";
 import { cloudRequirement, dateText, hourlyMoney, loadHardwarePrices, publicCloudGpuName, publicCloudInstanceName, publicCloudProviderName, sourceUrl, cheapestCloudOptionFor } from "@/lib/hardware-data";
-import { MODEL_COLUMNS, SOURCES, TIERS, type Fit, type TierDevice } from "@/lib/hardware-tiers";
+import { MODEL_COLUMNS, SOURCES, TIERS, deviceMemoryGb, type Fit, type TierDevice } from "@/lib/hardware-tiers";
 
 export const metadata: Metadata = { title: "Run decision models on your own hardware", description: "Device tiers from edge boards to rack servers: which decision models fit, measured and estimated speed, power, noise and price, and what we can pre-install for you.", alternates: { canonical: "/hardware" } };
 
-type HardwareProps = { searchParams: Promise<{ model?: string; device?: string }> };
+type HardwareProps = { searchParams: Promise<{ model?: string; device?: string; requested?: string }> };
 
 const fitBadge: Record<Fit["level"], { label: string; className: string }> = {
   measured: { label: "Measured", className: "badge signal" },
@@ -30,10 +34,18 @@ function SourceLinks({ ids }: { ids: string[] }) {
   })}</ul>;
 }
 
-function DeviceCard({ device, selectedModel }: { device: TierDevice; selectedModel?: string }) {
+function memoryFit(device: TierDevice, neededGb?: number | null) {
+  const have = deviceMemoryGb(device.memory);
+  if (!neededGb || have === null) return null;
+  return have * GPU_MEMORY_UTILISATION >= neededGb ? `Memory: about ${neededGb} GB needed; fits in the ${device.memory}. Speed is not estimated.` : `Memory: about ${neededGb} GB needed; more than this device offers.`;
+}
+
+function DeviceCard({ device, selectedModel, deviceClass, neededGb }: { device: TierDevice; selectedModel?: string; deviceClass: string; neededGb?: number | null }) {
+  const fitLine = memoryFit(device, neededGb);
   const query = new URLSearchParams({ device: device.id });
   if (selectedModel) query.set("model", selectedModel);
   return <article className={`price-card ${device.offer === "preinstall" ? "featured" : ""}`} id={device.id}>
+    <Image src={`/hardware/${deviceClass}.svg`} alt={`Illustration of a ${deviceClass === "edge" ? "GPU edge board" : deviceClass === "desk" ? "mini PC" : deviceClass === "workstation" ? "workstation tower" : "rack server"}; not a product photo`} width={480} height={260} className="hardware-device-image" />
     <span className={device.offer === "preinstall" ? "badge signal" : device.offer === "not-yet" ? "badge warn" : "badge"}>Coming soon · Pilot interest</span>
     <h3 className="space-top-sm">{device.name}</h3>
     {device.examples && <p className="fine-print">{device.examples}</p>}
@@ -43,6 +55,8 @@ function DeviceCard({ device, selectedModel }: { device: TierDevice; selectedMod
       <div><dt>Power</dt><dd>{device.power}</dd></div>
       <div><dt>Noise</dt><dd>{device.noise}</dd></div>
     </dl>
+    <ul className="plain-steps space-top-sm">{MODEL_COLUMNS.map((column) => <li key={column.key}><strong>{column.title}:</strong> <span className={fitBadge[device.fits[column.key].level].className}>{fitBadge[device.fits[column.key].level].label}</span> {device.fits[column.key].text}</li>)}</ul>
+    {fitLine && <p className="fine-print">{fitLine}</p>}
     <p className="variant-note">{device.offerNote}</p>
     <details className="price-source-disclosure"><summary>Sources ({device.sources.length})</summary><SourceLinks ids={device.sources} /></details>
     <a className="button button-secondary space-top-sm" href={`/hardware?${query.toString()}#request`}>Interested in becoming a pilot customer</a>
@@ -50,16 +64,20 @@ function DeviceCard({ device, selectedModel }: { device: TierDevice; selectedMod
 }
 
 export default async function HardwarePage({ searchParams }: HardwareProps) {
-  const { model: requestedSlug, device: requestedDevice } = await searchParams;
+  const { model: requestedSlug, device: requestedDevice, requested } = await searchParams;
   const selectedSlug = isRequestedModelSlug(requestedSlug) ? requestedSlug : undefined;
   const models = loadCatalog();
   const selectedModel = selectedSlug ? models.find((item) => item.slug === selectedSlug) : undefined;
+  const publicFacts = selectedSlug && !selectedModel ? selfRunModel(selectedSlug) : undefined;
+  const selectedName = selectedModel?.name ?? publicFacts?.name;
+  const neededGb = publicFacts?.vram_gb ?? null;
   const prices = loadHardwarePrices();
   const cloudModels = models.map((model) => ({ model, requirement: cloudRequirement(model), offer: cheapestCloudOptionFor(model, prices) })).filter((item) => item.requirement !== null);
   const allDevices = TIERS.flatMap((tier) => tier.devices.map((device) => ({ tier, device })));
   const selectedHardware = allDevices.find(({ device }) => device.id === requestedDevice)?.device.id;
 
   return <>
+    {requested === "1" && selectedSlug && <section className="section-wrap page-top"><div className="callout" role="status"><h2>Request received — {selectedModel?.name ?? localRequestModels()[selectedSlug] ?? selectedSlug} on pre-installed hardware.</h2><p>If you just sent a request for {selectedModel?.name ?? localRequestModels()[selectedSlug] ?? selectedSlug}, we have it and will answer by email. These options are being introduced, so requests are answered by hand for now.</p></div></section>}
     <section className="section-wrap hero">
       <div className="hero-grid"><div><p className="eyebrow">Pre-installed hardware · Coming soon</p><h1>Run decision models on your own hardware.</h1><p className="lede">From a small edge board to a rack of GPUs: see which models fit, how many decisions per second to expect, and what each machine costs. We are preparing a pilot program for pre-installed machines. Register interest in a device below; we will confirm feasibility and availability before offering a quote. You can already use your own device with our installer.</p><div className="hero-actions"><a className="button button-primary" href="#tiers">Compare devices</a><a className="button button-secondary" href="#request">Become a pilot customer</a></div></div>
         <aside className="hero-note"><strong>Speeds marked “measured” come from our own runs.</strong><span>Everything else is labelled as an estimate. A decision is one question answered with a probability for each option.</span></aside></div>
@@ -80,12 +98,13 @@ export default async function HardwarePage({ searchParams }: HardwareProps) {
     </section>
 
     {selectedModel && <section className="section-wrap"><div className="callout"><strong>Selected model: {selectedModel.name}</strong><p>Check the memory it needs on the model page, then pick a device below with at least that much memory.</p><Link href={`/models/${selectedModel.slug}/local`}>View model requirements →</Link></div></section>}
+    {publicFacts && selectedSlug && <section className="section-wrap"><div className="callout"><strong>Selected model: {selectedName ?? selectedSlug}</strong><p>{neededGb ? `About ${neededGb} GB of GPU memory is estimated for the served precision and 8k context. Pick a device below with at least that much memory; the device cards show whether it fits.` : "The memory this model needs is not known yet, so we cannot say which device fits."}</p><Link href={`/models/${selectedSlug}/local`}>Run the public weights yourself →</Link></div></section>}
 
     <section className="section-wrap section" id="tiers">
       <div className="section-heading"><div><p className="section-kicker">Device tiers</p><h2>Edge, desk, workstation, rack</h2></div><p>Prices are device street or list prices in Germany (incl. VAT) and the US, with the date we checked them. Setup, shipping and support are quoted separately on request.</p></div>
       {TIERS.map((tier) => <div className="section hardware-class" key={tier.id} id={`tier-${tier.id}`}>
         <div className="section-heading"><div><p className="section-kicker">{tier.kicker}</p><h3>{tier.title}</h3></div><p>{tier.summary}</p></div>
-        <div className="model-grid">{tier.devices.map((device) => <DeviceCard key={device.id} device={device} selectedModel={selectedSlug} />)}</div>
+        <div className="model-grid">{tier.devices.map((device) => <DeviceCard key={device.id} device={device} selectedModel={selectedSlug} deviceClass={tier.id} neededGb={neededGb} />)}</div>
       </div>)}
     </section>
 

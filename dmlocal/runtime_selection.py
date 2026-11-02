@@ -148,6 +148,17 @@ def recipe_errors(variant):
                 errors.append(f"{label}.sha256 must be a pinned SHA-256")
             if not _safe_relative(item.get("dest")):
                 errors.append(f"{label}.dest must be a safe relative path")
+            if "patch" in item:
+                patch = item["patch"]
+                if (not isinstance(patch, dict) or set(patch) != {"path", "sha256", "tree_sha256"}
+                        or not _safe_relative(patch.get("path"))
+                        or not isinstance(patch.get("sha256"), str)
+                        or not _SHA256.fullmatch(patch.get("sha256", ""))
+                        or not isinstance(patch.get("tree_sha256"), str)
+                        or not _SHA256.fullmatch(patch.get("tree_sha256", ""))):
+                    errors.append(f"{label}.patch requires a safe weights-relative path and pinned sha256 / tree_sha256")
+                if item.get("source") != "github" or item.get("pip_install"):
+                    errors.append(f"{label}.patch requires github source without pip_install")
             if not isinstance(item.get("pip_install", False), bool) or not isinstance(item.get("deps", False), bool):
                 errors.append(f"{label}.pip_install and deps must be booleans")
         if runtime not in ("venv", "mlx") and any(isinstance(item, dict) and item.get("pip_install") for item in codes):

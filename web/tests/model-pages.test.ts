@@ -31,10 +31,9 @@ describe("model local pages", () => {
     }
   }, 60_000);
 
-  const COMMANDS = /dm-local (?:install|plan|uninstall|remote)|curl [^<]*install\.sh|vllm serve|pip install vllm|llama-server/;
   const supported = loadCatalog().filter(isInstallerSupported);
 
-  it("shows Local install on request, and no commands, for models without installer support", async () => {
+  it("shows self-run guidance without installer commands for unsupported models", async () => {
     const catalogue = loadCatalog();
     const unsupported = [
       ...hardware.filter((entry) => !catalogue.some((model) => model.slug === entry.slug)).map((entry) => entry.slug),
@@ -43,13 +42,14 @@ describe("model local pages", () => {
     expect(unsupported.length).toBeGreaterThan(0);
     for (const slug of unsupported) {
       const html = await render(slug);
-      expect(html, slug).toContain("Local install on request");
+      expect(html, slug).toContain("yourself");
+      expect(html, slug).toContain("Need help setting it up?");
       expect(html, slug).toContain('name="request_kind" value="local"');
       expect(html, slug).toContain('type="hidden" name="models"');
-      expect(html, slug).not.toContain("Buy company licence");
-      expect(html, slug).not.toMatch(COMMANDS);
+      expect(html, slug).toContain("Public weights need no Decision Models licence");
+      expect(html, slug).not.toMatch(/dm-local (?:install|plan|remote)\b/);
       expect(html, slug).not.toContain("Manual, not covered");
-      expect(html, slug).toContain("Buying an installer licence does not add support for this model.");
+      expect(html, slug).toContain("buying a licence does not add support");
     }
   });
 
@@ -74,10 +74,10 @@ describe("model local pages", () => {
     }
   });
 
-  it("says hardware is on request when the data has no size", async () => {
+  it("states unknown sizing when no serving size is recorded", async () => {
     const unknown = hardware.find((entry) => !entry.min && !loadCatalog().some((model) => model.slug === entry.slug));
     if (!unknown) return;
-    expect(await render(unknown.slug)).toContain("We first check the model reference, access to weights, model licence and your hardware.");
+    expect(await render(unknown.slug)).toContain("Unknown for this runtime and precision");
   });
 
   it("does not claim anything about hosting location or certifications", async () => {

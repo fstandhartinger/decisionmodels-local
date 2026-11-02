@@ -16,6 +16,9 @@ UNION = {"quyet-1-0-large", "jeff-1-0-large", "decisio-gemma-4-31b-v080", "deck3
          "bobcat-flash-1.2", "surogate-rune-26b-a4b-v3", "decider-12b", "xor-26b-a4b", "torchcast-decision-12b",
          "winnow-12b", "cygnet"}
 
+# Verified current-board additions (public text selftest receipts, 2 November2026).
+UNION |= {'vllm-sr-d3-turbo', 'basal-omni-1.0-ultra', 'pplx-decider-v1-1-27b', 'knowline-31b-gen1', 'fastino-glide-1.2-open', 'mammoth-1', 'vllm-sr-d3'}
+
 # Union members that are on_request until a full end-to-end test has passed (xor needs a Docker host).
 UNTESTED = {"xor-26b-a4b"}
 
@@ -59,14 +62,17 @@ class Top10PolicyTests(unittest.TestCase):
 
     @unittest.skipUnless(sys.platform.startswith("linux"), "uses /proc/<pid>/cmdline")
     def test_process_record_matches_command_with_empty_argument(self):
-        command = [sys.executable, "-c", "import time; time.sleep(30)", "--cors-origins", ""]
-        child = subprocess.Popen(command)
+        command = [sys.executable, "-c", "import time; print('ready', flush=True); time.sleep(30)", "--cors-origins", ""]
+        child = subprocess.Popen(command, stdout=subprocess.PIPE, text=True)
         try:
+            # Wait for child startup; /proc/cmdline can be transient during exec.
+            self.assertEqual(child.stdout.readline().strip(), "ready")
             self.assertTrue(process._record_matches_process({"pid": child.pid, "command": command}))
             self.assertFalse(process._record_matches_process({"pid": child.pid, "command": command[:-1] + ["x"]}))
         finally:
             child.kill()
             child.wait()
+            child.stdout.close()
 
 
 if __name__ == "__main__":

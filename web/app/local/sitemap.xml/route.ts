@@ -10,7 +10,7 @@ function sitemapPaths(): string[] {
   const excluded = new Set(loadCatalog().filter((model) => model.installer_policy?.status === "excluded").map((model) => model.slug));
   const slugs = new Set([...loadCatalog().map((model) => model.slug), ...loadHardwareAll().map((entry) => entry.slug)]);
   for (const slug of excluded) slugs.delete(slug);
-  return ["/local", "/hardware", ...[...slugs].sort().map((slug) => `/models/${slug}/local`)];
+  return ["/local", "/local/cloud", "/hardware", ...[...slugs].sort().map((slug) => `/models/${slug}/local`)];
 }
 
 export async function GET() {

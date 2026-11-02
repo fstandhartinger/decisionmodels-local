@@ -251,3 +251,11 @@ html,body { max-width:100%; overflow-x:clip; }
 .brand-lockup { padding-block:2px; margin-block:-2px; }
 .checkbox-list label { padding-block:2px; margin-block:-2px; } /* the label is the click target of its 13 px checkbox */
 .price-source-list a,.hw-table td a,td > a,.consent-link,.eyebrow a,.hero-note a,.source-note a,.cloud-pick a,.variant-note a,.fine-print a,.api-examples a.fine-print { padding-block:5px; }
+
+.self-run-guide .hw-facts { grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); padding:24px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+.self-run-guide .hw-facts dd { overflow-wrap:anywhere; }
+.self-run-guide .panel > p,.cloud-quick-guide .section > p { margin-block:16px; }
+.cloud-quick-guide .section > h2 { margin-bottom:20px; }
+.cloud-quick-guide .code-block { margin-top:16px; }
+
+.hardware-device-image { display:block; width:100%; height:auto; margin-bottom:20px; }

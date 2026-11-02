@@ -261,3 +261,9 @@ export const OFFER_LABEL: Record<Offer, string> = {
   byo: "Bring your own device",
   "not-yet": "Not supported yet"
 };
+
+/** Smallest memory figure in a device label such as "96–256 GB unified (M5 Ultra)"; null when unparseable. */
+export function deviceMemoryGb(label: string): number | null {
+  const match = /(\d+(?:\.\d+)?)\s*(?:[–-]\s*\d+(?:\.\d+)?\s*)?GB/.exec(label);
+  return match ? Number(match[1]) : null;
+}

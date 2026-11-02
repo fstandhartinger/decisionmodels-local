@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { catalogRoot } from "./catalog-root";
+import { getModel, hasAnyExecutableInstallRecipe, hasExecutableInstallRecipe, isInstallerSupported } from "./catalog";
 
 export type HwTier = { precision?: string | null; vram_gb?: number | null; gpu_examples?: string | null; ram_gb?: number | null; disk_gb?: number | null };
 export type HwPrecision = { id: string; weights_gb?: number | null; min_vram_gb?: number | null; min_ram_gb?: number | null; disk_gb?: number | null };
@@ -43,7 +44,24 @@ export function loadHardwareAll(file = path.join(catalogRoot(), "hardware-all.js
 }
 
 export function getHardware(slug: string): HardwareEntry | undefined {
-  return loadHardwareAll().find((entry) => entry.slug === slug);
+  const base = loadHardwareAll().find((entry) => entry.slug === slug);
+  const model = getModel(slug);
+  const variant = model?.variants?.filter((v) => hasExecutableInstallRecipe(v) && Number(v.min_vram_gb) > 0 && v.platforms?.includes("linux-nvidia"))
+    .sort((a, b) => Number(a.min_vram_gb) - Number(b.min_vram_gb))[0];
+  if (!model || !variant || !hasAnyExecutableInstallRecipe(model)) return base;
+  const maximum = (...values: Array<number | null | undefined>) => {
+    const known = values.filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+    return known.length ? Math.max(...known) : undefined;
+  };
+  return { ...base, slug, name: base?.name ?? model.name, hf_repo: model.weights?.repo ?? base?.hf_repo,
+    params_total_b: model.params?.total_b ?? base?.params_total_b, modalities: model.modalities ?? base?.modalities,
+    source: "installer-catalog", installer_supported: isInstallerSupported(model),
+    min: { ...base?.min, precision: variant.precision ?? base?.min?.precision,
+      vram_gb: maximum(base?.min?.vram_gb, variant.min_vram_gb),
+      ram_gb: maximum(base?.min?.ram_gb, variant.min_ram_gb), disk_gb: maximum(base?.min?.disk_gb, variant.disk_gb) },
+    recommended: { ...base?.recommended, precision: variant.precision ?? base?.recommended?.precision,
+      vram_gb: maximum(base?.recommended?.vram_gb, variant.recommended_vram_gb, variant.min_vram_gb),
+      ram_gb: maximum(base?.recommended?.ram_gb, variant.min_ram_gb), disk_gb: maximum(base?.recommended?.disk_gb, variant.disk_gb) } };
 }
 
 export function hasKnownHardware(entry?: HardwareEntry): boolean {

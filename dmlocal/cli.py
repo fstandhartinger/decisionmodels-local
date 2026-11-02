@@ -234,6 +234,10 @@ def _install(args):
             url = (f"https://github.com/{item['repo']}/releases/download/{item['tag']}/{item['asset']}" if item.get("source") == "github-release"
                    else f"https://codeload.github.com/{item['repo']}/tar.gz/{item['revision']}")
             print("Would download, verify, and safely extract: " + url + " sha256=" + item["sha256"])
+            if item.get("patch"):
+                spec = item["patch"]
+                print("Would apply restricted text patch in staging: " + spec["path"]
+                      + " sha256=" + spec["sha256"] + " tree_sha256=" + spec["tree_sha256"])
         if runtime_name == "docker-compose":
             compose = recipe["compose"]
             url = __import__("dmlocal.storage", fromlist=["hf_url"]).hf_url(model["weights"]["repo"], model["weights"]["revision"], compose["bundle"])

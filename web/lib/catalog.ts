@@ -53,6 +53,7 @@ export type Model = {
     imagejevbench?: { version?: string; key?: string; capability_rank?: number; rank?: number; capability?: number; p50_s_raw?: number; page?: string };
   };
   modalities?: string[];
+  readout?: { type?: string };
   weights?: { repo?: string; revision?: string; url?: string; gated?: boolean };
   params?: { total_b?: number; active_b?: number };
   licence?: { spdx?: string; commercial_use?: string; redistribution?: string; notes?: string; evidence?: string[] };
@@ -106,8 +107,11 @@ export function loadCatalog(directory = modelDirectory): Model[] {
   return [...found.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
+// The deployed catalogue belongs to the image; reuse its index across page rendering.
+let modelIndex: Map<string, Model> | undefined;
 export function getModel(slug: string): Model | undefined {
-  return loadCatalog().find((model) => model.slug === slug);
+  modelIndex ??= new Map(loadCatalog().map((model) => [model.slug, model]));
+  return modelIndex.get(slug);
 }
 
 export function sanitizePublicText(value: string): string {
