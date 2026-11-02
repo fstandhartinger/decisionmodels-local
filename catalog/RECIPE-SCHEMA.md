@@ -115,3 +115,27 @@ and relative executable lookup all select that project's `.venv` (`bin/python` o
 `code[].pip_install` flags must be false/absent: overlays would defeat the frozen environment. Additional model
 weights continue through the existing verified download path. Dry-run renders the same frozen sync and process
 interpreter commands without acquiring uv, downloading code, creating a venv, or writing support/port files.
+
+### Pinned text patches on author source
+
+`install.code[].patch = {"path": "serve.patch", "sha256": "<64 hex>", "tree_sha256": "<64 hex>"}` optionally
+applies one pinned UTF-8/LF git unified diff from the downloaded weights directory
+to a SHA-256-verified immutable GitHub archive. Include the patch in the variant's
+hash-checked `files`. This requires no system git and executes no patch commands.
+Only same-path regular-file edits and new regular files (mode 100644) are accepted.
+Absolute/traversal/Windows paths, symlinks/junctions, binary patches, renames,
+deletions, mode changes, metadata paths and fuzz matching are rejected.
+
+The checkout is patched and inventoried in a private temporary sibling, then
+renamed into place only after complete success. Repeated preparation checks the
+exact source/patch pins and every checkout file; mismatch or tampering fails closed.
+Remove the damaged checkout explicitly to reinstall. No `pip_install` on patched
+source: use pinned dependencies and `PYTHONPATH` instead. Set
+`PYTHONDONTWRITEBYTECODE=1`; generated files in the checkout invalidate its inventory.
+A failed initial preparation leaves no checkout and cleans its temporary stage.
+
+`tree_sha256` pins the complete patched regular-file inventory: SHA-256 of UTF-8
+`json.dumps({relative_posix_path: file_sha256, ...}, sort_keys=True, separators=(",", ":"))`
+excluding the installer verification marker. It is checked on first install and
+every repeated prepare, so editing both a checkout file and its local marker
+cannot authorize altered source. Directory entries do not contribute to this hash.

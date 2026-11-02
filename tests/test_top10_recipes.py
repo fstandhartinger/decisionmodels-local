@@ -9,7 +9,7 @@ CATALOG = Path(__file__).resolve().parents[1] / "catalog" / "models"
 
 # JevBench v1.8.4 top-10 recipes added 2026-11-02. A recipe may only be supported with a passing selftest receipt.
 SLUGS = ["vllm-sr-d3", "vllm-sr-d3-turbo", "pplx-decider-v1-1-27b", "fastino-glide-1.2-open", "basal-omni-1.0-ultra",
-         "knowline-31b-gen1"]
+         "knowline-31b-gen1", "mammoth-1"]
 
 
 class Top10RecipeTests(unittest.TestCase):
