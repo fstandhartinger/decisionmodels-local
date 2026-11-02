@@ -21,3 +21,16 @@ export function licenceCopy(licence?: string | null) {
 export function selfRunModel(slug: string): SelfRunModel | undefined {
   return selfRunModels()[slug];
 }
+
+/** Public Hugging Face repo id (`owner/name`) for display. Internal cache paths map to the repo they hold; anything else is hidden. */
+export function publicRepoId(value?: string | null): string | undefined {
+  const text = (value ?? "").trim();
+  const cached = /^\/workspace\/hf\/hub\/models--([^/]+?)--([^/]+?)(?:\/snapshots\/[^/]+\/?)?$/.exec(text);
+  const repo = cached ? `${cached[1]}/${cached[2]}` : text;
+  return /^[A-Za-z0-9][A-Za-z0-9._-]*\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(repo) && !repo.includes("..") ? repo : undefined;
+}
+
+/** Copy-paste request for a locally served vLLM model (OpenAI-compatible chat completion). */
+export function localRequestCurl(repo: string) {
+  return `curl http://localhost:8000/v1/chat/completions \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify({ model: repo, messages: [{ role: "user", content: "Say hello." }], max_tokens: 64 })}'`;
+}

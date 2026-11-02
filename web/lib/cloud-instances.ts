@@ -15,12 +15,16 @@ export const cloudInstances = [
   { provider: "gcp", name: "a3-highgpu-1g", gpu: "1 × H100 (Spot or Flex-start only)", memory: 80, gpuCount: 1, gpuMemory: 80, source: "https://docs.cloud.google.com/compute/docs/gpus" }
 ] as const;
 
+/** vLLM uses 90 % of GPU memory by default, so an estimate must fit within this share of the GPUs. */
+export const GPU_MEMORY_UTILISATION = 0.9;
+
 export function cloudInstanceFor(provider: string, memory?: number | null) {
   if (!memory || memory <= 0) return undefined;
   const options = cloudInstances.filter((item) => item.provider === provider);
-  const single = options.filter((item) => item.gpuCount === 1 && item.gpuMemory >= memory)
+  const usable = (gpuMemory: number) => gpuMemory * GPU_MEMORY_UTILISATION >= memory;
+  const single = options.filter((item) => item.gpuCount === 1 && usable(item.gpuMemory))
     .sort((a, b) => a.gpuMemory - b.gpuMemory)[0];
-  return single ?? options.filter((item) => item.gpuCount > 1 && item.memory >= memory)
+  return single ?? options.filter((item) => item.gpuCount > 1 && usable(item.memory))
     .sort((a, b) => a.gpuCount - b.gpuCount || a.memory - b.memory)[0];
 }
 

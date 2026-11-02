@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ContactForm } from "./contact-form";
 import { CopyCommand } from "./copy-command";
 import { CloudGuide, LicenceBox } from "./local-sections";
-import { selfRunModel, licenceCopy } from "@/lib/self-run";
+import { selfRunModel, licenceCopy, publicRepoId, localRequestCurl } from "@/lib/self-run";
 import type { HardwareEntry } from "@/lib/hardware-all";
 
 export function SelfRunGuide({ slug, name, known, hw }: { slug: string; name: string; known: boolean; hw?: HardwareEntry }) {
@@ -32,7 +32,9 @@ export function SelfRunGuide({ slug, name, known, hw }: { slug: string; name: st
       <p className="section-kicker">Your machine</p><h2>Serve the weights</h2>
       {facts?.command ? <><p>Use Linux with an NVIDIA GPU and a compatible CUDA driver. These commands have not been run by us end-to-end. Check the model card for runtime versions and any custom readout code.</p>
         <pre className="code-block">{`python3 -m venv .venv\n. .venv/bin/activate\npython -m pip install vllm\n${facts.command}`}</pre><CopyCommand value={`python3 -m venv .venv\n. .venv/bin/activate\npython -m pip install vllm\n${facts.command}`} />
-        <p className="fine-print">The server listens on localhost port 8000. This is the stock vLLM API; a Jev-compatible endpoint may need the model author’s readout code. No runtime compatibility or performance test is implied.</p></> : <p>{facts?.missing ?? "A verified full checkpoint, pinned revision and compatible runtime are not recorded yet. Check the model card before choosing a serving command."}{facts?.gated && " Request access on Hugging Face first and accept the author’s terms."}{facts?.adapter_base && ` This is an adapter; obtain the base model (${facts.adapter_base}) and follow the author’s adapter instructions.`}</p>}
+        <p className="fine-print">The server listens on localhost port 8000. This is the stock vLLM API; a Jev-compatible endpoint may need the model author’s readout code. No runtime compatibility or performance test is implied.</p>
+        {repo && <><h3 className="space-top">Send a request to your local server</h3><p>With the server running, this OpenAI-compatible chat completion request goes to localhost:8000. We have not tested this request.</p>
+          <pre className="code-block">{localRequestCurl(repo)}</pre><CopyCommand value={localRequestCurl(repo)} /></>}</> : <p>{facts?.missing ?? "A verified full checkpoint, pinned revision and compatible runtime are not recorded yet. Check the model card before choosing a serving command."}{facts?.gated && " Request access on Hugging Face first and accept the author’s terms."}{facts?.adapter_base && (publicRepoId(facts.adapter_base) ? ` This is an adapter; obtain the base model (${publicRepoId(facts.adapter_base)}) and follow the author’s adapter instructions.` : " This is an adapter; obtain its base model from the model card and follow the author’s adapter instructions.")}</p>}
       {url && <p><a href={url}>Read the model card →</a></p>}
     </div></section>
     <CloudGuide slug={slug} hw={cloudHw} installer={false} />

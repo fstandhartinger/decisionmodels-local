@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import Page from "../app/models/[slug]/local/page";
 import CloudPage from "../app/local/cloud/page";
-import { licenceCopy, selfRunModels } from "../lib/self-run";
+import { licenceCopy, localRequestCurl, publicRepoId, selfRunModels } from "../lib/self-run";
 import { cloudInstanceFor, cloudServeCommand } from "../lib/cloud-instances";
 
 const render = async (slug: string) => renderToStaticMarkup(await Page({ params: Promise.resolve({ slug }) }));
@@ -48,6 +48,17 @@ describe("self-service guides", () => {
     expect(cloudInstanceFor("azure", 100)?.gpuCount).toBe(2);
     expect(cloudInstanceFor("gcp", null)).toBeUndefined();
   });
+  it("keeps the estimate within vLLM's default 90 % GPU memory use", () => {
+    expect(cloudInstanceFor("aws", 24)?.name).toBe("g6e.xlarge");
+    expect(cloudInstanceFor("aws", 21.6)?.name).toBe("g6.xlarge");
+    expect(cloudInstanceFor("aws", 76.6)?.name).toBe("p5.48xlarge");
+    expect(cloudInstanceFor("azure", 76.6)?.name).toBe("Standard_NC40ads_H100_v5");
+    expect(cloudInstanceFor("gcp", 76.6)?.name).toBe("a2-ultragpu-2g");
+    for (const provider of ["aws", "azure", "gcp"]) for (const memory of [10, 24, 40, 67.8, 72, 76.6, 100, 150]) {
+      const instance = cloudInstanceFor(provider, memory);
+      if (instance) expect(instance.memory * 0.9).toBeGreaterThanOrEqual(memory);
+    }
+  });
   it("withholds unreviewed custom architectures and base-less adapters", async () => {
     const models = selfRunModels();
     for (const slug of ["vera-large", "d1a-gemma4-e4b", "watersheep", "decision-2-0-vega-27b", "openjev-4b-v5"]) {
@@ -69,7 +80,7 @@ describe("self-service guides", () => {
     for (const [provider, flag] of [["aws", "--instance-type"], ["azure", "--size"], ["gcp", "--machine-type"]]) {
       const instance = cloudInstanceFor(provider, memory)!;
       expect(instance.gpuCount).toBe(1);
-      expect(instance.gpuMemory).toBeGreaterThanOrEqual(memory);
+      expect(instance.gpuMemory * 0.9).toBeGreaterThanOrEqual(memory);
       const section = html.split(`id="${provider}"`)[1].split("</section>")[0];
       expect(section).toContain(`INSTANCE_TYPE=${instance.name}`);
       expect(section).toContain(`${flag} &quot;$INSTANCE_TYPE&quot;`);
@@ -90,7 +101,7 @@ describe("self-service guides", () => {
     for (const provider of ["aws", "azure", "gcp"]) {
       const instance = cloudInstanceFor(provider, 125.8)!;
       expect(instance.gpuCount).toBeGreaterThan(1);
-      expect(instance.memory).toBeGreaterThanOrEqual(125.8);
+      expect(instance.memory * 0.9).toBeGreaterThanOrEqual(125.8);
       expect(cloudServeCommand("vllm serve example --host 127.0.0.1", instance)).toContain(`--tensor-parallel-size ${instance.gpuCount}`);
     }
     expect(cloudInstanceFor("aws", 1000)).toBeUndefined();
@@ -101,5 +112,33 @@ describe("self-service guides", () => {
     expect(licenceCopy("MIT")).toContain("Commercial use OK");
     expect(licenceCopy("MIT (code); weights restricted")).toContain("Licence unclear");
     expect(licenceCopy(null)).toContain("Licence unclear");
+  });
+  it("never shows internal paths: maps cache paths to repo ids and hides everything else", () => {
+    expect(publicRepoId("/workspace/hf/hub/models--Qwen--Qwen3.5-9B/snapshots/c2022abc")).toBe("Qwen/Qwen3.5-9B");
+    expect(publicRepoId("/workspace/hf/hub/models--Qwen--Qwen3.5-9B")).toBe("Qwen/Qwen3.5-9B");
+    expect(publicRepoId("google/gemma-4-12B-it")).toBe("google/gemma-4-12B-it");
+    for (const bad of ["/workspace/models/local-base", "../x/y", "/tmp/a/b", "plainname", "", null, undefined, "a/b/c"]) expect(publicRepoId(bad as string | null | undefined), String(bad)).toBeUndefined();
+  });
+  it("renders adapter bases as repo ids and no workspace paths anywhere", async () => {
+    const models = selfRunModels();
+    for (const [slug, model] of Object.entries(models)) if (model.adapter_base) expect(await render(slug), slug).not.toContain("/workspace/");
+    const imajev = models["imajev-9b"];
+    if (imajev?.adapter_base?.startsWith("/workspace/")) expect(await render("imajev-9b")).toContain(publicRepoId(imajev.adapter_base)!);
+  });
+  it("shows an untested localhost request with the exact repo id after the vLLM command", async () => {
+    const html = await render("mammoth-1");
+    expect(html).toContain("http://localhost:8000/v1/chat/completions");
+    expect(html).toContain("baselabs/mammoth-1");
+    expect(html).toContain("We have not tested this request");
+    expect(html.indexOf("vllm serve ")).toBeLessThan(html.indexOf("/v1/chat/completions"));
+    expect(JSON.parse(/-d '(.*)'$/.exec(localRequestCurl("a/b"))![1]).model).toBe("a/b");
+    expect(await render("watersheep")).not.toContain("/v1/chat/completions");
+  });
+  it("drops the purchase button where the installer does not cover the model", async () => {
+    const html = await render("mammoth-1");
+    expect(html).not.toContain("Buy company licence");
+    expect(html).toContain("The dm-local installer does not cover this model yet. The licence is only needed if you use the installer.");
+    expect(html).toContain('href="/local/licence"');
+    expect(await render("h2o-lightning-4b")).toContain("Buy company licence");
   });
 });

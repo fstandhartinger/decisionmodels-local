@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import HardwarePage from "../app/hardware/page";
+import { deviceMemoryGb } from "../lib/hardware-tiers";
 
 async function render(model?: string, device?: string, requested?: string) {
   return renderToStaticMarkup(await HardwarePage({ searchParams: Promise.resolve({ model, device, requested }) }));
@@ -10,7 +11,8 @@ describe("hardware requested model", () => {
   it("confirms only the requested=1 flow and illustrates each device", async () => {
     const html = await render("mammoth-1", undefined, "1");
     expect(html).toContain("Request received — baselabs mammoth-1 on pre-installed hardware.");
-    expect(html).toContain("within one business day");
+    expect(html).toContain("If you just sent a request for baselabs mammoth-1, we have it and will answer by email. These options are being introduced, so requests are answered by hand for now.");
+    expect(html).not.toContain("within one business day");
     expect(await render("mammoth-1")).not.toContain("Request received");
     expect(await render("mammoth-1", undefined, "0")).not.toContain("Request received");
     expect(await render(undefined, undefined, "1")).not.toContain("Request received");
@@ -20,7 +22,20 @@ describe("hardware requested model", () => {
     const html = await render(slug);
     expect(html).toContain(`Requested model: ${slug}`);
     expect(html).toMatch(new RegExp(`name="models"[^>]*checked=""[^>]*value="${slug}"`));
-    expect(html).not.toContain(`href="/models/${slug}/local"`);
+  });
+  it("falls back to the public-weights facts for models outside the installer catalogue", async () => {
+    const html = await render("mammoth-1");
+    expect(html).toContain("Selected model: baselabs mammoth-1");
+    expect(html).toContain("About 67.8 GB of GPU memory");
+    expect(html).toContain('href="/models/mammoth-1/local"');
+    expect(html).toMatch(/about 67.8 GB needed; fits in the 96 GB GPU memory/);
+    expect(html).toMatch(/about 67.8 GB needed; more than this device offers/);
+    expect(await render("quyet-1-0-large")).not.toContain("GB needed;");
+  });
+  it("parses device memory labels", () => {
+    expect(deviceMemoryGb("96–256 GB unified (M5 Ultra)")).toBe(96);
+    expect(deviceMemoryGb("32 GB GPU memory")).toBe(32);
+    expect(deviceMemoryGb("varies")).toBeNull();
   });
   it("preserves the catalog selection and requirements link", async () => {
     const html = await render("quyet-1-0-large");
