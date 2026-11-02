@@ -62,14 +62,17 @@ class Top10PolicyTests(unittest.TestCase):
 
     @unittest.skipUnless(sys.platform.startswith("linux"), "uses /proc/<pid>/cmdline")
     def test_process_record_matches_command_with_empty_argument(self):
-        command = [sys.executable, "-c", "import time; time.sleep(30)", "--cors-origins", ""]
-        child = subprocess.Popen(command)
+        command = [sys.executable, "-c", "import time; print('ready', flush=True); time.sleep(30)", "--cors-origins", ""]
+        child = subprocess.Popen(command, stdout=subprocess.PIPE, text=True)
         try:
+            # Wait for child startup; /proc/cmdline can be transient during exec.
+            self.assertEqual(child.stdout.readline().strip(), "ready")
             self.assertTrue(process._record_matches_process({"pid": child.pid, "command": command}))
             self.assertFalse(process._record_matches_process({"pid": child.pid, "command": command[:-1] + ["x"]}))
         finally:
             child.kill()
             child.wait()
+            child.stdout.close()
 
 
 if __name__ == "__main__":
