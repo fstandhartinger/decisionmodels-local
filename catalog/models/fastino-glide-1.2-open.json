@@ -1,0 +1,292 @@
+{
+  "schema": "decisionmodels-local-catalog/1",
+  "slug": "fastino-glide-1.2-open",
+  "name": "Fastino GLiDE 1.2",
+  "author": "Fastino",
+  "lists": [
+    "jevbench-top10"
+  ],
+  "benchmarks": {
+    "jevbench": {
+      "version": "v1.8.4",
+      "key": "fastino-glide-1.2-open",
+      "capability_rank": 3,
+      "capability": 84.92,
+      "page": "https://benchmarkheaven.com/jev-models/fastino-glide-1.2-open"
+    }
+  },
+  "modalities": [
+    "text"
+  ],
+  "question_types": {
+    "choice": "native",
+    "noul": "native",
+    "score": "native"
+  },
+  "weights": {
+    "repo": "fastino/GLiDE",
+    "revision": "d199b6d7e04523d87986b8b68cd62272ed1cefc0",
+    "url": "https://huggingface.co/fastino/GLiDE/tree/d199b6d7e04523d87986b8b68cd62272ed1cefc0",
+    "gated": false
+  },
+  "code": null,
+  "base_model": {
+    "repo": "Qwen/Qwen3.8-27B",
+    "licence": "apache-2.0",
+    "revision": null,
+    "revision_note": "GLiDE is a modified Qwen3.8-27B"
+  },
+  "params": {
+    "total_b": 27.0,
+    "active_b": 27.0
+  },
+  "licence": {
+    "spdx": "other",
+    "commercial_use": "conditional",
+    "redistribution": "conditional",
+    "notes": "Fastino Community License (LICENSE and NOTICE in the repo): free to use, copy and distribute with the licence and Qwen Apache-2.0 notices. Commercial Production use by an entity with annual revenue above USD 10M needs a separate written agreement from Fastino; any commercial use must display 'Built with Fastino GLiDE'; derivatives (including quantised weights) stay under this licence. dm-local only downloads the public weights from Hugging Face.",
+    "evidence": [
+      "https://huggingface.co/fastino/GLiDE/raw/d199b6d7e04523d87986b8b68cd62272ed1cefc0/LICENSE",
+      "https://huggingface.co/fastino/GLiDE/raw/d199b6d7e04523d87986b8b68cd62272ed1cefc0/README.md"
+    ]
+  },
+  "jev_distillation": {
+    "status": "unclear",
+    "evidence": "No statement about Jev-derived training data was read.",
+    "url": "https://huggingface.co/fastino/GLiDE/raw/d199b6d7e04523d87986b8b68cd62272ed1cefc0/README.md"
+  },
+  "installer_policy": {
+    "status": "on_request",
+    "reason": "Recipe written from the author's published serving instructions; not yet verified end to end.",
+    "decided_by": "recipes worker, 2026-11-02"
+  },
+  "readout": {
+    "type": "author_server",
+    "endpoint": "jev",
+    "backend_agnostic": false,
+    "notes": "The author's glide/server.py (FastAPI, dynamic micro-batching on one GPU) answers POST /v1/systemone and GET /health.",
+    "portable_notes": "Run one server process per GPU. The author server defaults to 0.0.0.0; the recipe binds 127.0.0.1."
+  },
+  "variants": [
+    {
+      "id": "bf16-glide-server",
+      "precision": "bf16",
+      "benchmarked": true,
+      "runtime": "transformers (author glide.server, in-process)",
+      "runtime_version": "torch 2.14.0, transformers 5.17.0 (author requirements.txt)",
+      "image": null,
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "gpu_arch_min": "sm_80",
+      "min_vram_gb": 65,
+      "recommended_vram_gb": 80,
+      "min_ram_gb": 64,
+      "disk_gb": 52.19,
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 5177,
+          "sha256": "07baba666b4a986185f850912e85c679825599d4b13ee8a868e220ab1a2a5d3e"
+        },
+        {
+          "path": "NOTICE",
+          "size": 495,
+          "sha256": "9a3e5ac1b76b35de70ed32f9977045370f673278bc4cf9c1d0ba62f7ffbc4656"
+        },
+        {
+          "path": "README.md",
+          "size": 17943,
+          "sha256": "a16a8e8ced4dd38899a96289ee34305b2ae88d59e418c04408374623d7f95089"
+        },
+        {
+          "path": "chat_template.jinja",
+          "size": 8952,
+          "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041"
+        },
+        {
+          "path": "config.json",
+          "size": 3298,
+          "sha256": "0792f5f0fca346147e010bc9196f87d19ca0df3bb4937d9c85f8cf383aa7b04f"
+        },
+        {
+          "path": "decision_config.json",
+          "size": 4543,
+          "sha256": "df40c569d6248a8562177ea8377d47c6fbe558521f60dd14e4e8a78d04e7ce10"
+        },
+        {
+          "path": "generation_config.json",
+          "size": 214,
+          "sha256": "df6f86c3fdce573ecdb55cec35f502ddda70e70abe78288a78164aef120232e7"
+        },
+        {
+          "path": "glide/__init__.py",
+          "size": 255,
+          "sha256": "7e807d7d94895d436c43c2b2add0521608e208c5dde7e0016549c5b8ee5d7192"
+        },
+        {
+          "path": "glide/images.py",
+          "size": 2785,
+          "sha256": "4858f30b92819abe463d845886f3240145c532fd0dfc725f5a08586e7591c616"
+        },
+        {
+          "path": "glide/model.py",
+          "size": 18253,
+          "sha256": "dd771ffe6c354e4a46dd1e4d8573be4faf0e8ca416010757dd2de4e5724172b2"
+        },
+        {
+          "path": "glide/prompt.py",
+          "size": 6434,
+          "sha256": "e47149ac980fe12c3cb24ea0ee63822d5bcde71f32d4a5cc9f37499853948338"
+        },
+        {
+          "path": "glide/server.py",
+          "size": 8422,
+          "sha256": "baa81296446828455b0ca1b43e58f3662b7a06ab684e5ef02d0e4fa77574030a"
+        },
+        {
+          "path": "licenses/Qwen3.8-27B-LICENSE",
+          "size": 11544,
+          "sha256": "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a"
+        },
+        {
+          "path": "model-00001-of-00005.safetensors",
+          "size": 10752475776,
+          "sha256": "db9d6159f2fb224943a0f6b060171ea90ddf8b1319998f91b03804c7c24c9d79"
+        },
+        {
+          "path": "model-00002-of-00005.safetensors",
+          "size": 10821787824,
+          "sha256": "22a378bf87cd1427dd1d510c20d9f63282f265fe4acc2f72efa53a258dabbe45"
+        },
+        {
+          "path": "model-00003-of-00005.safetensors",
+          "size": 10791416008,
+          "sha256": "16f76821d84245c8f40ccc7b158d5732c85b319a1619a72e50e3f89485e8585d"
+        },
+        {
+          "path": "model-00004-of-00005.safetensors",
+          "size": 10748470520,
+          "sha256": "61e4518d72a2dc843b9ca5a5968471f82e3e3f9328e72e6a5272597d1966af09"
+        },
+        {
+          "path": "model-00005-of-00005.safetensors",
+          "size": 8135161744,
+          "sha256": "dd07059f88eede382a71a2dbdfa315ac70d465f22b4e834b03ebb168b28bd9ff"
+        },
+        {
+          "path": "model-visual.safetensors",
+          "size": 921497224,
+          "sha256": "0aed35369c4026e1315f3606ecd1ef6083c3938024ec84a30ceaab2dea7f28b3"
+        },
+        {
+          "path": "model.safetensors.index.json",
+          "size": 105978,
+          "sha256": "832070be48f3e3419841b9324da33b5b865f3f7ab790125a5d244080917aaf0e"
+        },
+        {
+          "path": "preprocessor_config.json",
+          "size": 390,
+          "sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516"
+        },
+        {
+          "path": "readout.safetensors",
+          "size": 2611288,
+          "sha256": "801e3114fb7857e779644d7e1afa8b6afd04d78c87043360a4e8e07f0376347e"
+        },
+        {
+          "path": "requirements.txt",
+          "size": 390,
+          "sha256": "a75af0bae5435ce58fbc3e33f7dac5b8d158054c883458c4dc4d1b5a61661351"
+        },
+        {
+          "path": "tokenizer.json",
+          "size": 19989325,
+          "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "size": 1124,
+          "sha256": "66e427c470fe580fe8c7b5725d857af23d8417e37fae62667ec698306a19987b"
+        }
+      ],
+      "serve": {
+        "port": 8000,
+        "steps": [
+          "python3.12 venv with the pinned requirements.txt of the repository.",
+          "GLIDE_MODEL=<snapshot> python -m glide.server --model <snapshot> --host 127.0.0.1 --port <api port> (cwd = snapshot, so the glide package imports)."
+        ]
+      },
+      "expected_speed": "Not measured by us yet.",
+      "notes": "Author: 52.2 GB loaded, 60.2 GB peak at 39k tokens; recommends >= 80 GB. Commercial users: attribution 'Built with Fastino GLiDE' and a separate agreement above USD 10M annual revenue.",
+      "install": {
+        "runtime": "venv",
+        "python": "3.12",
+        "packages": [
+          "torch==2.14.0+cu130",
+          "transformers==5.17.0",
+          "tokenizers==0.23.2",
+          "safetensors==0.8.0",
+          "huggingface-hub==1.33.0",
+          "jinja2==3.1.6",
+          "numpy==2.5.3",
+          "pillow==12.3.0",
+          "fastapi==0.142.2",
+          "uvicorn==0.54.0",
+          "anyio==4.15.1",
+          "flash-linear-attention==0.5.2",
+          "fla-core==0.5.2"
+        ],
+        "extra_index_urls": [
+          "https://download.pytorch.org/whl/cu130"
+        ],
+        "index_strategy": "unsafe-best-match",
+        "processes": [
+          {
+            "name": "api",
+            "command": [
+              "{python}",
+              "-m",
+              "glide.server",
+              "--model",
+              "{weights}",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "{port:api}"
+            ],
+            "env": {
+              "PYTHONPATH": "{weights}"
+            },
+            "cwd": "{weights}",
+            "ready": {
+              "url": "http://127.0.0.1:{port:api}/health",
+              "timeout_s": 1800
+            }
+          }
+        ],
+        "api": {
+          "mode": "proxy_jev",
+          "port": "api",
+          "text_path": "/v1/systemone",
+          "image_path": null,
+          "model": "fastino/GLiDE",
+          "auth_header": null
+        },
+        "requires": {
+          "platforms": [
+            "linux-nvidia",
+            "wsl2-nvidia"
+          ],
+          "cuda_min": "13.0",
+          "gpu_arch_min": "sm_80"
+        },
+        "verified": {
+          "status": "unverified"
+        }
+      }
+    }
+  ],
+  "sources_checked_utc": "2026-11-02T10:00Z"
+}

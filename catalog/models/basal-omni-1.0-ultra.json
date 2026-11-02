@@ -1,0 +1,250 @@
+{
+  "schema": "decisionmodels-local-catalog/1",
+  "slug": "basal-omni-1.0-ultra",
+  "name": "basal-omni-1.0-ultra",
+  "author": "Remek Kinas",
+  "lists": [
+    "jevbench-top10"
+  ],
+  "benchmarks": {
+    "jevbench": {
+      "version": "v1.8.4",
+      "key": "basal-omni-1.0-ultra",
+      "capability_rank": 9,
+      "capability": 82.13,
+      "page": "https://benchmarkheaven.com/jev-models/basal-omni-1.0-ultra"
+    }
+  },
+  "modalities": [
+    "text"
+  ],
+  "question_types": {
+    "choice": "native",
+    "noul": "native",
+    "score": "native"
+  },
+  "weights": {
+    "repo": "Remek/basal-omni-1.0-ultra",
+    "revision": "6d5ba67db149e47ddce26fc02d78c0cadb10f496",
+    "url": "https://huggingface.co/Remek/basal-omni-1.0-ultra/tree/6d5ba67db149e47ddce26fc02d78c0cadb10f496",
+    "gated": false
+  },
+  "code": {
+    "repo": "https://github.com/rkinas/basal",
+    "revision": "acc63b2233310a201a7107741616d5da31c8df77"
+  },
+  "base_model": {
+    "repo": "google/gemma-4-31B-it",
+    "licence": "apache-2.0",
+    "revision": null,
+    "revision_note": "base named in the model card"
+  },
+  "params": {
+    "total_b": 31.0,
+    "active_b": 31.0
+  },
+  "licence": {
+    "spdx": "apache-2.0",
+    "commercial_use": "yes",
+    "redistribution": "yes",
+    "notes": "Apache-2.0 per the model card and Hugging Face metadata (no LICENSE file in the repo); base Gemma 4 31B-it is Apache-2.0. Engine basal is Apache-2.0.",
+    "evidence": [
+      "https://huggingface.co/Remek/basal-omni-1.0-ultra/raw/6d5ba67db149e47ddce26fc02d78c0cadb10f496/LICENSE",
+      "https://huggingface.co/Remek/basal-omni-1.0-ultra/raw/6d5ba67db149e47ddce26fc02d78c0cadb10f496/README.md"
+    ]
+  },
+  "jev_distillation": {
+    "status": "unclear",
+    "evidence": "No statement about Jev-derived training data was read (model card: soft targets from basal-1.5, about 640,000 Polish and English typed decisions).",
+    "url": "https://huggingface.co/Remek/basal-omni-1.0-ultra/raw/6d5ba67db149e47ddce26fc02d78c0cadb10f496/README.md"
+  },
+  "installer_policy": {
+    "status": "on_request",
+    "reason": "Recipe written from the author's published serving instructions; not yet verified end to end.",
+    "decided_by": "recipes worker, 2026-11-02"
+  },
+  "readout": {
+    "type": "author_server",
+    "endpoint": "jev",
+    "backend_agnostic": false,
+    "notes": "The basal engine (basal-serve --mode eager, one option order) answers POST /v1/systemone and GET /health; calibration comes from CALIBRATION.json in the checkpoint.",
+    "portable_notes": "Eager mode runs the model in PyTorch bf16. The engine defaults to 0.0.0.0; the recipe binds 127.0.0.1."
+  },
+  "variants": [
+    {
+      "id": "bf16-basal-eager",
+      "precision": "bf16",
+      "benchmarked": true,
+      "runtime": "transformers (basal engine 2.3.1, --mode eager, bf16)",
+      "runtime_version": "basal 2.3.1 (acc63b22), torch 2.13.0+cu130, transformers 5.17.0",
+      "image": null,
+      "platforms": [
+        "linux-nvidia",
+        "wsl2-nvidia"
+      ],
+      "gpu_arch_min": "sm_80",
+      "min_vram_gb": 70,
+      "recommended_vram_gb": 80,
+      "min_ram_gb": 64,
+      "disk_gb": 62.58,
+      "files": [
+        {
+          "path": "CALIBRATION.json",
+          "size": 5844,
+          "sha256": "f09ef731555f9c83a26ccfa2aa99bbcb5ac1823518d8f8a0c664ee8bf7532e1b"
+        },
+        {
+          "path": "CALIBRATION.o2.json",
+          "size": 5823,
+          "sha256": "e491705d2ba4d6599e9f222ceccedaaae3666cc7f27506ebb5b0b20487005966"
+        },
+        {
+          "path": "README.md",
+          "size": 13690,
+          "sha256": "02ef9b09578449263bf901fb26665de128a459d1be4b81173b0a2d82e0185dea"
+        },
+        {
+          "path": "SHA256SUMS",
+          "size": 1125,
+          "sha256": "dae15fc39d2c07cf3380b9d6d88ef312d7a665f89b58e8f93bd9026316918ee0"
+        },
+        {
+          "path": "basal.json",
+          "size": 482,
+          "sha256": "39699f0526f4f9d0420f92b6b9844aaacce7c29b7d8af2e0f07f3c3821a25219"
+        },
+        {
+          "path": "chat_template.jinja",
+          "size": 18683,
+          "sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4"
+        },
+        {
+          "path": "config.json",
+          "size": 5427,
+          "sha256": "be2991c38b2aabb5a1bd08461b0d1d52c702ee4c6d98c1f235a976223f1e0dc7"
+        },
+        {
+          "path": "generation_config.json",
+          "size": 204,
+          "sha256": "ab62926273a435bed81af368050f3a0ba5b7298d8b09f0e7615ccc41bc787103"
+        },
+        {
+          "path": "model-00001-of-00002.safetensors",
+          "size": 49923154850,
+          "sha256": "2afee89c3008d3e57a6913d62db1c0b9c24f4ffd542589398898a0a4cac59859"
+        },
+        {
+          "path": "model-00002-of-00002.safetensors",
+          "size": 12623183414,
+          "sha256": "91409cdee34b78ebb4977ec4f640f1fed49d3de7022a42a701e692cd8e79ba5d"
+        },
+        {
+          "path": "model.safetensors.index.json",
+          "size": 120246,
+          "sha256": "390b7f9a0a502e4526cf20862d22954c911cc318d8aba2cdb745c6fbd98264f6"
+        },
+        {
+          "path": "processor_config.json",
+          "size": 1689,
+          "sha256": "32bdf45d2ad4cc29a0822ddd157a182de76644f0419a6228d151495256e9813c"
+        },
+        {
+          "path": "tokenizer.json",
+          "size": 32169626,
+          "sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "size": 3678,
+          "sha256": "2cd8ebfa6e4a2bc45fe54ba404aabf094b6d967bad7268bb9e5669fe546c3e80"
+        }
+      ],
+      "serve": {
+        "port": 8000,
+        "steps": [
+          "python3.12 venv: torch 2.13.0+cu130, transformers 5.17.0 and the engine from rkinas/basal@acc63b22 (v2.3.1).",
+          "basal-serve --model <snapshot> --mode eager --host 127.0.0.1 --port <api port>."
+        ]
+      },
+      "expected_speed": "Not measured by us yet.",
+      "notes": "Experimental release. Author: ~62 GB GPU memory for the weights; with engine 2.3.1 an 80 GB H100 answers states up to ~82,000 tokens in eager mode. Text only (images need --media on and are not enabled here).",
+      "install": {
+        "runtime": "venv",
+        "python": "3.12",
+        "packages": [
+          "torch==2.13.0+cu130",
+          "torchvision==0.28.0+cu130",
+          "transformers==5.17.0",
+          "huggingface-hub==1.33.0",
+          "accelerate==1.15.0",
+          "safetensors==0.8.0",
+          "starlette==1.7.0",
+          "uvicorn==0.54.0",
+          "httpx==0.28.1",
+          "pillow==12.3.0"
+        ],
+        "extra_index_urls": [
+          "https://download.pytorch.org/whl/cu130"
+        ],
+        "index_strategy": "unsafe-best-match",
+        "code": [
+          {
+            "id": "author",
+            "source": "github",
+            "repo": "rkinas/basal",
+            "revision": "acc63b2233310a201a7107741616d5da31c8df77",
+            "sha256": "e51d120e00681786f174b29f7db30d0a786a0e8734f46d5537ad8a8ecfa40860",
+            "dest": "code/basal",
+            "pip_install": true
+          }
+        ],
+        "processes": [
+          {
+            "name": "api",
+            "command": [
+              "{python}",
+              "-m",
+              "basal.server",
+              "--model",
+              "{weights}",
+              "--mode",
+              "eager",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "{port:api}"
+            ],
+            "env": {
+              "PYTHONUNBUFFERED": "1"
+            },
+            "cwd": "{weights}",
+            "ready": {
+              "url": "http://127.0.0.1:{port:api}/health",
+              "timeout_s": 1800
+            }
+          }
+        ],
+        "api": {
+          "mode": "proxy_jev",
+          "port": "api",
+          "text_path": "/v1/systemone",
+          "image_path": null,
+          "model": "Remek/basal-omni-1.0-ultra",
+          "auth_header": null
+        },
+        "requires": {
+          "platforms": [
+            "linux-nvidia",
+            "wsl2-nvidia"
+          ],
+          "cuda_min": "13.0",
+          "gpu_arch_min": "sm_80"
+        },
+        "verified": {
+          "status": "unverified"
+        }
+      }
+    }
+  ],
+  "sources_checked_utc": "2026-11-02T10:00Z"
+}
