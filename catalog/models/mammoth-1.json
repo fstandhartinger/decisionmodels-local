@@ -163,8 +163,8 @@
           "Run installer wrapper around the author DecisionEngine and qev.server.create_app on 127.0.0.1; POST /v1/systemone."
         ]
       },
-      "expected_speed": "Not measured; no supported or performance claim before the GPU selftest.",
-      "notes": "Unmeasured conservative planning estimates: 70 GB VRAM minimum / 80 GB recommended, 80 GB host RAM, weights 54.7 GB plus 20 GB runtime/cache headroom. Author setup uses torch 2.8.0 CUDA 12.8; Linux R570.26+ required conservatively for JIT, R580 is suitable. No measured peak VRAM, image support or performance parity claim.",
+      "expected_speed": "Not measured by us yet.",
+      "notes": "Conservative planning requirements: 70 GB VRAM minimum / 80 GB recommended, 80 GB host RAM, weights 54.7 GB plus 20 GB runtime/cache headroom. Author setup uses torch 2.8.0 CUDA 12.8; Linux R570.26+ required conservatively for JIT, R580 is suitable. Synthetic text selftest passed on A100 80 GB; sampled peak 59,191 MiB. This does not establish maximum-context memory, image support or performance parity.",
       "install": {
         "runtime": "venv",
         "python": "3.12",
