@@ -2,11 +2,20 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import HardwarePage from "../app/hardware/page";
 
-async function render(model?: string, device?: string) {
-  return renderToStaticMarkup(await HardwarePage({ searchParams: Promise.resolve({ model, device }) }));
+async function render(model?: string, device?: string, requested?: string) {
+  return renderToStaticMarkup(await HardwarePage({ searchParams: Promise.resolve({ model, device, requested }) }));
 }
 
 describe("hardware requested model", () => {
+  it("confirms only the requested=1 flow and illustrates each device", async () => {
+    const html = await render("mammoth-1", undefined, "1");
+    expect(html).toContain("Request received — baselabs mammoth-1 on pre-installed hardware.");
+    expect(html).toContain("within one business day");
+    expect(await render("mammoth-1")).not.toContain("Request received");
+    expect(await render("mammoth-1", undefined, "0")).not.toContain("Request received");
+    expect(await render(undefined, undefined, "1")).not.toContain("Request received");
+    for (const name of ["edge", "desk", "workstation", "rack"]) expect(html).toContain(`/hardware/${name}.svg`);
+  });
   it.each(["pplx-decider-v1-1-27b", "jpt-9b", "vllm-sr-d3", "h2o-lightning-31b"])("keeps %s selected without inventing model requirements", async (slug) => {
     const html = await render(slug);
     expect(html).toContain(`Requested model: ${slug}`);

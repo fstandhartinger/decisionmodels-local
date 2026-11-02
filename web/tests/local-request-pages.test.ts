@@ -13,11 +13,14 @@ describe("local setup request fallback", () => {
     for (const slug of ["h2o-lightning-31b", "basal-omni-1.0-ultra", "dopest-1.0-31b", "jeff-1-1-medium", "arcbright-elf-1-31b", "sieve-31b-v2", "metask-jev-rain-31b-trained-v3"]) {
       const html = renderToStaticMarkup(await Page(props(slug)));
       expect(html).toContain(names[slug]);
-      expect(html).toContain("Request local setup");
+      expect(html).toContain("Run ");
+      expect(html).toContain("yourself");
+      expect(html).toContain("Need help setting it up?");
+      expect(html).toContain('href="/local/cloud"');
       expect(html).toContain(`name="models" value="${slug}"`);
       expect(html).toContain('name="request_kind" value="local"');
-      expect(html).not.toContain("Buy company licence");
-      expect(html).not.toContain("dm-local install");
+      expect(html).toContain("buying a licence does not add support");
+      expect(html).not.toContain(`dm-local install ${slug}`);
       expect(html).not.toContain("Machine of interest");
     }
   });

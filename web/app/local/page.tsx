@@ -85,6 +85,7 @@ export default function LocalOverviewPage() {
   const excludedVision = imageTop.find((model) => model.slug === "vjev-vision" && model.installer_policy?.status === "excluded");
   const installable = models.filter((model) => model.installer_policy?.status === "supported" || model.installer_policy?.status === "supported_noncommercial_only");
   return <>
+    <nav className="section-wrap space-top" aria-label="Cloud setup"><Link href="/local/cloud">Run in your AWS, Azure or Google Cloud account →</Link></nav>
     <section className="section-wrap hero">
       <div className="hero-grid">
         <div><p className="eyebrow">Decision Models · Run locally</p><h1>Fully sovereign decision models.</h1><p className="lede">Maximum data privacy: run an open-weight model on hardware you control or in your own cloud account. Your data never leaves your machines. Check the hardware it needs and serve it through a Jev-compatible endpoint.</p><p className="fine-print">Free for individuals and companies up to 10 employees and USD 1M ARR; <Link href="/local/licence">USD 1,000 one-time + USD 100/month for larger companies</Link>.</p><div className="hero-actions"><Link className="button button-primary" href="#models">Explore local models</Link><Link className="button button-secondary" href="/hardware">Plan a hardware setup</Link></div></div>

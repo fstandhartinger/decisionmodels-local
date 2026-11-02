@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { CopyCommand } from "@/components/copy-command";
 import { displayCopy } from "@/lib/catalog";
-import { CLOUD_PROVIDERS, hasKnownHardware, sourceLink, type HardwareEntry, type HwCloud } from "@/lib/hardware-all";
+import { CLOUD_PROVIDERS, hasKnownHardware, type HardwareEntry } from "@/lib/hardware-all";
+import { cloudInstanceFor } from "@/lib/cloud-instances";
 import { POSIX_INSTALL_COMMAND } from "@/lib/install-commands";
 
 export const REQUEST_EMAIL = "info@decisionmodels.io";
@@ -30,7 +31,7 @@ export function LicenceBox({ installable = true }: { installable?: boolean }) {
       <h2 id="installer-licence-title">Free for small teams. USD 1,000 + USD 100/month for larger companies.</h2>
       <p className="licence-line"><strong>Free for individuals and companies with up to 10 employees and up to USD 1M ARR.</strong></p>
       <p className="licence-line"><strong>Larger companies: USD 1,000 one-time + USD 100/month (self-declared).</strong> That applies above either threshold: more than 10 employees or more than USD 1 million ARR.</p>
-      <p className="fine-print">This is the licence for the Decision Models <em>installer</em>. The model&apos;s own weights licence is separate and shown further down.</p>
+      <p className="fine-print">This is the licence for the Decision Models <em>installer</em>. The model&apos;s own weights licence is separate.</p>
     </div>
     <div className="licence-actions">
       <Link className="button button-primary" href="/local/licence#checkout">Buy company licence</Link>
@@ -85,21 +86,18 @@ export function HardwareCard({ hw }: { hw?: HardwareEntry }) {
   </section>;
 }
 
-function offerLine(offer?: HwCloud | null) {
-  if (!offer?.instance) return null;
-  return { instance: offer.instance, gpu: offer.gpu, price: Number.isFinite(offer.usd_per_hour) ? `about USD ${Number(offer.usd_per_hour).toFixed(2)}/h on demand${offer.price_region ? ` in ${offer.price_region}` : ""}` : "price on the provider page", regions: offer.eu_regions, source: sourceLink(offer.source) };
-}
-
 export function CloudGuide({ slug, hw, installer }: { slug: string; hw?: HardwareEntry; installer: boolean }) {
   const install = installer ? `dm-local install ${slug}` : null;
   const known = hasKnownHardware(hw);
   return <section className="section-wrap section" id="cloud-guide">
     <div className="section-heading"><div><p className="section-kicker">Your cloud account</p><h2>Run it on AWS, Azure or Google Cloud</h2></div><p>{installer ? "Launch a GPU machine in your own account, run the model there, and keep everything inside your cloud account and the region you pick." : "The GPU instance you would need in your own cloud account, so everything stays inside your account and the region you pick."}</p></div>
     <div className="cloud-grid">{CLOUD_PROVIDERS.map((provider) => {
-      const offer = known ? offerLine(hw?.cloud?.[provider.id]) : null;
+      const verified = cloudInstanceFor(provider.id, hw?.min?.vram_gb);
+      const offer = verified ? { instance: verified.name, gpu: `${verified.gpu} · ${verified.memory} GB GPU memory`, price: "Check current regional pricing", regions: null, source: verified.source } : null;
       return <article className="panel cloud-card" key={provider.id}>
         <h3>{provider.name}</h3>
-        {offer ? <p className="cloud-pick"><strong>{offer.instance}</strong><br />{offer.gpu}<br />{offer.price}{offer.regions ? <><br />EU regions: {offer.regions}</> : null}{offer.source ? <> · <a href={offer.source}>price source</a></> : null}</p> : <p className="cloud-pick">Instance for this model: on request. Pick a GPU with at least {known ? gb(hw?.min?.vram_gb) : "the memory shown above"} of memory.</p>}
+        {offer ? <p className="cloud-pick"><strong>{offer.instance}</strong><br />{offer.gpu}<br />{offer.price}{offer.regions ? <><br />EU regions: {offer.regions}</> : null}{offer.source ? <> · <a href={offer.source}>provider specifications</a></> : null}</p> : <p className="cloud-pick">{known ? `No verified option in this guide meets the ${gb(hw?.min?.vram_gb)} requirement. A larger or multi-GPU setup needs review.` : "Memory requirements are unknown. Confirm sizing from the model card before renting a GPU."}</p>}
+        <p><Link href={`/local/cloud#${provider.id}`}>Create the VM, connect and clean up →</Link></p>
         {installer && <ol className="plain-steps">
           <li>Open the {provider.where} and launch a GPU instance in an EU region of your choice, using the {provider.image}.</li>
           <li>If the launch is refused, request GPU quota first: {provider.quota}.</li>
@@ -108,7 +106,7 @@ export function CloudGuide({ slug, hw, installer }: { slug: string; hw?: Hardwar
           {install && <li>Install the model: <div className="command-line"><code>{install}</code><CopyCommand value={install} /></div></li>}
           <li>Reach the endpoint through an SSH tunnel (<code>ssh -L 8484:127.0.0.1:8484 user@instance</code>) or from inside your private network, then call <code>http://127.0.0.1:8484/v1/systemone</code>.</li>
         </ol>}
-        <p className="fine-print">Your data stays in your cloud account and region. Prices change; region, storage and traffic may add charges.</p>
+        <p className="fine-print">Review the model runtime’s network behaviour. Prices change; region, storage and traffic may add charges.</p>
       </article>;
     })}</div>
     {installer && <p className="source-note">Other options: rent a GPU from RunPod or CoreWeave, or use any machine you control over SSH: <code>dm-local remote user@host install {slug}</code>.</p>}

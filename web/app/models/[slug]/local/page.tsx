@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { LocalSetupRequest } from "@/components/local-setup-request";
+import { selfRunModel, selfRunModels } from "@/lib/self-run";
+import { SelfRunGuide } from "@/components/self-run-guide";
 import { localRequestModels } from "@/lib/local-request-models";
 import { isRequestedModelSlug } from "@/lib/contact-validation";
 import { CopyCommand } from "@/components/copy-command";
@@ -15,7 +16,7 @@ import { cloudOptionsFor, cloudRequirement, dateText, hourlyMoney, loadHardwareP
 type PageProps = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {
-  const slugs = new Set([...loadCatalog().map((model) => model.slug), ...loadHardwareAll().map((entry) => entry.slug), ...Object.keys(localRequestModels())]);
+  const slugs = new Set([...loadCatalog().map((model) => model.slug), ...loadHardwareAll().map((entry) => entry.slug), ...Object.keys(localRequestModels()), ...Object.keys(selfRunModels())]);
   return [...slugs].sort().map((slug) => ({ slug }));
 }
 
@@ -24,8 +25,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const model = getModel(slug);
   const hardware = getHardware(slug);
   if (!model || (model.installer_policy?.status !== "excluded" && !isInstallerSupported(model))) {
-    const name = localRequestModels()[slug] ?? model?.name ?? hardware?.name;
-    return { title: `Local setup request: ${name ?? slug}`, description: "Request a feasibility review for local model setup; installer support is not yet available.", robots: { index: Boolean(name), follow: true }, alternates: { canonical: `/models/${slug}/local` } };
+    const name = selfRunModel(slug)?.name ?? localRequestModels()[slug] ?? model?.name ?? hardware?.name;
+    return { title: `Run ${name ?? slug} yourself`, description: "Public weights, runtime requirements and guides for running the model on your hardware or in your cloud account.", robots: { index: Boolean(name), follow: true }, alternates: { canonical: `/models/${slug}/local` } };
   }
   const excluded = model?.installer_policy?.status === "excluded";
   const hasRecipe = model ? hasAnyExecutableInstallRecipe(model) : false;
@@ -162,8 +163,8 @@ export default async function ModelLocalPage({ params }: PageProps) {
   const excluded = status === "excluded";
   if (excluded) return <section className="section-wrap narrow page-top"><p className="eyebrow"><Link href="/local">Run locally</Link></p><h1>Model not offered</h1><p className="lede space-top">This model is not offered in the installer while its licensing review is pending.</p></section>;
   if (!model || !isInstallerSupported(model)) {
-    const name = localRequestModels()[slug] ?? model?.name ?? hardware?.name;
-    return <LocalSetupRequest slug={slug} name={name ?? slug} known={Boolean(name)} />;
+    const name = selfRunModel(slug)?.name ?? localRequestModels()[slug] ?? model?.name ?? hardware?.name;
+    return <SelfRunGuide slug={slug} name={name ?? slug} known={Boolean(name)} hw={hardware} />;
   }
   const commercialOnly = status === "supported_noncommercial_only";
   const hasRecipe = hasAnyExecutableInstallRecipe(model);
