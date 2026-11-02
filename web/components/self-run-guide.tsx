@@ -5,7 +5,7 @@ import { CloudGuide, LicenceBox } from "./local-sections";
 import { selfRunModel, licenceCopy, publicRepoId, localRequestCurl } from "@/lib/self-run";
 import type { HardwareEntry } from "@/lib/hardware-all";
 
-export function SelfRunGuide({ slug, name, known, hw }: { slug: string; name: string; known: boolean; hw?: HardwareEntry }) {
+export function SelfRunGuide({ slug, name, known, hw, recipePending = false }: { slug: string; name: string; known: boolean; hw?: HardwareEntry; recipePending?: boolean }) {
   const facts = selfRunModel(slug);
   const repo = facts?.hf_repo ?? hw?.hf_repo;
   const url = repo ? `https://huggingface.co/${repo}` : undefined;
@@ -17,6 +17,7 @@ export function SelfRunGuide({ slug, name, known, hw }: { slug: string; name: st
       <h1>Run {name} yourself</h1>
       <p className="lede space-top-sm">{licenceCopy(facts?.licence)}</p>
       <p>This model has no supported dm-local installer recipe. Use the public weights directly where the runtime supports them.</p>
+      {recipePending && <div className="callout"><strong>Installer recipe in verification</strong><p>We have written a dm-local recipe for this model that includes the author’s own server. It is being tested on a GPU. Until that test passes, the installer will not install it. Stock vLLM below serves the raw weights only. The typed decisions measured in the benchmark need the author’s server.</p></div>}
       {!known && <div className="callout"><strong>Unverified model reference</strong><p>This page does not confirm that the model or its weights are available. Check the spelling and the original model card.</p></div>}
       <dl className="hw-facts space-top">
         <div><dt>Weights</dt><dd>{url ? <a href={url}>{repo}</a> : "Repository not listed"}</dd></div>

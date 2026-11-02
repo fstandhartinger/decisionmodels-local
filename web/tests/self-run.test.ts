@@ -20,6 +20,15 @@ describe("self-service guides", () => {
     expect(html).toMatch(/<details[^>]*><summary>Need help setting it up\?/);
     expect(html).toContain("Running the public weights yourself with vLLM needs no Decision Models licence");
   });
+  it("shows unverified top-10 recipes as in verification, never as installable", async () => {
+    for (const slug of ["vllm-sr-d3", "knowline-31b-gen1"]) {
+      const html = await render(slug);
+      expect(html).toContain("Installer recipe in verification");
+      expect(html).not.toContain(`dm-local install ${slug}`);
+      expect(html).not.toContain("Local install on request");
+    }
+    expect(await render("mammoth-1")).not.toContain("Installer recipe in verification");
+  });
   it("links supported model pages to the cloud guide too", async () => {
     expect(await render("h2o-lightning-4b")).toContain('href="/local/cloud?model=h2o-lightning-4b#aws"');
   });

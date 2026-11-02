@@ -164,7 +164,7 @@ export default async function ModelLocalPage({ params }: PageProps) {
   if (excluded) return <section className="section-wrap narrow page-top"><p className="eyebrow"><Link href="/local">Run locally</Link></p><h1>Model not offered</h1><p className="lede space-top">This model is not offered in the installer while its licensing review is pending.</p></section>;
   if (!model || !isInstallerSupported(model)) {
     const name = selfRunModel(slug)?.name ?? localRequestModels()[slug] ?? model?.name ?? hardware?.name;
-    return <SelfRunGuide slug={slug} name={name ?? slug} known={Boolean(name)} hw={hardware} />;
+    return <SelfRunGuide slug={slug} name={name ?? slug} known={Boolean(name)} hw={hardware} recipePending={Boolean(model && hasAnyExecutableInstallRecipe(model))} />;
   }
   const commercialOnly = status === "supported_noncommercial_only";
   const hasRecipe = hasAnyExecutableInstallRecipe(model);
