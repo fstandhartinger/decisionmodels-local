@@ -26,7 +26,7 @@ export function SelfRunGuide({ slug, name, known, hw }: { slug: string; name: st
         <div><dt>Precision</dt><dd>{facts?.precision ?? "Not verified"}</dd></div>
         <div><dt>Model licence</dt><dd>{facts?.licence ?? "Not listed; check the model card"}</dd></div>
       </dl>
-      <div className="hero-actions"><a className="button button-primary" href="#run-weights">Run the public weights</a><Link className="button button-secondary" href="/local/cloud">Cloud quick guides</Link></div>
+      <div className="hero-actions"><a className="button button-primary" href="#run-weights">Run the public weights</a><Link className="button button-secondary" href={`/local/cloud?model=${encodeURIComponent(slug)}`}>Cloud quick guides</Link></div>
     </section>
     <section className="section-wrap section" id="run-weights"><div className="panel">
       <p className="section-kicker">Your machine</p><h2>Serve the weights</h2>

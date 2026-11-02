@@ -97,7 +97,8 @@ export function CloudGuide({ slug, hw, installer }: { slug: string; hw?: Hardwar
       return <article className="panel cloud-card" key={provider.id}>
         <h3>{provider.name}</h3>
         {offer ? <p className="cloud-pick"><strong>{offer.instance}</strong><br />{offer.gpu}<br />{offer.price}{offer.regions ? <><br />EU regions: {offer.regions}</> : null}{offer.source ? <> · <a href={offer.source}>provider specifications</a></> : null}</p> : <p className="cloud-pick">{known ? `No verified option in this guide meets the ${gb(hw?.min?.vram_gb)} requirement. A larger or multi-GPU setup needs review.` : "Memory requirements are unknown. Confirm sizing from the model card before renting a GPU."}</p>}
-        <p><Link href={`/local/cloud#${provider.id}`}>Create the VM, connect and clean up →</Link></p>
+        {verified && verified.gpuCount > 1 && <p>Requires tensor parallelism across {verified.gpuCount} GPUs. Multi-GPU serving has not been tested by us; check the cloud guide and model compatibility before renting.</p>}
+        <p><Link href={`/local/cloud?model=${encodeURIComponent(slug)}#${provider.id}`}>Create the VM, connect and clean up →</Link></p>
         {installer && <ol className="plain-steps">
           <li>Open the {provider.where} and launch a GPU instance in an EU region of your choice, using the {provider.image}.</li>
           <li>If the launch is refused, request GPU quota first: {provider.quota}.</li>

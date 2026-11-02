@@ -2,7 +2,7 @@
   "source": "fstandhartinger/decisionmodels-hosting",
   "sha256": {
     "model-map.json": "a40925af75e17bee168852d56370de5f2bf1be268ae67276a4aa0dbe07e4d3ed",
-    "model-overrides.json": "5004fc87dbb93e7336745a3f991fd5125957c72a21a9ebe5570aa2b25f7e0b86",
+    "model-overrides.json": "e81e39ae7893c50d4476b3097018c4ef5f44dcb8f15cd9fc22f3fb12d1a6e590",
     "model-facts.json": "6ed87e45a637641ec137f9b0b0d132a00eacf0da898f00ec88b4c66205cd5b15"
   },
   "models": {
@@ -17,6 +17,9 @@
       "gated": true,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "These weights require Hugging Face access approval."
     },
@@ -31,6 +34,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve baselabs/mammoth-1 --revision 61cec44c281c693992e3d6ebeb44dd3402dfa186 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -45,6 +51,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve PelaAI/KnowLine-31B-Gen1 --revision 8f052a8130e599b53e5324c34f0f5ff90696e1c6 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -59,8 +68,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve fastino/GLiDE --revision d199b6d7e04523d87986b8b68cd62272ed1cefc0 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
     "pplx-decider-v1-1-27b": {
       "name": "Perplexity Decider v1.1 27B",
@@ -73,8 +85,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve perplexity-ai/pplx-decider-v1.1-27b --revision 14c9d90137962d300f3de95633f7b6535e80c5ce --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "vllm-sr-d3-turbo": {
       "name": "vLLM-SR d3-turbo",
@@ -87,8 +102,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve vllm-sr/d3-turbo --revision 9df220de4ce52ab11047156fa54b8c0313d8b0eb --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "imajev-4b": {
       "name": "Imajev-4B",
@@ -101,8 +119,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "startlux-decision-v1.1-27b-instant": {
       "name": "StartLux-Decision v1.1 27B Instant",
@@ -115,6 +134,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -129,6 +151,7 @@
       "gated": false,
       "adapter_base": "/workspace/hf/hub/models--Qwen--Qwen3.5-9B/snapshots/c202236235762e1c871ad0ccb60c8ee5ba337b9a",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -143,8 +166,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve vllm-sr/d3 --revision 62f07e54c6c3a5ff5f695107377edc43e1a86ea8 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "basal-omni-1.0-ultra": {
       "name": "basal-omni-1.0-ultra",
@@ -157,6 +183,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve Remek/basal-omni-1.0-ultra --revision 6d5ba67db149e47ddce26fc02d78c0cadb10f496 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -171,6 +200,7 @@
       "gated": false,
       "adapter_base": "google/gemma-4-31B-it",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -185,6 +215,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve h2oai/h2o-lightning-4b --revision 659fc412de8486dbc2477b0d1cb4121e97e72471 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -199,8 +232,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4UnifiedForCausalLM"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (Gemma4UnifiedForCausalLM); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "surogate-rune-26b-a4b-v3": {
       "name": "Surogate Rune 26B-A4B v3",
@@ -213,6 +249,9 @@
       "gated": true,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "These weights require Hugging Face access approval."
     },
@@ -227,6 +266,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve arcbright/elf-1-31b --revision 8c7799280c8c04a3802af1feeb3a1ad40d6c4eeb --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -241,8 +283,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5Model"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "quyet-1-0-large": {
       "name": "Quyet-1.0-Large",
@@ -255,6 +300,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve chinhnc/Quyet-1.0-Large --revision 9a0f051112ba4301f6e4c8b87fc088ce00b11aae --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -269,6 +317,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve tattrongvu/Jeffan-31b-1710 --revision cebfa86c2bed2b5c83b12e44de4374b20c87fd79 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -283,6 +334,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve h2oai/h2o-lightning-4b --revision 659fc412de8486dbc2477b0d1cb4121e97e72471 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -297,6 +351,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForCausalLM"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -311,6 +368,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -325,6 +385,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve kushalpatil/jevify-gemma4-26b-a4b --revision d4c0d1d455892957d274f68ec64e9fc0881011c8 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -339,6 +402,7 @@
       "gated": false,
       "adapter_base": "google/gemma-4-31B-it",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -353,6 +417,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -367,6 +434,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve turion-ai/turion-jev-31b --revision 866c0fc6e040cba23fcc72113a80e5c99d5ebab1 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -381,8 +451,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve perplexity-ai/pplx-decider-v1.2 --revision cce0f3f80033e9d89d80831d5281fd72124aacce --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "clef": {
       "name": "Clef",
@@ -395,6 +468,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve Cloudflare/clef --revision cfddda043dd190ef3b01cff449d5ee8cff1e8ec6 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -409,6 +485,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -423,8 +502,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5Model"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "neohorse-jev-4b": {
       "name": "NeoHorse Jev 4B",
@@ -437,8 +519,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve TokenRhythm/NeoHorse-Jev-4B --revision 434cb21d3a994a953d3ae5788405fcb2c4970554 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "metask-jev-rain-31b-trained-v3": {
       "name": "metask-jev-rain-31B-trained service v3",
@@ -451,6 +534,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve MeTask-Rain/metask-jev-rain-31B-trained --revision 24799f15e7cc853635c8b35011f759610caa5eb1 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -465,6 +551,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve Qwen/Qwen3.5-4B --revision 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -479,8 +568,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "vjev-vision": {
       "name": "vjev-vision",
@@ -493,6 +583,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -507,6 +600,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -521,8 +617,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve scar-ai/vera-large --revision f42d32abe5b26aa051678b974ba4edd55d9ac3db --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "VeraForDecision"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (VeraForDecision); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jev-omni": {
       "name": "Jev-Omni",
@@ -535,8 +634,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve akhilaaa3/Jev-Omni --revision fee89b076e2263bfa8bce8d34142caa4ca733a48 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "kev-27b": {
       "name": "Kev 27B",
@@ -549,8 +651,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve jaredpalmer/kev-27b --revision af0e6d551bdc2cc724f3e9d7a8bee1cd4fb8f7bf --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5TextModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5TextModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "metask-jev-rain-31b-trained": {
       "name": "metask-jev-rain-31B-trained",
@@ -563,6 +668,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve MeTask-Rain/metask-jev-rain-31B-trained --revision 24799f15e7cc853635c8b35011f759610caa5eb1 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -577,8 +685,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "clef-flash": {
       "name": "Clef-Flash",
@@ -591,6 +700,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve Cloudflare/clef-flash --revision fb4417d31c1d0f9e7e77f1141b40aaede7491e00 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -605,6 +717,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -619,6 +734,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve sanghwa-na/bobcat-1.3 --revision 4f25c70ece312ec4e74c47f1c5264cb2aeea956a --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -633,6 +751,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-4B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -647,8 +766,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "shisa-de-1": {
       "name": "shisa-de-1",
@@ -661,6 +781,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve shisa-ai/shisa-de-1 --revision 255830ef5ac79b55446cafbc6ea276cfe68a6c60 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -675,6 +798,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve torchcast-ai/torchcast-decision-4b --revision 492bfb19662f3c6e601cc9c4bd2911ac95609ed4 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -689,8 +815,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "llama.cpp",
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
       "command": null,
-      "missing": "This model needs the llama.cpp runtime; a stock vLLM command is not available."
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "gevva-e4b": {
       "name": "Gevva E4B",
@@ -703,8 +832,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve davidburhans/gevva-e4b --revision 1511be903351e5724379afe51a3ba79a2f4b5c7e --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4ForSequenceClassification"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4ForSequenceClassification); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "knowline-26b-a4b-gen2.5": {
       "name": "KnowLine 26B-A4B-Gen2.5",
@@ -717,6 +849,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve PelaAI/KnowLine-26B-A4B-Gen2.5 --revision 7486767f8546beb510e61aef07d0e74219ceb4e3 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -731,8 +866,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "eikos-27b": {
       "name": "Eikos-27B",
@@ -745,6 +881,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -759,8 +898,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Lfm2VlForConditionalGeneration"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (Lfm2VlForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "metask-jev-rain-12b-trained": {
       "name": "metask-jev-rain-12B-trained",
@@ -773,8 +915,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve MeTask-Rain/metask-jev-rain-12B-trained --revision 626eddfc436fbba37244bd57874f546474d162dd --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "gevva-e2b-multimodal": {
       "name": "Gevva E2B multimodal",
@@ -787,8 +932,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve davidburhans/gevva-e2b-multimodal --revision eed439eaf3fefb4cdd0614ea5763b9c4c86409a0 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4ForSequenceClassification"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4ForSequenceClassification); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "wald-26b-a4b": {
       "name": "Wald 26B-A4B",
@@ -801,6 +949,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve org2ai/Wald-26B-A4B --revision 4a5d0b94bff26a8bba359ef311b3e535cefae901 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -815,6 +966,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5MoeForConditionalGeneration"
+      ],
       "command": "vllm serve PelaAI/KnowLine-35B-A3B-Gen1.5 --revision 9adcf717361b2f7d2946d093f1e85efdf1e59010 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -829,6 +983,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-4B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -843,6 +998,7 @@
       "gated": false,
       "adapter_base": "/workspace/hf/hub/models--Qwen--Qwen3.5-2B/snapshots/15852e8c16360a2fea060d615a32b45270f8a8fc",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -857,8 +1013,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve salfatigroup/rene-1-31b-fp8 --revision bd634489957f8da63ccce858ee33fd6c2929d286 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "ReneModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (ReneModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decisio-gemma-4-12b-tuned-commit": {
       "name": "Decisio 12B tuned commit",
@@ -871,8 +1030,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve tachara-ai/Decisio-12b-tuned-commit --revision 245e00dc45abad14d693b1ebae4d4c7aa9cf72f1 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jpt-0p8b": {
       "name": "JPT-0.8B",
@@ -885,6 +1047,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -899,8 +1064,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jevify-gemma4-e4b": {
       "name": "Jevify Gemma 4 E4B",
@@ -913,6 +1079,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve kushalpatil/jevify-gemma4-e4b --revision a6b5a716f5d7dba2949c14f2c9e93227956e935d --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -927,8 +1096,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jev-27b-autotrust": {
       "name": "JEV-27B",
@@ -941,6 +1111,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": "vllm serve autotrust/JEV-27B --revision 14b425269ed24452e0a5ad5a8f3e51d139647a88 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -955,8 +1128,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve tarsur385/djev-distill-v4 --revision 9e90719516ef62d06be646f94dc132136b627ba5 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "DiffusionGemmaForBlockDiffusion"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (DiffusionGemmaForBlockDiffusion); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "nagi-enormous": {
       "name": "Nagi-ENORMOUS 27B",
@@ -969,6 +1145,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.8-27B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -983,6 +1160,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-0.8B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -997,6 +1175,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-2B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -1011,6 +1190,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve shgao/rsi-jev-v6.1-vl-27b --revision d0dccc052ee844ab7481ddfacad1b7335ab394e0 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1025,6 +1207,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve sanghwa-na/bobcat-flash-1.2 --revision 5fee24183e58ee99c8a9ca8806baf2fc41bd787d --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1039,8 +1224,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "djev-v10-step160-snowicarus": {
       "name": "diffusiongemma-26b djev v10 step160",
@@ -1053,8 +1239,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve snowicarus/diffusiongemma-26b-djev-v10-step160 --revision 858cc14441718ff52ea4dd6c9491d5316cc9834f --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "DiffusionGemmaForBlockDiffusion"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (DiffusionGemmaForBlockDiffusion); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "torchcast-decision-4b-v1.2": {
       "name": "Torchcast Decision 4B",
@@ -1067,6 +1256,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve torchcast-ai/torchcast-decision-4b --revision 492bfb19662f3c6e601cc9c4bd2911ac95609ed4 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1081,8 +1273,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "visual-jev-4b": {
       "name": "Visual-Jev 4B Answer-SFT",
@@ -1095,6 +1288,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3-VL-4B-Instruct",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -1109,8 +1303,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve FrontiersMind/Lumma-fev-27B --revision 2c080fb4b44bbad2a140353393d935e8b7af8bcb --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "omnijev-9b-v4-tzcfly": {
       "name": "OmniJev-Qwen3.5-9B-v4",
@@ -1123,8 +1320,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "glance-qwen3vl-4b": {
       "name": "Glance",
@@ -1137,6 +1335,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3VLForConditionalGeneration"
+      ],
       "command": "vllm serve Qwen/Qwen3-VL-4B-Instruct --revision ebb281ec70b05090aa6165b016eac8ec08e71b17 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1151,8 +1352,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "liquid-d1-omni-600m": {
       "name": "Liquid AI d1-omni-600M",
@@ -1165,8 +1369,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "D1OmniModel"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (D1OmniModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decider-12b": {
       "name": "decider-12b v2",
@@ -1179,8 +1386,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve Mapika/decider-12b --revision 64d8d3f0080d5a75549f18ebec478239ecd706fa --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jev-spatial": {
       "name": "jev-spatial",
@@ -1193,8 +1403,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve Fr0zencr4nE/jev-spatial --revision 5727eade6e1af2750ff852b1b1e90bb1f41a0602 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decision-2-0-vega-27b": {
       "name": "Decision 2.0 Vega 27B",
@@ -1207,8 +1418,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve vllm-sr/Decision-2.0-Vega-27B --revision 71d6ae1db4a786d98775d65c68c41be0e39bfe7c --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Decision2Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Decision2Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "playjev-0p8b": {
       "name": "PlayJev 0.8B",
@@ -1221,6 +1435,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve OmniJev/PlayJev-0.8B --revision a7348002b1e159add7037d6d50812cd4db2d96e9 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1235,8 +1452,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "djev-spark-nvfp4": {
       "name": "djev-spark NVFP4",
@@ -1249,8 +1467,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jevision": {
       "name": "JEVision",
@@ -1263,6 +1482,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve Qwen/Qwen3.5-0.8B-Base --revision dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1277,6 +1499,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve juspay/Xor-26B-A4B --revision e4d0e99442def315d0c8fc9430cfd78367be6466 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1291,8 +1516,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve Mapika/decider-12b --revision 64d8d3f0080d5a75549f18ebec478239ecd706fa --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "qevi-2b": {
       "name": "Qevi-2B",
@@ -1305,6 +1533,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3VLForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -1319,8 +1550,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decisio-gemma-4-12b-v080": {
       "name": "decisio v0.8.0 on gemma-4-12B-it",
@@ -1333,8 +1565,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jpt-35b-a3b": {
       "name": "JPT-35B-A3B",
@@ -1347,6 +1580,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5MoeForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -1361,8 +1597,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "elephant-1": {
       "name": "baselabs elephant-1",
@@ -1375,6 +1612,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve baselabs/elephant-1 --revision b3f8a93462fb1051a9de031e94a7ff380e254072 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1389,6 +1629,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve frontier-infra/jebadiah-27b --revision c44f505613449c1ccddb55a5cc7193e62f404153 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1403,6 +1646,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve autotrust/GEV-26B-Decide --revision eea849038e792cd09aa731d59d586f0eaf2c18f6 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1417,6 +1663,7 @@
       "gated": false,
       "adapter_base": "google/gemma-4-12B-it",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -1431,8 +1678,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "blink-v0-3-26b-a4b-nvfp4": {
       "name": "Blink v0.3 26B-A4B",
@@ -1445,6 +1693,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve PixilabAI/Blink-v0.3-26B-A4B-NVFP4 --revision 08caad20c1574fb76341ca809ff38fdb081f7d4a --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1459,8 +1710,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "respan-span-02": {
       "name": "Respan Span-02",
@@ -1473,6 +1725,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve lihe07/span-02 --revision 63cbdd774391f1b7d9bc3829179efe996d0191ce --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1487,6 +1742,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": "vllm serve PhillyLabs/philly-decider-v2 --revision 36e5ddde2c59021d37ed5974aa7c9f16062050e0 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1501,6 +1759,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve org2ai/Wald-4B --revision d17e09a2bbfea367a7f65e6eb05cf79a8e683dbf --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1515,6 +1776,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5MoeForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -1529,8 +1793,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve vllm-sr/d3-mini --revision df99bf4ca4418bc6908ee68e9b7479af1f3b8800 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "torchcast-decision-4b-v1.1": {
       "name": "Torchcast Decision 4B",
@@ -1543,6 +1810,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -1557,6 +1827,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve macrocosm-os/iota-decide-4b-v0.3 --revision 1da87f01c949e2f8a65e5958ef7cc43ec18da999 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1571,6 +1844,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve quevirus/Xevn-4B --revision ba11f0c2d8100a1e8b7789a1174ddee7c24dcab0 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1585,6 +1861,7 @@
       "gated": false,
       "adapter_base": "google/gemma-4-E4B-it",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -1599,6 +1876,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-4B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -1613,6 +1891,7 @@
       "gated": false,
       "adapter_base": "google/gemma-4-12B-it",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -1627,8 +1906,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "aplomb-1": {
       "name": "Aplomb 1",
@@ -1641,6 +1921,9 @@
       "gated": true,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "These weights require Hugging Face access approval."
     },
@@ -1655,6 +1938,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-9B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -1669,8 +1953,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve amazon/strands-decider-26B-A4B-gemma4-v1-2610 --revision f08dc85955d008dc247fae5b4df53bc409704f8a --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "tern-35b-a3b": {
       "name": "Tern-35B-A3B",
@@ -1683,8 +1968,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve matthewagi/Tern-35B-A3B --revision b293e272dfe80841644bdd22ef446698b9f006cc --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "ClefQwenMoeForPooling"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (ClefQwenMoeForPooling); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "knowline-4b-gen5.5": {
       "name": "KnowLine 4B-Gen5.5",
@@ -1697,6 +1985,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve PelaAI/KnowLine-4B-Gen5.5 --revision 779944d2cc8ffa19cef386aee83c83bcb967ade2 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1711,6 +2002,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5MoeForCausalLM"
+      ],
       "command": "vllm serve Mapika/decider-35b-a3b --revision 91470e65478656eb68fde8c0ccdfe575d69d0309 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1725,6 +2019,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve wayfind/metask-jev-4b-policy-mix --revision ea20fe85b28733b1522721dec119bec50947a869 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1739,6 +2036,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -1753,8 +2053,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve arcbright/elf-1-12b --revision 1018696022ae3fdd9cb8a93e3e972f69c11184c1 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decider-4b-v2": {
       "name": "decider-4b v2",
@@ -1767,8 +2070,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "seb-9b-v2": {
       "name": "Seb-9B-v2",
@@ -1781,6 +2085,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve ironbcc/Seb-9B-v2 --revision c01ef79eb54b491c83ed1260ab8444cbc662e65c --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1795,6 +2102,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -1809,6 +2119,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": "vllm serve tattrongvu/Jeffan-4B-2010 --revision 937a008f86f4a20a903d628f22ffad3e3f431d2c --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1823,8 +2136,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jebadiah-9b-v2-1": {
       "name": "Jebadiah 9B v2.1",
@@ -1837,6 +2151,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve frontier-infra/jebadiah-9b-v2-1 --revision a05f6e1f6d1018db249d4df5e12b51f33cfa8b0d --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1851,8 +2168,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "GLiClassModel"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (GLiClassModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "seb-9b": {
       "name": "Seb-9B",
@@ -1865,6 +2185,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve ironbcc/seb-9b --revision 4ae564d62fb69a86d5624c9176c6e271c539485f --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1879,8 +2202,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jevk5-v02": {
       "name": "JevK5 v0.2.0",
@@ -1893,8 +2217,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "messier-one-v0.4": {
       "name": "Messier One v0.4",
@@ -1907,6 +2232,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -1921,8 +2249,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jqv": {
       "name": "jqv",
@@ -1935,8 +2264,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "metask-jev-4b": {
       "name": "metask-jev-4b",
@@ -1949,8 +2279,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "kahn1": {
       "name": "Kahn1 4B",
@@ -1963,6 +2294,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": "vllm serve Okura66/Kahn1-Qwen3.5-4B --revision f3f9910f995b0e345a6e8a9cb0aeed1e06bafaf6 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -1977,8 +2311,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve perplexity-ai/pplx-decider-flash-v1.2 --revision 9ff7cf9838e59df461c276b7699d56b244d2af58 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "lev": {
       "name": "lev",
@@ -1991,6 +2328,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-4B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -2005,8 +2343,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve vllm-sr/Decision-2.0-Lux-9B --revision 1dcd1e7f240eab37ac09a6d0b0f77654b59411f9 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Decision2Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Decision2Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jeb-35b-a3b": {
       "name": "JEB-35B-A3B",
@@ -2019,6 +2360,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5MoeForConditionalGeneration"
+      ],
       "command": "vllm serve szybkie-ai/jeb-35b-a3b --revision dfac7afaed21ffff638ae4588402db560376aeac --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2033,8 +2377,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "blink-4b": {
       "name": "blink-4b",
@@ -2047,6 +2392,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -2061,8 +2409,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "qwen35-9b-jev-data-mix-v2": {
       "name": "Qwen3.5-9B Jev-like data-mix v2",
@@ -2075,6 +2424,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-9B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -2089,8 +2439,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jiwo-4b": {
       "name": "jiwo 4b",
@@ -2103,8 +2454,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve eljiwo/jiwo-4b --revision 9adc559ff7ec5baffade3998f7bca85da0d124ed --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5TextModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5TextModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "verdin-4b": {
       "name": "Verdin-4B",
@@ -2117,8 +2471,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "wald-4b-v2": {
       "name": "Wald 4B",
@@ -2131,6 +2486,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve org2ai/Wald-4B --revision d17e09a2bbfea367a7f65e6eb05cf79a8e683dbf --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2145,6 +2503,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve chinhnc/Quyet-1.0-Medium --revision bd509d64070e8ff39328e0b883ac86b9313d15f0 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2159,8 +2520,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "llama.cpp",
+      "architectures": [],
       "command": null,
-      "missing": "This model needs the llama.cpp runtime; a stock vLLM command is not available."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "clef-omni": {
       "name": "Clef-omni",
@@ -2173,8 +2535,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve Cloudflare/clef-omni --revision f32dfc060386af3eadec676c64b34f24ece2bcde --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3OmniMoeForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3OmniMoeForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "manchego-v21-v15": {
       "name": "Manchego v2.1",
@@ -2187,8 +2552,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "messier-one-v0.2": {
       "name": "Messier One v0.2",
@@ -2201,6 +2567,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -2215,8 +2584,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve google/diffusiongemma-26B-A4B-it --revision f7f5b7f5fa82ffc52addd066915886d497f5517b --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "DiffusionGemmaForBlockDiffusion"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (DiffusionGemmaForBlockDiffusion); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jev-local": {
       "name": "jev-local",
@@ -2229,8 +2601,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decision-4b-v11": {
       "name": "Decision 4B v1.1",
@@ -2243,8 +2616,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jev-qwen3.5-9b-base-nvfp4": {
       "name": "JEV Qwen3.5-9B Base NVFP4",
@@ -2257,6 +2631,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve WIlfLin/JEV-Qwen3.5-9B-Base-NVFP4 --revision 1b545cf7d0ce626e6b0fc574d8d82459b66f8335 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2271,6 +2648,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve macrocosm-os/iota-decide-4b --revision e4d7d7c438613d6e4e2647215a776a59628af486 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2285,8 +2665,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jebadiah-9b-v2": {
       "name": "Jebadiah 9B v2",
@@ -2299,6 +2680,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve frontier-infra/jebadiah-9b-v2 --revision 10eb6f2e624357f4dfc613415e4b7ab72db9b6c3 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2313,6 +2697,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-4B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -2327,6 +2712,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve apus-ailab/APUS-OpenJev-v1-9B --revision 600312f857d765f5baeebe99b527f8b7d74b7ff9 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2341,8 +2729,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve roudone/Decider-4B --revision ee44f38903295ffda61ca20299ee4b9c11142e31 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "typecastlm": {
       "name": "typecastlm",
@@ -2355,8 +2744,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "nimble-9b": {
       "name": "Bespoke Nimble 9B",
@@ -2369,8 +2759,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "pjev-2b": {
       "name": "pjev-2b",
@@ -2383,6 +2774,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "LlamaForCausalLM"
+      ],
       "command": "vllm serve Kailune-AI/pjev-2b --revision fd12d15ddaaffdcfb5605bbb88d1600c655e172f --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2397,8 +2791,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve mihailgribov/typecastlm-qwen3.5-3.8b --revision 8a0ec192f90b374bad42cfc0adbbe533a0dc1686 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5ForSequenceClassification"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5ForSequenceClassification); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "ryotide-qwen": {
       "name": "RYOTIDE-Qwen",
@@ -2411,8 +2808,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "compass-0.2.0": {
       "name": "Compass 0.2.0",
@@ -2425,6 +2823,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-4B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -2439,6 +2838,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Mistral3ForConditionalGeneration"
+      ],
       "command": "vllm serve StandardThinking/StandardOne-3B-SH --revision 7f56f73be882bc3fb2b69abe609bab1de8297d77 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2453,6 +2855,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Mistral3ForConditionalGeneration"
+      ],
       "command": "vllm serve StandardThinking/StandardOne-3B-SH --revision 7f56f73be882bc3fb2b69abe609bab1de8297d77 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2467,8 +2872,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "arsenelupin-v1.1": {
       "name": "ArseneLupin v1.1",
@@ -2481,6 +2887,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve IBOU-SEARCH/ArseneLupin-v1.1 --revision 411a6aefab87a4c155372c2a0a20777c2f5e1317 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2495,8 +2904,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decision-2b": {
       "name": "Decision 2B",
@@ -2509,8 +2919,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jez-large-1.0.0": {
       "name": "Jez-large-1.0.0",
@@ -2523,6 +2934,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForCausalLM"
+      ],
       "command": "vllm serve pragmaticfrontier/jez-large-1.0.0 --revision c6f511cf031cdcf8119fd67954e2fcbc6d3f2dbf --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2537,8 +2951,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "spark-s1-4b-v6": {
       "name": "spark-s1-4b-v6",
@@ -2551,8 +2966,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "ryotide-qwen9": {
       "name": "RYOTIDE-Qwen9",
@@ -2565,8 +2981,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "goddragon-arbiter-4b": {
       "name": "Arbiter-4B",
@@ -2579,8 +2996,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve Goddragon/Arbiter-4B --revision 8fd20568f359f4156de55f016027efdc841d690a --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decisionnode-edge-0.9.2": {
       "name": "DecisionNode Edge 0.9.2",
@@ -2593,6 +3011,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve bynn-intelligence-com/decisionnode-edge --revision 3dd48fe35dba5ce308a2d079a5c145cd8a6c7386 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2607,8 +3028,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
     "classone-qwen3.5-9b": {
       "name": "ClassOne Qwen 3.5 9B",
@@ -2621,8 +3043,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve devops-thiago/classone-qwen3.5-9b --revision 788ce86375a9869e8614fb5df700ade935b96577 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "kev-8b": {
       "name": "kev 8B",
@@ -2635,8 +3060,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "zerank-2": {
       "name": "ZeroEntropy zerank-2",
@@ -2649,6 +3075,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3ForCausalLM"
+      ],
       "command": "vllm serve zeroentropy/zerank-2-reranker --revision 5eae30d5ee3c6b2df2ef6d723bde45172d761c4c --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2663,8 +3092,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve theunnecessarythings/JADE --revision 8e9f9a3aa4293190fcc4a6ff17ff5f3251f4c270 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "open-alternative-jev": {
       "name": "open-alternative-jev",
@@ -2677,8 +3107,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "opensourcejev-qwen35-4b-q4km": {
       "name": "OpenSourceJev",
@@ -2691,8 +3122,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "open-jev-zefan-2b": {
       "name": "Open-Jev 2B",
@@ -2705,8 +3137,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "exaone-4.0-1.2b-jev-v0.3": {
       "name": "EXAONE-4.0-1.2B-JEV v0.3",
@@ -2719,8 +3152,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Exaone4ForCausalLM"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (Exaone4ForCausalLM); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "malkuth-2b": {
       "name": "Malkuth-2B",
@@ -2733,8 +3169,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decisionnode-edge-mini-0.9.2": {
       "name": "DecisionNode Edge Mini 0.9.2",
@@ -2747,6 +3184,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve bynn-intelligence-com/decisionnode-edge-mini --revision 30a628092c1a364ef747c9432ce86c0025d046c1 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2761,8 +3201,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jiwo-0.8b": {
       "name": "jiwo 0.8b",
@@ -2775,8 +3216,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve eljiwo/jiwo-0.8b --revision 71b7911cf68f7df52fdc2dbf07de1e158bb807f2 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5TextModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5TextModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decisor-4b": {
       "name": "decisor-4b",
@@ -2789,6 +3233,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": "vllm serve underlabs/decisor-4b --revision 30e430d9824daa204423c8886e5d52a9adbd5505 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2803,8 +3250,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
     "qwen3-reranker-4b": {
       "name": "Qwen3-Reranker-4B",
@@ -2817,6 +3265,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3ForCausalLM"
+      ],
       "command": "vllm serve Qwen/Qwen3-Reranker-4B --revision 22e683669bc0f0bd69640a1354a6d0aebcfeede5 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2831,6 +3282,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": "vllm serve Mapika/decider-2b --revision 7614a6c7ea5a047aa7d7bcfb1a0015469381c3e3 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2845,8 +3299,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "XLMRobertaForSequenceClassification"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (XLMRobertaForSequenceClassification); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "kev-4b": {
       "name": "kev 4B",
@@ -2859,8 +3316,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "mxbai-rerank-base-v2": {
       "name": "Mixedbread mxbai-rerank-base-v2",
@@ -2873,6 +3331,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen2ForCausalLM"
+      ],
       "command": "vllm serve mixedbread-ai/mxbai-rerank-base-v2 --revision 3ea9d4dffa7d12a4f366be8e275c349de9fc9865 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2887,8 +3348,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jez-small-1.0.0": {
       "name": "Jez-small-1.0.0",
@@ -2901,6 +3363,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": "vllm serve pragmaticfrontier/jez-small-1.0.0 --revision 4151ad0762ca95eae85b5a10c6dd6bfc10eb7627 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2915,8 +3380,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "purplemist-mini-1.0": {
       "name": "PurpleMIST-Mini-1.0",
@@ -2929,8 +3395,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve olaverse/PurpleMIST-Mini-1.0 --revision 8072361ec4b632b3b8a73899022281d5de3c639b --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5TextModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5TextModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "chon-1.0-12b": {
       "name": "Chon-1.0-12B",
@@ -2943,6 +3412,7 @@
       "gated": false,
       "adapter_base": "google/gemma-4-12B-it",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -2957,8 +3427,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "vega-u-qwen3.5-4b": {
       "name": "Vega-U",
@@ -2971,8 +3442,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve nandakishorm/vega-U --revision 4d2050287982ca7a7bb0c22fd19a389f5f94474e --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jul-fast": {
       "name": "jul fast",
@@ -2985,6 +3457,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "LlamaForCausalLM"
+      ],
       "command": "vllm serve usejul/jul-decision-minicpm5-2b --revision f556a6936089693ea68bfed3080c637e4853a3ff --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -2999,6 +3474,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-2B-Base",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -3013,8 +3489,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "ModernBertForSequenceClassification"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (ModernBertForSequenceClassification); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jeetu-decider-2b": {
       "name": "Jeetu Decider 2B",
@@ -3027,6 +3506,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": "vllm serve Jeetu456/decider-2b --revision cd0216309bf590f387500d78d1970af15d04baf5 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3041,8 +3523,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve zaitlabs/watt-flash-0.1 --revision d49a3a880b0201b325f2d2299d4c36ffc8735477 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decision-fast": {
       "name": "Decision Fast",
@@ -3055,8 +3538,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "openjev-verdict-1.4": {
       "name": "openJev Verdict 1.4",
@@ -3069,8 +3553,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve heman10x/rlcd-modernbert-151m --revision 8af2496eb63c7fa66d7d234e1f62629380030eb4 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "GLiClassModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (GLiClassModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "quyet-1-0-small-en": {
       "name": "Quyet-1.0-Small-EN",
@@ -3083,8 +3570,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve chinhnc/Quyet-1.0-Small-EN --revision dffa4c30695e959d3f0f43f6d5847e026014e52d --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "classone-gemma4-e4b": {
       "name": "ClassOne Gemma 4 E4B",
@@ -3097,8 +3585,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve devops-thiago/classone-gemma4-e4b --revision 091352eaf7495d27e33d628d811aeaed82377e0a --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "classone-qwen3.5-4b": {
       "name": "ClassOne Qwen 3.5 4B",
@@ -3111,8 +3602,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve devops-thiago/classone-qwen3.5-4b --revision 111db79fc15fbe989504e16a99c11cb9e060f7cb --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "opendecision": {
       "name": "OpenDecision",
@@ -3125,8 +3619,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "verdict-small": {
       "name": "verdict-small",
@@ -3139,8 +3634,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "kev-0.6b": {
       "name": "kev 0.6B",
@@ -3153,8 +3649,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "vegaml-4b": {
       "name": "Vega 4B",
@@ -3167,8 +3664,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve nandakishorm/vega-08b-public-intents --revision 42ac8d4fa9efb61f96e53d80962cf28f6dfe667e --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "watersheep": {
       "name": "WaterSheep",
@@ -3181,8 +3679,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve samratduttaofficial/WaterSheep --revision 236de6496b530d37e36a8ac63ff8412e92940f6e --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "WaterSheepModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (WaterSheepModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "raw-phi-4-mini": {
       "name": "Raw Phi-4 mini direct logits",
@@ -3195,6 +3696,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Phi3ForCausalLM"
+      ],
       "command": "vllm serve microsoft/Phi-4-mini-instruct --revision cfbefacb99257ffa30c83adab238a50856ac3083 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3209,6 +3713,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3ForCausalLM"
+      ],
       "command": "vllm serve Qwen/Qwen3-4B-Instruct-2507 --revision cdbee75f17c01a7cc42f958dc650907174af0554 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3223,8 +3730,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve nandakishorm/vega-08b-public-intents --revision 42ac8d4fa9efb61f96e53d80962cf28f6dfe667e --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "kev-0.5b": {
       "name": "kev 0.5B",
@@ -3237,8 +3745,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "quyet-1-0-small": {
       "name": "Quyet-1.0-Small",
@@ -3251,8 +3760,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve chinhnc/Quyet-1.0-Small --revision f007dfeb4874f0f3b3a3cc0a63f4d4192164c1c2 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "quyet-1-0-tiny": {
       "name": "Quyet-1.0-Tiny",
@@ -3265,8 +3775,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve chinhnc/Quyet-1.0-Tiny --revision fba8ca9292a705e21b14a4c5150e79a4ddcc8db3 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "open-jev-json-canvas-joshuasp": {
       "name": "Open Jev JSON Canvas",
@@ -3279,8 +3790,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "phocinae-largha-150m-v1": {
       "name": "Phocinae-Largha-150M-v1",
@@ -3293,8 +3805,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "ModernBertForMaskedLM"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (ModernBertForMaskedLM); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "raw-qwen3-8b": {
       "name": "Raw Qwen3 8B direct logits",
@@ -3307,6 +3822,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3ForCausalLM"
+      ],
       "command": "vllm serve Qwen/Qwen3-8B --revision b968826d9c46dd6066d109eabc6255188de91218 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3321,8 +3839,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "openjev-verdict": {
       "name": "openJev Verdict",
@@ -3335,8 +3854,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "tacet-sonata": {
       "name": "Tacet Sonata",
@@ -3349,8 +3869,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve codepawl/tacet-sonata --revision 26f447c35881a80020fe557c95ceb8c61bc3fd12 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "clm-8b": {
       "name": "CLM-8B",
@@ -3363,8 +3884,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "classone-qwen3.5-2b": {
       "name": "ClassOne Qwen 3.5 2B",
@@ -3377,8 +3899,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve devops-thiago/classone-qwen3.5-2b --revision 00b45093ec11fdc61345d50189487fa4cc6fbdcb --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "deem-0.8-v1": {
       "name": "Deem 0.8B v1",
@@ -3391,6 +3916,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -3405,8 +3933,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve convaiinnovations/laya --revision 7b928d828b7b0e022f929d9bd2e44165aa270148 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "LayaTypedDecisions"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (LayaTypedDecisions); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "classone-gemma4-e2b": {
       "name": "ClassOne Gemma 4 E2B",
@@ -3419,8 +3950,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve devops-thiago/classone-gemma4-e2b --revision cd502aa33d288e67f16937c2e125f2297ab7b4ad --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "julia-1": {
       "name": "Julia-1",
@@ -3433,8 +3967,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve SupersonicLabs/Julia-1 --revision a85b127321d580d65176c89ced8273f305745d85 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "raw-qwen3-1.7b": {
       "name": "Raw Qwen3 1.7B direct logits",
@@ -3447,6 +3982,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3ForCausalLM"
+      ],
       "command": "vllm serve Qwen/Qwen3-1.7B --revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3461,6 +3999,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3ForCausalLM"
+      ],
       "command": "vllm serve Qwen/Qwen3-0.6B --revision c1899de289a04d12100db370d81485cdf75e47ca --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3475,6 +4016,7 @@
       "gated": false,
       "adapter_base": "google/gemma-4-31B-it",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -3489,8 +4031,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "allec-oavg": {
       "name": "allec-oavg",
@@ -3503,6 +4046,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve plantwaterer/allec --revision e54027aa1f865bdd25724e9b3c1acb51b2bbc3c3 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3517,8 +4063,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "apus-openjev-v1-35b-a3b": {
       "name": "APUS-OpenJev-v1-35B-A3B",
@@ -3531,6 +4078,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5MoeForConditionalGeneration"
+      ],
       "command": "vllm serve apus-ailab/APUS-OpenJev-v1-35B-A3B --revision f52c2a4013e5e50428e3c64684383e2d135845ff --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3545,8 +4095,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve arcbright/elf-1-12b --revision 1018696022ae3fdd9cb8a93e3e972f69c11184c1 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "autojev-27b-rtxpro6000-a2": {
       "name": "AutoJev-27B",
@@ -3559,8 +4112,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "bev-bonsai-27b": {
       "name": "Bev / Bonsai 27B",
@@ -3573,8 +4127,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "llama.cpp",
+      "architectures": [],
       "command": null,
-      "missing": "This model needs the llama.cpp runtime; a stock vLLM command is not available."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "bongard-mini": {
       "name": "Bongard-mini",
@@ -3587,8 +4142,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve AgentBull/bongard-mini --revision 88bb70a7e6c3acec1d9c807305e8decf4904a07d --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "JudgmentModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (JudgmentModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "bonsai-2-27b-pq2-0": {
       "name": "Bonsai-2-27B v2 PQ2_0 + Q8_0 MMProj",
@@ -3601,8 +4159,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "bosun-v31-0.6b": {
       "name": "Bosun v3.1 0.6B",
@@ -3615,8 +4174,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "BosunForDecision"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (BosunForDecision); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "chaoliangunsw-jev-style-2b-decision-v4": {
       "name": "Jev-Style-2B",
@@ -3629,6 +4191,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve chaoliangUNSW/Jev-Style-2B-Decision-v4 --revision 9d3147c2ba1d793958e447b0e7e20c7436ec34b5 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3643,6 +4208,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-27B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -3657,6 +4223,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-9B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -3671,8 +4238,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve cribl-ai/cribl-decision-2 --revision 317e53b77f62011f442f56cb7c5032484fadd850 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5TextModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5TextModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "cribl-decision-2-mini": {
       "name": "cribl-decision-2-mini",
@@ -3685,8 +4255,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve cribl-ai/cribl-decision-2-mini --revision fede0fcd51b2fcbace7ed1f1729bb404eddfeb2a --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5TextModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5TextModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decisio-gemma-4-12b-tuned-commit-think": {
       "name": "Decisio 12B tuned commit-think",
@@ -3699,8 +4272,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve tachara-ai/Decisio-12b-tuned-commit-think --revision e36aeb243dea3008c593f454112840a1a29e5837 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "decision-king-v1.1": {
       "name": "Decision-King v1.1",
@@ -3713,6 +4289,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve xsdfasfgsa/Decision-King-v1.1 --revision e9afadc80608546e403b83c89027c6f91c6c2378 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3727,8 +4306,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "gliner2-large": {
       "name": "GLiNER2 large",
@@ -3741,8 +4321,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve fastino/gliner2-large-v1 --revision d7aa8a2850d175a9227ff80358ea380723d03ad2 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "gliner2.5-multi": {
       "name": "GLiNER2.5 multi",
@@ -3755,8 +4336,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve fastino/gliner2.5-multi-v1 --revision cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gliner2ForSchemaExtraction"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gliner2ForSchemaExtraction); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "gliner2.5-small": {
       "name": "GLiNER2.5 small",
@@ -3769,8 +4353,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve fastino/gliner2.5-small-v1 --revision df5910e44bc4ffdb0d95399a83b0ca4516349aa5 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gliner2ForSchemaExtraction"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gliner2ForSchemaExtraction); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "granite-switch-4.1-8b": {
       "name": "Granite Switch 4.1 8B",
@@ -3783,8 +4370,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve ibm-granite/granite-switch-4.1-8b --revision fb4aa7877e13e5fe09ca328713dc1db72a3f93ce --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "GraniteSwitchForCausalLM"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (GraniteSwitchForCausalLM); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "gutsy-0.8b-v0.3": {
       "name": "Gutsy 0.8B v0.3",
@@ -3797,8 +4387,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "llama.cpp",
+      "architectures": [],
       "command": null,
-      "missing": "This model needs the llama.cpp runtime; a stock vLLM command is not available."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "h2o-lightning-4b-v1.4.1": {
       "name": "H2O-Lightning-4B v1.4.1",
@@ -3811,6 +4402,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve h2oai/h2o-lightning-4b --revision 659fc412de8486dbc2477b0d1cb4121e97e72471 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3825,6 +4419,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve h2oai/h2o-lightning-4b --revision 659fc412de8486dbc2477b0d1cb4121e97e72471 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3839,6 +4436,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve macrocosm-os/iota-decide-4b-v0.4 --revision 7c82bc488b80d0ab45408c4c1a652483d485725c --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3853,8 +4453,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jeff-1-1-large": {
       "name": "Jeff-1.1-Large",
@@ -3867,6 +4468,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForCausalLM"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -3881,6 +4485,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -3895,8 +4502,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jevany-27b-sft": {
       "name": "JevAny-27B SFT",
@@ -3909,8 +4517,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "jevora-9b-v1": {
       "name": "jevora-9b-v1",
@@ -3923,8 +4532,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "joey-1": {
       "name": "baselabs joey-1",
@@ -3937,6 +4547,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve baselabs/joey-1 --revision 9efbe485efbed9598dfca5294cbbe8da00e21908 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -3951,6 +4564,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3.5-9B-Base",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -3965,8 +4579,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve convaiinnovations/laya --revision 7b928d828b7b0e022f929d9bd2e44165aa270148 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "LayaTypedDecisions"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (LayaTypedDecisions); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "laya-typed-decisions": {
       "name": "Laya typed-decisions",
@@ -3979,8 +4596,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve convaiinnovations/laya --revision 7b928d828b7b0e022f929d9bd2e44165aa270148 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "LayaTypedDecisions"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (LayaTypedDecisions); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "litjev": {
       "name": "LitJev",
@@ -3993,8 +4613,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "metask-jev-rain-12b": {
       "name": "metask-jev-rain-12B",
@@ -4007,8 +4628,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve cyankiwi/gemma-4-12B-it-qat-AWQ-INT4 --revision 9ed5aaf62f81d4bd931ef30ead291a32a3de2063 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Gemma4UnifiedForConditionalGeneration); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "mghafiri-qwen3.5-0.8b-decision-model": {
       "name": "Qwen3.5-0.8B Decision Model",
@@ -4021,6 +4645,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForCausalLM"
+      ],
       "command": "vllm serve mghafiri/qwen3.5-0.8B-decision-model --revision 4a9939034a27006b4b62ad5aed65a90b82d0d350 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -4035,8 +4662,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "modernbert-jev-v2": {
       "name": "modernbert-jev v2",
@@ -4049,8 +4677,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "ModernBertForSequenceClassification"
+      ],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (ModernBertForSequenceClassification); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "nagi-huge": {
       "name": "Nagi-HUGE 12B",
@@ -4063,6 +4694,7 @@
       "gated": false,
       "adapter_base": "google/gemma-4-12B-it",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -4077,8 +4709,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "needle-3-tools": {
       "name": "Needle 3, options as tools",
@@ -4091,8 +4724,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "nemotron-deciffusion-8b-v2": {
       "name": "Nemotron Deciffusion 8B v2",
@@ -4105,8 +4739,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "nev-2b": {
       "name": "Nev-2B",
@@ -4119,8 +4754,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "llama.cpp",
+      "architectures": [],
       "command": null,
-      "missing": "This model needs the llama.cpp runtime; a stock vLLM command is not available."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "ninfer-qwen3.8-27b-t1.5": {
       "name": "NInfer Qwen3.8-27B NVFP4",
@@ -4133,8 +4769,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "oenogarum": {
       "name": "oenogarum",
@@ -4147,6 +4784,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve plantwaterer/oenogarum --revision 9b684d7da38eb200fe4c5d11c36e3ce819ea2cfb --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -4161,8 +4801,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "open-jev-zefan-27b-v1.1": {
       "name": "Open-Jev 27B v1.1",
@@ -4175,8 +4816,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "open-jev-zefan-9b": {
       "name": "Open-Jev 9B",
@@ -4189,8 +4831,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "openjev-4b-nli": {
       "name": "OpenJev 4B NLI v2",
@@ -4203,8 +4846,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "openjev-4b-v5": {
       "name": "OpenJev 4B NLI v5",
@@ -4217,8 +4861,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve AlexWortega/openjev --revision a20448012c213128955ca0c693e7c943865cab77 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "openjev-thinking": {
       "name": "OpenJev",
@@ -4231,8 +4876,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "piccolo-27b": {
       "name": "Piccolo 27B",
@@ -4245,6 +4891,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve agentscope-ai/Piccolo-27B --revision b9d1e3a25a3e8b155bb76f2f2d07fdbad22deeea --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -4259,6 +4908,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve agentscope-ai/Piccolo-4B --revision 5e17bd25b50c56c02d66685a9702441a4c8368be --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -4273,6 +4925,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve agentscope-ai/Piccolo-9B --revision 1028c8b42ff4b13b62b95da4b49c80f1e1551ae1 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -4287,8 +4942,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve olaverse/PurpleMIST-Flash-1.0 --revision a48fe0206ee0d8a3f4458a3581468c24a7365ac5 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5TextModel"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5TextModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "reflex-27b": {
       "name": "reflex-27b",
@@ -4301,8 +4959,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "reflex-instinct-0.6b": {
       "name": "Reflex Instinct 0.6B",
@@ -4315,6 +4974,7 @@
       "gated": false,
       "adapter_base": "Qwen/Qwen3-0.6B",
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
       "missing": "This repository contains an adapter, not a standalone checkpoint."
     },
@@ -4329,8 +4989,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "saif-4b": {
       "name": "Saif 4B",
@@ -4343,8 +5004,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "SaifDecisionModel"
+      ],
       "command": null,
-      "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
+      "missing": "This model uses its own architecture (SaifDecisionModel); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "simplejev-qwen3.5-0.8b": {
       "name": "SimpleJev",
@@ -4357,8 +5021,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "simplejev-qwen3.8-27b-selfhost": {
       "name": "SimpleJev Qwen3.8-27B",
@@ -4371,8 +5036,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "sors-2b": {
       "name": "Sors-2B",
@@ -4385,8 +5051,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve SakuraYuyuko/Sors-2B --revision 3aa743877c9e37103649cb3a156d13fa6a026c39 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "standard-one-3b": {
       "name": "Standard One 3B",
@@ -4399,6 +5066,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Mistral3ForConditionalGeneration"
+      ],
       "command": "vllm serve StandardThinking/StandardOne-3B --revision 70023495760b0cefecda7395377377f4d85a64fb --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -4413,6 +5083,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Mistral3ForConditionalGeneration"
+      ],
       "command": "vllm serve StandardThinking/StandardOne-8B-SH --revision 534cedffb5324a3b49d2cd40c35a5df4198b9992 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -4427,6 +5100,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Mistral3ForConditionalGeneration"
+      ],
       "command": "vllm serve StandardThinking/StandardOne-8B --revision ac495d1c221297f0ae951941eff27bcf58b5ce52 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -4441,8 +5117,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "tde-general-large": {
       "name": "TDE general large v0.1",
@@ -4455,8 +5132,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve tdelab/tde-general-large-v0.1 --revision 2d697981fc217d50c27d042079549c555bc08e27 --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "torchcast-decision-31b-v1.0": {
       "name": "Torchcast Decision 31B v1.0",
@@ -4469,6 +5147,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Gemma4ForConditionalGeneration"
+      ],
       "command": "vllm serve torchcast-ai/torchcast-decision-31b --revision 1e267fc9409654a3ac91c123265c21cddce73a3b --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -4483,6 +5164,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5MoeForCausalLM"
+      ],
       "command": null,
       "missing": "A stock vLLM setup has not been cleared for these weights. Check the model card and runtime instructions."
     },
@@ -4497,8 +5181,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve nandakishorm/vega-U --revision 4d2050287982ca7a7bb0c22fd19a389f5f94474e --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [],
+      "command": null,
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "visionjev-1.0.0-27b": {
       "name": "VisionJEV 1.0.0",
@@ -4511,6 +5196,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "command": "vllm serve taoszhang/VisionJEV --revision cd6353aaea57561bd8c9beee69311f104dd77528 --max-model-len 8192 --host 127.0.0.1 --port 8000",
       "missing": null
     },
@@ -4525,8 +5213,9 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
+      "architectures": [],
       "command": null,
-      "missing": "A standalone full checkpoint has not been verified; follow the model card for the required files and base model."
+      "missing": "This model uses its own architecture (unknown); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "wemm-jev": {
       "name": "WeMM-JEV",
@@ -4539,8 +5228,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve Rover00/WeMM-JEV --revision a463f840c9259ff9139ab02181e01f20aca91b4b --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     },
     "zils-ai-z3-mini-soup-preview": {
       "name": "z3-mini-soup-preview",
@@ -4553,8 +5245,11 @@
       "gated": false,
       "adapter_base": null,
       "runtime": "vllm",
-      "command": "vllm serve zils-ai/z3-mini-soup-preview --revision 1492185bb48347db2a9d88f8bf18cb0e9c17a55b --max-model-len 8192 --host 127.0.0.1 --port 8000",
-      "missing": null
+      "architectures": [
+        "Qwen3_5Model"
+      ],
+      "command": null,
+      "missing": "This model uses its own architecture (Qwen3_5Model); stock vLLM cannot serve it. Follow the model card's own runtime instructions."
     }
   }
 }

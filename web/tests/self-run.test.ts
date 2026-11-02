@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import Page from "../app/models/[slug]/local/page";
 import CloudPage from "../app/local/cloud/page";
 import { licenceCopy, selfRunModels } from "../lib/self-run";
-import { cloudInstanceFor } from "../lib/cloud-instances";
+import { cloudInstanceFor, cloudServeCommand } from "../lib/cloud-instances";
 
 const render = async (slug: string) => renderToStaticMarkup(await Page({ params: Promise.resolve({ slug }) }));
 describe("self-service guides", () => {
@@ -12,7 +12,7 @@ describe("self-service guides", () => {
     expect(html).toContain("Run baselabs mammoth-1 yourself");
     expect(html).toContain("vllm serve baselabs/mammoth-1 --revision");
     expect(html).toContain("--host 127.0.0.1 --port 8000");
-    expect(html).toContain('href="/local/cloud"');
+    expect(html).toContain('href="/local/cloud?model=mammoth-1"');
     expect(html).not.toContain("dm-local plan mammoth-1");
     expect(html).not.toContain("dm-local install mammoth-1");
     expect(html).not.toContain("Local install on request");
@@ -21,10 +21,10 @@ describe("self-service guides", () => {
     expect(html).toContain("Running the public weights yourself with vLLM needs no Decision Models licence");
   });
   it("links supported model pages to the cloud guide too", async () => {
-    expect(await render("h2o-lightning-4b")).toContain('href="/local/cloud#aws"');
+    expect(await render("h2o-lightning-4b")).toContain('href="/local/cloud?model=h2o-lightning-4b#aws"');
   });
-  it("lists all three providers, SSH tunnels, cleanup and honest validation status", () => {
-    const html = renderToStaticMarkup(CloudPage());
+  it("lists all three providers, SSH tunnels, cleanup and honest validation status", async () => {
+    const html = renderToStaticMarkup(await CloudPage({}));
     for (const id of ["aws", "azure", "gcp"]) expect(html).toContain(`id="${id}"`);
     for (const command of ["aws ec2 run-instances", "az vm create", "gcloud compute instances create", "aws ec2 terminate-instances", "az group delete", "gcloud compute instances delete"]) expect(html).toContain(command);
     expect(html).toContain("not been run by us end-to-end");
@@ -44,9 +44,57 @@ describe("self-service guides", () => {
     }
   });
   it("selects only instances with enough known memory", () => {
-    expect(cloudInstanceFor("aws", 70)?.name).toBe("p5.48xlarge");
-    expect(cloudInstanceFor("azure", 100)).toBeUndefined();
+    expect(cloudInstanceFor("aws", 70)?.name).toBe("p5.4xlarge");
+    expect(cloudInstanceFor("azure", 100)?.gpuCount).toBe(2);
     expect(cloudInstanceFor("gcp", null)).toBeUndefined();
+  });
+  it("withholds unreviewed custom architectures and base-less adapters", async () => {
+    const models = selfRunModels();
+    for (const slug of ["vera-large", "d1a-gemma4-e4b", "watersheep", "decision-2-0-vega-27b", "openjev-4b-v5"]) {
+      expect(models[slug], slug).toBeDefined();
+      expect(models[slug].command, slug).toBeNull();
+      expect(await render(slug)).not.toContain("vllm serve ");
+    }
+    expect(models["vera-large"].missing).toContain("own architecture (VeraForDecision)");
+    expect(models["d1a-gemma4-e4b"].vram_gb).toBeNull();
+    for (const slug of ["mammoth-1", "knowline-31b-gen1"]) expect(models[slug].command).toContain("vllm serve ");
+    for (const model of Object.values(models)) expect(model.command ?? "").not.toContain("--trust-remote-code");
+  });
+  it.each(["mammoth-1", "h2o-lightning-4b"])("keeps %s sizing, VM creation and serving together", async (slug) => {
+    const facts = selfRunModels()[slug];
+    const html = renderToStaticMarkup(await CloudPage({ searchParams: Promise.resolve({ model: slug }) }));
+    const local = await render(slug);
+    const memory = slug === "h2o-lightning-4b" ? 24 : facts.vram_gb!; // Installer card uses its recorded 24 GB minimum.
+    expect(html).toContain(`GPU memory needed: ${memory} GB`);
+    for (const [provider, flag] of [["aws", "--instance-type"], ["azure", "--size"], ["gcp", "--machine-type"]]) {
+      const instance = cloudInstanceFor(provider, memory)!;
+      expect(instance.gpuCount).toBe(1);
+      expect(instance.gpuMemory).toBeGreaterThanOrEqual(memory);
+      const section = html.split(`id="${provider}"`)[1].split("</section>")[0];
+      expect(section).toContain(`INSTANCE_TYPE=${instance.name}`);
+      expect(section).toContain(`${flag} &quot;$INSTANCE_TYPE&quot;`);
+      expect(section).toContain(facts.command!);
+      expect(section).not.toContain("--tensor-parallel-size");
+      expect(local).toContain(instance.name);
+      expect(local).toContain(`/local/cloud?model=${slug}#${provider}`);
+    }
+    if (slug === "mammoth-1") expect(cloudInstanceFor("aws", facts.vram_gb)?.name).toBe("p5.4xlarge");
+  });
+  it("requires explicit size selection in generic creation commands", async () => {
+    const html = renderToStaticMarkup(await CloudPage({}));
+    expect(html.match(/INSTANCE_TYPE=REPLACE_WITH_INSTANCE_FROM_TABLE/g)).toHaveLength(3);
+    expect(html.indexOf("<table>")).toBeLessThan(html.indexOf("INSTANCE_TYPE="));
+    expect(html).not.toContain("vllm serve ");
+  });
+  it("adds tensor parallelism only for a fitting multi-GPU instance", () => {
+    for (const provider of ["aws", "azure", "gcp"]) {
+      const instance = cloudInstanceFor(provider, 125.8)!;
+      expect(instance.gpuCount).toBeGreaterThan(1);
+      expect(instance.memory).toBeGreaterThanOrEqual(125.8);
+      expect(cloudServeCommand("vllm serve example --host 127.0.0.1", instance)).toContain(`--tensor-parallel-size ${instance.gpuCount}`);
+    }
+    expect(cloudInstanceFor("aws", 1000)).toBeUndefined();
+    expect(cloudServeCommand(null, cloudInstanceFor("aws", 20))).toBeNull();
   });
   it("treats non-commercial and mixed licence strings conservatively", () => {
     expect(licenceCopy("cc-by-nc-4.0")).toContain("research and personal use only");

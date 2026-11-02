@@ -16,7 +16,7 @@ describe("local setup request fallback", () => {
       expect(html).toContain("Run ");
       expect(html).toContain("yourself");
       expect(html).toContain("Need help setting it up?");
-      expect(html).toContain('href="/local/cloud"');
+      expect(html).toContain(`href="/local/cloud?model=${slug}"`);
       expect(html).toContain(`name="models" value="${slug}"`);
       expect(html).toContain('name="request_kind" value="local"');
       expect(html).toContain("buying a licence does not add support");

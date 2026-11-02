@@ -22,7 +22,7 @@ const path = require('node:path');
       page.on('pageerror', err => failures.push(String(err)));
       // A direct next start needs the hub's /local/_next asset-prefix mapping.
       await page.route('**/local/_next/**', route => route.continue({ url: route.request().url().replace('/local/_next/', '/_next/') }));
-      for (const [name, url] of [['mammoth-local', '/models/mammoth-1/local'], ['cloud', '/local/cloud'], ['hardware-requested', '/hardware?model=mammoth-1&requested=1']]) {
+      for (const [name, url] of [['mammoth-local', '/models/mammoth-1/local'], ['cloud', '/local/cloud?model=mammoth-1'], ['hardware-requested', '/hardware?model=mammoth-1&requested=1']]) {
         const response = await page.goto(`http://127.0.0.1:3197${url}`, { waitUntil: 'networkidle' });
         await page.evaluate(() => document.fonts.ready);
         await page.locator('img').evaluateAll(async items => {
