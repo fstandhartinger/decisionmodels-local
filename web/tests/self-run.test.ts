@@ -8,21 +8,21 @@ import { getModel, isInstallerSupported } from "../lib/catalog";
 
 const render = async (slug: string) => renderToStaticMarkup(await Page({ params: Promise.resolve({ slug }) }));
 describe("self-service guides", () => {
-  it("gives Mammoth a pinned localhost vLLM command and secondary help", async () => {
-    const html = await render("mammoth-1");
-    expect(html).toContain("Run baselabs mammoth-1 yourself");
-    expect(html).toContain("vllm serve baselabs/mammoth-1 --revision");
+  it("gives Clef a pinned localhost vLLM command and secondary help", async () => {
+    const html = await render("clef");
+    expect(html).toContain("Run Clef yourself");
+    expect(html).toContain("vllm serve Cloudflare/clef --revision");
     expect(html).toContain("--host 127.0.0.1 --port 8000");
-    expect(html).toContain('href="/local/cloud?model=mammoth-1"');
-    expect(html).not.toContain("dm-local plan mammoth-1");
-    expect(html).not.toContain("dm-local install mammoth-1");
+    expect(html).toContain('href="/local/cloud?model=clef"');
+    expect(html).not.toContain("dm-local plan clef");
+    expect(html).not.toContain("dm-local install clef");
     expect(html).not.toContain("Local install on request");
     expect(html.indexOf("Run the public weights")).toBeLessThan(html.indexOf("<form"));
     expect(html).toMatch(/<details[^>]*><summary>Need help setting it up\?/);
     expect(html).toContain("Running the public weights yourself with vLLM needs no Decision Models licence");
   });
   it("keeps author-server models off the stock vLLM path, with honest pending-recipe status", async () => {
-    for (const slug of ["vllm-sr-d3", "vllm-sr-d3-turbo", "pplx-decider-v1-1-27b", "fastino-glide-1.2-open", "basal-omni-1.0-ultra", "knowline-31b-gen1"]) {
+    for (const slug of ["mammoth-1", "vllm-sr-d3", "vllm-sr-d3-turbo", "pplx-decider-v1-1-27b", "fastino-glide-1.2-open", "basal-omni-1.0-ultra", "knowline-31b-gen1"]) {
       const html = await render(slug);
       if (!isInstallerSupported(getModel(slug))) {
         expect(html).toContain("Installer recipe in verification");
@@ -36,7 +36,7 @@ describe("self-service guides", () => {
       expect(cloud).toContain("author’s serving runtime");
       expect(html).not.toContain("Local install on request");
     }
-    expect(await render("mammoth-1")).not.toContain("Installer recipe in verification");
+    expect(await render("clef")).not.toContain("Installer recipe in verification");
   });
   it("links supported model pages to the cloud guide too", async () => {
     expect(await render("h2o-lightning-4b")).toContain('href="/local/cloud?model=h2o-lightning-4b#aws"');
@@ -89,7 +89,7 @@ describe("self-service guides", () => {
     for (const slug of ["mammoth-1", "knowline-31b-gen1"]) expect(models[slug].command).toContain("vllm serve ");
     for (const model of Object.values(models)) expect(model.command ?? "").not.toContain("--trust-remote-code");
   });
-  it.each(["mammoth-1", "h2o-lightning-4b"])("keeps %s sizing, VM creation and serving together", async (slug) => {
+  it.each(["clef", "h2o-lightning-4b"])("keeps %s sizing, VM creation and serving together", async (slug) => {
     const facts = selfRunModels()[slug];
     const html = renderToStaticMarkup(await CloudPage({ searchParams: Promise.resolve({ model: slug }) }));
     const local = await render(slug);
@@ -107,7 +107,7 @@ describe("self-service guides", () => {
       expect(local).toContain(instance.name);
       expect(local).toContain(`/local/cloud?model=${slug}#${provider}`);
     }
-    if (slug === "mammoth-1") expect(cloudInstanceFor("aws", facts.vram_gb)?.name).toBe("p5.4xlarge");
+    if (slug === "clef") expect(cloudInstanceFor("aws", facts.vram_gb)?.name).toBe("p5.4xlarge");
   });
   it("requires explicit size selection in generic creation commands", async () => {
     const html = renderToStaticMarkup(await CloudPage({}));
@@ -144,16 +144,16 @@ describe("self-service guides", () => {
     if (imajev?.adapter_base?.startsWith("/workspace/")) expect(await render("imajev-9b")).toContain(publicRepoId(imajev.adapter_base)!);
   });
   it("shows an untested localhost request with the exact repo id after the vLLM command", async () => {
-    const html = await render("mammoth-1");
+    const html = await render("clef");
     expect(html).toContain("http://localhost:8000/v1/chat/completions");
-    expect(html).toContain("baselabs/mammoth-1");
+    expect(html).toContain("Cloudflare/clef");
     expect(html).toContain("We have not tested this request");
     expect(html.indexOf("vllm serve ")).toBeLessThan(html.indexOf("/v1/chat/completions"));
     expect(JSON.parse(/-d '(.*)'$/.exec(localRequestCurl("a/b"))![1]).model).toBe("a/b");
     expect(await render("watersheep")).not.toContain("/v1/chat/completions");
   });
   it("drops the purchase button where the installer does not cover the model", async () => {
-    const html = await render("mammoth-1");
+    const html = await render("clef");
     expect(html).not.toContain("Buy company licence");
     expect(html).toContain("The dm-local installer does not cover this model yet. The licence is only needed if you use the installer.");
     expect(html).toContain('href="/local/licence"');

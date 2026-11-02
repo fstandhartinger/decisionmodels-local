@@ -56,9 +56,9 @@
     "url": "https://huggingface.co/PelaAI/KnowLine-31B-Gen1/raw/8f052a8130e599b53e5324c34f0f5ff90696e1c6/README.md"
   },
   "installer_policy": {
-    "status": "on_request",
-    "reason": "Recipe written from the author's published serving instructions; not yet verified end to end.",
-    "decided_by": "recipes worker, 2026-11-02"
+    "status": "supported",
+    "reason": "Pinned text recipe passed installation and public synthetic choice/probability/score smoke tests on A10080, 2 November2026. Model licence conditions still apply.",
+    "decided_by": "Decision Models release review, 2026-11-02"
   },
   "readout": {
     "type": "author_server",
@@ -315,7 +315,11 @@
           "gpu_arch_min": "sm_80"
         },
         "verified": {
-          "status": "unverified"
+          "status": "verified",
+          "where": "Shadeform Hyperstack A10080, Ubuntu22.04, NVIDIA580.178.04, 2026-11-02",
+          "selftest": "pass",
+          "scope": "text smoke only; not benchmark/performance parity",
+          "evidence": "catalog/verification/2026-11-02-local-smoke.json"
         }
       }
     }

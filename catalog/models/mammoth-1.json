@@ -51,9 +51,9 @@
     "url": "https://huggingface.co/baselabs/mammoth-1/raw/61cec44c281c693992e3d6ebeb44dd3402dfa186/README.md"
   },
   "installer_policy": {
-    "status": "on_request",
-    "reason": "Pinned author OneJev runtime plus serve.patch; synthetic installer checks only. Requires disposable-GPU install/selftest before support.",
-    "decided_by": "mammoth worker, 2026-11-02"
+    "status": "supported",
+    "reason": "Pinned text recipe passed installation and public synthetic choice/probability/score smoke tests on A10080, 2 November2026. Model licence conditions still apply.",
+    "decided_by": "Decision Models release review, 2026-11-02"
   },
   "readout": {
     "type": "author_server",
@@ -255,7 +255,11 @@
           "gpu_arch_min": "sm_80"
         },
         "verified": {
-          "status": "unverified"
+          "status": "verified",
+          "where": "Shadeform Hyperstack A10080, Ubuntu22.04, NVIDIA580.178.04, 2026-11-02",
+          "selftest": "pass",
+          "scope": "text smoke only; not benchmark/performance parity",
+          "evidence": "catalog/verification/2026-11-02-local-smoke.json"
         }
       }
     }

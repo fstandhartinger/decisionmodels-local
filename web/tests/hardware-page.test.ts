@@ -10,27 +10,34 @@ async function render(model?: string, device?: string, requested?: string) {
 describe("hardware requested model", () => {
   it("confirms only the requested=1 flow and illustrates each device", async () => {
     const html = await render("mammoth-1", undefined, "1");
-    expect(html).toContain("Request received — baselabs mammoth-1 on pre-installed hardware.");
-    expect(html).toContain("If you just sent a request for baselabs mammoth-1, we have it and will answer by email. These options are being introduced, so requests are answered by hand for now.");
+    expect(html).toContain("Request received — Mammoth-1 on pre-installed hardware.");
+    expect(html).toContain("If you just sent a request for Mammoth-1, we have it and will answer by email. These options are being introduced, so requests are answered by hand for now.");
     expect(html).not.toContain("within one business day");
     expect(await render("mammoth-1")).not.toContain("Request received");
     expect(await render("mammoth-1", undefined, "0")).not.toContain("Request received");
     expect(await render(undefined, undefined, "1")).not.toContain("Request received");
     for (const name of ["edge", "desk", "workstation", "rack"]) expect(html).toContain(`/hardware/${name}.svg`);
   });
-  it.each(["mammoth-1", "jpt-9b", "dopest-1.0-31b", "h2o-lightning-31b"])("keeps %s selected without inventing model requirements", async (slug) => {
+  it.each(["jpt-9b", "dopest-1.0-31b", "h2o-lightning-31b"])("keeps %s selected without inventing model requirements", async (slug) => {
     const html = await render(slug);
     expect(html).toContain(`Requested model: ${slug}`);
     expect(html).toMatch(new RegExp(`name="models"[^>]*checked=""[^>]*value="${slug}"`));
   });
   it("falls back to the public-weights facts for models outside the installer catalogue", async () => {
-    const html = await render("mammoth-1");
-    expect(html).toContain("Selected model: baselabs mammoth-1");
-    expect(html).toContain("About 67.8 GB of GPU memory");
-    expect(html).toContain('href="/models/mammoth-1/local"');
-    expect(html).toMatch(/about 67.8 GB needed; fits in the 96 GB GPU memory/);
-    expect(html).toMatch(/about 67.8 GB needed; more than this device offers/);
+    const html = await render("clef");
+    expect(html).toContain("Selected model: Clef");
+    expect(html).toContain("About 68.1 GB of GPU memory");
+    expect(html).toContain('href="/models/clef/local"');
+    expect(html).toMatch(/about 68.1 GB needed; fits in the 96 GB GPU memory/);
+    expect(html).toMatch(/about 68.1 GB needed; more than this device offers/);
     expect(await render("quyet-1-0-large")).not.toContain("GB needed;");
+  });
+  it("uses the new Mammoth recipe requirements and preserves its selection", async () => {
+    const html = await render("mammoth-1");
+    expect(html).toContain("Selected model: Mammoth-1");
+    expect(html).not.toContain("Requested model:");
+    expect(html).toMatch(/name="models"[^>]*checked=""[^>]*value="mammoth-1"/);
+    expect(html).toContain('href="/models/mammoth-1/local"');
   });
   it("parses device memory labels", () => {
     expect(deviceMemoryGb("96–256 GB unified (M5 Ultra)")).toBe(96);

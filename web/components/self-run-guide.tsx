@@ -12,7 +12,7 @@ export function SelfRunGuide({ slug, name, known, hw, recipePending = false }: {
   const command = authorServer ? null : facts?.command;
   const repo = facts?.hf_repo ?? hw?.hf_repo;
   const url = repo ? `https://huggingface.co/${repo}` : undefined;
-  const memory = facts?.vram_gb; // Use served precision, never a smaller hypothetical quantisation.
+  const memory = authorServer ? hw?.min?.vram_gb ?? facts?.vram_gb : facts?.vram_gb; // Never size using a smaller hypothetical quantisation.
   const cloudHw: HardwareEntry = { slug, name, min: memory ? { vram_gb: memory } : null };
   return <div className="self-run-guide">
     <section className="section-wrap hero">
@@ -26,7 +26,7 @@ export function SelfRunGuide({ slug, name, known, hw, recipePending = false }: {
         <div><dt>Weights</dt><dd>{url ? <a href={url}>{repo}</a> : "Repository not listed"}</dd></div>
         <div><dt>Pinned revision</dt><dd>{facts?.revision && url ? <a href={`${url}/tree/${facts.revision}`}>{facts.revision}</a> : "Not verified yet"}</dd></div>
         <div><dt>Parameters</dt><dd>{facts?.params ?? (hw?.params_total_b ? `${hw.params_total_b}B` : "Unknown")}</dd></div>
-        <div><dt>GPU memory needed</dt><dd>{memory ? `${memory} GB estimated for the served precision and 8k context` : "Unknown for this runtime and precision"}</dd></div>
+        <div><dt>GPU memory needed</dt><dd>{memory ? (authorServer ? `${memory} GB for the recorded author-runtime recipe; see verification status above` : `${memory} GB estimated for the served precision and 8k context`) : "Unknown for this runtime and precision"}</dd></div>
         <div><dt>Precision</dt><dd>{facts?.precision ?? "Not verified"}</dd></div>
         <div><dt>Model licence</dt><dd>{facts?.licence ?? "Not listed; check the model card"}</dd></div>
       </dl>

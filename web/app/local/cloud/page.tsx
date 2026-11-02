@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cloudInstanceFor, cloudServeCommand, cloudInstances } from "@/lib/cloud-instances";
 import { CopyCommand } from "@/components/copy-command";
 import { selfRunModel } from "@/lib/self-run";
-import { getModel, isInstallerSupported, installRecipeStatus } from "@/lib/catalog";
+import { getModel, installRecipeStatus } from "@/lib/catalog";
 import { getHardware } from "@/lib/hardware-all";
 import { POSIX_INSTALL_COMMAND } from "@/lib/install-commands";
 
@@ -91,15 +91,14 @@ export default async function CloudPage({ searchParams }: { searchParams?: Promi
   const facts = slug ? selfRunModel(slug) : undefined;
   const model = slug ? getModel(slug) : undefined;
   const hardware = slug ? getHardware(slug) : undefined;
-  const supported = model && isInstallerSupported(model);
   const authorServer = model?.readout?.type === "author_server";
   const variant = model?.variants?.filter((v) => installRecipeStatus(v) !== "documentation_only" && v.platforms?.includes("linux-nvidia") && Number(v.min_vram_gb) > 0)
     .sort((a, b) => Number(a.min_vram_gb) - Number(b.min_vram_gb))[0];
-  const memory = supported ? (hardware ? hardware.min?.vram_gb : variant?.min_vram_gb) : facts?.vram_gb;
+  const memory = variant ? (hardware?.min?.vram_gb ?? variant.min_vram_gb) : facts?.vram_gb;
   const name = facts?.name ?? model?.name ?? slug;
 
   return <div className="cloud-quick-guide">
-    <section className="section-wrap hero"><p className="eyebrow"><Link href="/local">Run locally</Link> / Your cloud account</p><h1>Run models in your cloud account</h1><p className="lede space-top-sm">Create a GPU VM, connect over SSH, run your model, then delete the machine.</p><p>Commands have not been run by us end-to-end. You need a cloud account, billing, its CLI and GPU quota in your chosen region. GPU quota requests and capacity checks may be needed before launch. You pay the provider directly.</p>{slug && <div className="callout space-top"><strong>{name}</strong><p>GPU memory needed: {memory ? `${memory} GB` : "unknown; confirm sizing before renting"}. {facts?.command ? "Estimates use the served precision and 8k context." : facts?.missing ?? "A stock vLLM command has not been verified for this model."}</p><Link href={`/models/${encodeURIComponent(slug)}/local`}>Model setup and licence →</Link></div>}<nav className="hero-actions">{providers.map((p) => <a className="button button-secondary" href={`#${p.id}`} key={p.id}>{p.name}</a>)}</nav></section>
+    <section className="section-wrap hero"><p className="eyebrow"><Link href="/local">Run locally</Link> / Your cloud account</p><h1>Run models in your cloud account</h1><p className="lede space-top-sm">Create a GPU VM, connect over SSH, run your model, then delete the machine.</p><p>Commands have not been run by us end-to-end. You need a cloud account, billing, its CLI and GPU quota in your chosen region. GPU quota requests and capacity checks may be needed before launch. You pay the provider directly.</p>{slug && <div className="callout space-top"><strong>{name}</strong><p>GPU memory needed: {memory ? `${memory} GB` : "unknown; confirm sizing before renting"}. {authorServer ? "Memory follows the recipe’s recorded runtime requirements; see the model setup page for verification status." : facts?.command ? "Estimates use the served precision and 8k context." : facts?.missing ?? "A stock vLLM command has not been verified for this model."}</p><Link href={`/models/${encodeURIComponent(slug)}/local`}>Model setup and licence →</Link></div>}<nav className="hero-actions">{providers.map((p) => <a className="button button-secondary" href={`#${p.id}`} key={p.id}>{p.name}</a>)}</nav></section>
     {providers.map((provider) => {
       const instance = cloudInstanceFor(provider.id, memory);
       const serve = cloudServeCommand(authorServer ? null : facts?.command, instance);

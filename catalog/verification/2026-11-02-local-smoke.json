@@ -1,0 +1,59 @@
+{
+  "date_utc": "2026-11-02",
+  "gpu": "NVIDIA A100 80 GB",
+  "driver": "580.178.04",
+  "platform": "Ubuntu22.04, x86_64",
+  "scope": "Public synthetic text smoke only (choice, probability and score); no image, production throughput or benchmark parity claim. Sampled VRAM does not establish maximum-context requirements.",
+  "isolation": "Unprivileged loopback-only serving with read-only model/source inputs on a disposable GPU VM.",
+  "recipes": [
+    {
+      "slug": "vllm-sr-d3",
+      "weights_revision": "62f07e54c6c3a5ff5f695107377edc43e1a86ea8",
+      "pre_verification_recipe_sha256": "80e6fd539fd2c60f2ec5b42f807668378db1bee062fb413790d156137521e828",
+      "text_selftest": "pass",
+      "sampled_peak_vram_mib": 54695
+    },
+    {
+      "slug": "vllm-sr-d3-turbo",
+      "weights_revision": "9df220de4ce52ab11047156fa54b8c0313d8b0eb",
+      "pre_verification_recipe_sha256": "7460709256f578c588ebb86426bbd340e69ece0ee32bb52be56283d8414ac58c",
+      "text_selftest": "pass",
+      "sampled_peak_vram_mib": 61293
+    },
+    {
+      "slug": "pplx-decider-v1-1-27b",
+      "weights_revision": "14c9d90137962d300f3de95633f7b6535e80c5ce",
+      "pre_verification_recipe_sha256": "0f2116ee10160b9ddbd425bba19ec42568c4a48f551cdb99a5d78fe6d57ebc2d",
+      "text_selftest": "pass",
+      "sampled_peak_vram_mib": 50351
+    },
+    {
+      "slug": "fastino-glide-1.2-open",
+      "weights_revision": "d199b6d7e04523d87986b8b68cd62272ed1cefc0",
+      "pre_verification_recipe_sha256": "feff7cddf67b4bf7efb201e64494623116354fbde97ccb728c2fac91d88805b9",
+      "text_selftest": "pass",
+      "sampled_peak_vram_mib": 52765
+    },
+    {
+      "slug": "basal-omni-1.0-ultra",
+      "weights_revision": "6d5ba67db149e47ddce26fc02d78c0cadb10f496",
+      "pre_verification_recipe_sha256": "d285a83dd501a79ac2f9cf5785aa9ab8ca8e953db85c296959d0620fe2ae9b23",
+      "text_selftest": "pass",
+      "sampled_peak_vram_mib": 60561
+    },
+    {
+      "slug": "knowline-31b-gen1",
+      "weights_revision": "8f052a8130e599b53e5324c34f0f5ff90696e1c6",
+      "pre_verification_recipe_sha256": "8421f77370cd0bc48ce4a3dfa6de5e5b7505f87f499e18be01056cee3d7d7be8",
+      "text_selftest": "pass",
+      "sampled_peak_vram_mib": 60991
+    },
+    {
+      "slug": "mammoth-1",
+      "weights_revision": "61cec44c281c693992e3d6ebeb44dd3402dfa186",
+      "pre_verification_recipe_sha256": "2094678b22e093427ebd24d257d9457c8a03808ec2476b1e10c76ea836526467",
+      "text_selftest": "pass",
+      "sampled_peak_vram_mib": 59191
+    }
+  ]
+}
